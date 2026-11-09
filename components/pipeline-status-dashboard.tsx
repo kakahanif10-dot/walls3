@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import {
   Activity,
@@ -15,12 +15,17 @@ import {
   AlertCircle,
   ExternalLink,
   ChevronRight,
+  ChevronLeft,
   Info,
   Clock,
   Sparkles,
+  BarChart2,
+  Filter,
+  X,
 } from "lucide-react";
 import { type PipelineMetrics, type ScoredAssetItem } from "@/lib/market-pipeline";
 import { stanceColor } from "@/lib/market";
+import ScoreDistributionHistogram from "@/components/score-distribution-histogram";
 
 export default function PipelineStatusDashboard() {
   const [metrics, setMetrics] = useState<PipelineMetrics | null>(null);
@@ -28,10 +33,26 @@ export default function PipelineStatusDashboard() {
   const [bottomRanked, setBottomRanked] = useState<ScoredAssetItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<"overview" | "distribution" | "explorer" | "providers">("overview");
+
+  // Explorer states
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"overview" | "explorer" | "providers">("overview");
   const [selectedKind, setSelectedKind] = useState<"all" | "stock" | "crypto" | "meme">("all");
   const [selectedStance, setSelectedStance] = useState<string>("all");
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(25);
+  const [explorerAssets, setExplorerAssets] = useState<ScoredAssetItem[]>([]);
+  const [explorerTotal, setExplorerTotal] = useState(0);
+  const [explorerLoading, setExplorerLoading] = useState(false);
+
+  // Score range filter from histogram
+  const [selectedScoreRange, setSelectedScoreRange] = useState<{
+    minScore: number;
+    maxScore: number;
+    label: string;
+  } | null>(null);
+
+  // Asset detail modal
   const [selectedAssetDetail, setSelectedAssetDetail] = useState<any | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
@@ -58,9 +79,54 @@ export default function PipelineStatusDashboard() {
 
   useEffect(() => {
     fetchPipeline();
-    const interval = setInterval(() => fetchPipeline(), 30_000);
+    const interval = setInterval(() => fetchPipeline(), 45_000);
     return () => clearInterval(interval);
   }, []);
+
+  // Fetch explorer assets from /api/scoring
+  const fetchExplorer = useCallback(async () => {
+    try {
+      setExplorerLoading(true);
+      const params = new URLSearchParams();
+      if (searchQuery.trim()) params.set("q", searchQuery.trim());
+      if (selectedKind !== "all") params.set("kind", selectedKind);
+      if (selectedStance !== "all") params.set("stance", selectedStance);
+      if (selectedScoreRange) {
+        params.set("minScore", String(selectedScoreRange.minScore));
+        params.set("maxScore", String(selectedScoreRange.maxScore));
+      }
+      params.set("page", String(page));
+      params.set("limit", String(pageSize));
+
+      const res = await fetch(`/api/scoring?${params.toString()}`);
+      if (!res.ok) throw new Error("Failed to load universe");
+      const data = await res.json();
+      setExplorerAssets(data.results || []);
+      setExplorerTotal(data.meta?.totalMatching || 0);
+    } catch (err) {
+      console.warn("Failed to query scoring universe:", err);
+    } finally {
+      setExplorerLoading(false);
+    }
+  }, [searchQuery, selectedKind, selectedStance, selectedScoreRange, page, pageSize]);
+
+  useEffect(() => {
+    fetchExplorer();
+  }, [fetchExplorer]);
+
+  // Handle score range selection from the histogram
+  const handleSelectScoreRange = (minScore: number | null, maxScore: number | null, label?: string) => {
+    if (minScore === null || maxScore === null) {
+      setSelectedScoreRange(null);
+    } else {
+      setSelectedScoreRange({
+        minScore,
+        maxScore,
+        label: label || `Score ${minScore}–${maxScore}`,
+      });
+      setPage(1);
+    }
+  };
 
   // Fetch detailed 5-component breakdown for an asset
   const inspectAsset = async (symbol: string) => {
@@ -78,21 +144,7 @@ export default function PipelineStatusDashboard() {
     }
   };
 
-  // Filtered list of ranked assets for explorer
-  const displayedAssets = useMemo(() => {
-    let list = [...topRanked, ...bottomRanked];
-    if (selectedKind !== "all") {
-      list = list.filter((a) => a.kind === selectedKind);
-    }
-    if (selectedStance !== "all") {
-      list = list.filter((a) => a.stance.toLowerCase() === selectedStance.toLowerCase());
-    }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter((a) => a.symbol.toLowerCase().includes(q) || a.name.toLowerCase().includes(q));
-    }
-    return list;
-  }, [topRanked, bottomRanked, selectedKind, selectedStance, searchQuery]);
+  const totalPages = Math.ceil(explorerTotal / pageSize) || 1;
 
   return (
     <div className="space-y-8">
@@ -112,7 +164,7 @@ export default function PipelineStatusDashboard() {
             Multi-Source Market Data &amp; Scoring Engine
           </h2>
           <p className="mt-1 text-xs text-muted max-w-2xl leading-relaxed">
-            Ingests real quotes from <strong className="text-bone">Nasdaq</strong>, <strong className="text-bone">Coinbase</strong>, <strong className="text-bone">Binance</strong>, and <strong className="text-bone">OKX</strong>. Computes 5-factor mathematical trend scores, technical invalidation levels, and realized volatility across 2,000+ instruments.
+            Ingests real quotes from <strong className="text-bone">Nasdaq</strong>, <strong className="text-bone">Coinbase</strong>, <strong className="text-bone">Binance</strong>, and <strong className="text-bone">OKX</strong>. Computes 5-factor mathematical trend scores, technical invalidation levels, and Gaussian universe distribution.
           </p>
         </div>
 
@@ -183,7 +235,7 @@ export default function PipelineStatusDashboard() {
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Navigation Tabs */}
       <div className="border-b border-line/60 pb-1 flex items-center justify-between">
         <div className="flex gap-2 text-xs">
           <button
@@ -195,7 +247,35 @@ export default function PipelineStatusDashboard() {
                 : "text-muted hover:text-bone"
             }`}
           >
-            Overview &amp; Top Momentum
+            Overview &amp; Momentum
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("distribution")}
+            className={`rounded-t-lg px-4 py-2 font-medium transition-colors flex items-center gap-1.5 ${
+              activeTab === "distribution"
+                ? "border-b-2 border-gold text-gold-bright"
+                : "text-muted hover:text-bone"
+            }`}
+          >
+            <BarChart2 className="h-3.5 w-3.5" />
+            Distribution Histogram
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("explorer")}
+            className={`rounded-t-lg px-4 py-2 font-medium transition-colors flex items-center gap-1.5 ${
+              activeTab === "explorer"
+                ? "border-b-2 border-gold text-gold-bright"
+                : "text-muted hover:text-bone"
+            }`}
+          >
+            <span>2,000+ Asset Scored Universe</span>
+            {selectedScoreRange && (
+              <span className="rounded-full bg-gold/20 px-1.5 py-0.2 text-[9px] text-gold-bright font-mono font-bold">
+                Filtered
+              </span>
+            )}
           </button>
           <button
             type="button"
@@ -208,17 +288,6 @@ export default function PipelineStatusDashboard() {
           >
             API Providers ({metrics?.providers?.length || 4})
           </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("explorer")}
-            className={`rounded-t-lg px-4 py-2 font-medium transition-colors ${
-              activeTab === "explorer"
-                ? "border-b-2 border-gold text-gold-bright"
-                : "text-muted hover:text-bone"
-            }`}
-          >
-            2,000+ Asset Scored Universe
-          </button>
         </div>
 
         {metrics?.lastSyncTime && (
@@ -229,7 +298,22 @@ export default function PipelineStatusDashboard() {
         )}
       </div>
 
-      {/* TAB 1: OVERVIEW & TOP MOMENTUM */}
+      {/* HISTOGRAM VISUALIZATION COMPONENT (Rendered in Overview & Distribution tabs) */}
+      {(activeTab === "overview" || activeTab === "distribution") && metrics?.distribution && (
+        <ScoreDistributionHistogram
+          distribution={metrics.distribution}
+          distributionByKind={metrics.distributionByKind}
+          onSelectScoreRange={(min, max, label) => {
+            handleSelectScoreRange(min, max, label);
+            if (min !== null && max !== null) {
+              setActiveTab("explorer");
+            }
+          }}
+          selectedRange={selectedScoreRange}
+        />
+      )}
+
+      {/* TAB 1: OVERVIEW & TOP MOMENTUM BOARDS */}
       {activeTab === "overview" && (
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Top 10 Momentum Leaders */}
@@ -243,7 +327,7 @@ export default function PipelineStatusDashboard() {
             </div>
 
             <div className="mt-3 divide-y divide-line/60">
-              {topRanked.slice(0, 7).map((item) => (
+              {topRanked.slice(0, 8).map((item) => (
                 <div key={item.symbol} className="flex items-center justify-between py-2.5 text-xs">
                   <div className="flex items-center gap-3">
                     <button
@@ -262,7 +346,9 @@ export default function PipelineStatusDashboard() {
                   </div>
 
                   <div className="flex items-center gap-3 font-mono">
-                    <span className="text-bone">${item.price >= 1 ? item.price.toLocaleString(undefined, { maximumFractionDigits: 2 }) : item.price.toFixed(5)}</span>
+                    <span className="text-bone">
+                      ${item.price >= 1 ? item.price.toLocaleString(undefined, { maximumFractionDigits: 2 }) : item.price.toFixed(5)}
+                    </span>
                     <span className={`w-14 text-right ${item.change24h >= 0 ? "text-up" : "text-down"}`}>
                       {item.change24h >= 0 ? "+" : ""}{(item.change24h * 100).toFixed(1)}%
                     </span>
@@ -286,7 +372,7 @@ export default function PipelineStatusDashboard() {
             </div>
 
             <div className="mt-3 divide-y divide-line/60">
-              {bottomRanked.slice(0, 7).map((item) => (
+              {bottomRanked.slice(0, 8).map((item) => (
                 <div key={item.symbol} className="flex items-center justify-between py-2.5 text-xs">
                   <div className="flex items-center gap-3">
                     <button
@@ -305,7 +391,9 @@ export default function PipelineStatusDashboard() {
                   </div>
 
                   <div className="flex items-center gap-3 font-mono">
-                    <span className="text-bone">${item.price >= 1 ? item.price.toLocaleString(undefined, { maximumFractionDigits: 2 }) : item.price.toFixed(5)}</span>
+                    <span className="text-bone">
+                      ${item.price >= 1 ? item.price.toLocaleString(undefined, { maximumFractionDigits: 2 }) : item.price.toFixed(5)}
+                    </span>
                     <span className={`w-14 text-right ${item.change24h >= 0 ? "text-up" : "text-down"}`}>
                       {item.change24h >= 0 ? "+" : ""}{(item.change24h * 100).toFixed(1)}%
                     </span>
@@ -360,9 +448,29 @@ export default function PipelineStatusDashboard() {
         </div>
       )}
 
-      {/* TAB 3: EXPLORER ACROSS SCORING UNIVERSE */}
+      {/* TAB 3: EXPLORER ACROSS SCORING UNIVERSE (2,000+ ASSETS) */}
       {activeTab === "explorer" && (
         <div className="space-y-4">
+          {/* Active Range Filter Indicator */}
+          {selectedScoreRange && (
+            <div className="flex items-center justify-between rounded-lg border border-gold/40 bg-gold/10 px-4 py-2.5 text-xs">
+              <div className="flex items-center gap-2 text-gold-bright">
+                <Filter className="h-4 w-4" />
+                <span>Histogram Selection Filter:</span>
+                <strong className="font-mono font-bold text-bone">{selectedScoreRange.label}</strong>
+                <span className="text-muted">({explorerTotal.toLocaleString()} assets match)</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedScoreRange(null)}
+                className="flex items-center gap-1 rounded bg-line/60 px-2.5 py-1 text-[11px] text-muted hover:text-bone hover:bg-line transition"
+              >
+                <X className="h-3 w-3" />
+                Clear Range
+              </button>
+            </div>
+          )}
+
           {/* Filter Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="relative flex-1 max-w-sm">
@@ -371,26 +479,56 @@ export default function PipelineStatusDashboard() {
                 type="text"
                 placeholder="Search symbol, company, or sector..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
                 className="w-full rounded-lg border border-line bg-ink-900 pl-9 pr-3 py-1.5 text-xs text-bone placeholder:text-muted/60 focus:border-gold focus:outline-none"
               />
             </div>
 
-            <div className="flex flex-wrap items-center gap-1.5 text-xs">
-              {(["all", "stock", "crypto", "meme"] as const).map((k) => (
-                <button
-                  key={k}
-                  type="button"
-                  onClick={() => setSelectedKind(k)}
-                  className={`rounded-full px-3 py-1 uppercase text-[10px] tracking-wider transition ${
-                    selectedKind === k
-                      ? "bg-gold text-ink-950 font-bold"
-                      : "border border-line text-muted hover:text-bone"
-                  }`}
-                >
-                  {k}
-                </button>
-              ))}
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              {/* Kind selector */}
+              <div className="flex items-center gap-1 rounded-full border border-line bg-ink-950 p-0.5">
+                {(["all", "stock", "crypto", "meme"] as const).map((k) => (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={() => {
+                      setSelectedKind(k);
+                      setPage(1);
+                    }}
+                    className={`rounded-full px-2.5 py-1 uppercase text-[9px] tracking-wider transition ${
+                      selectedKind === k
+                        ? "bg-gold text-ink-950 font-bold"
+                        : "text-muted hover:text-bone"
+                    }`}
+                  >
+                    {k}
+                  </button>
+                ))}
+              </div>
+
+              {/* Stance filter */}
+              <select
+                value={selectedStance}
+                onChange={(e) => {
+                  setSelectedStance(e.target.value);
+                  setPage(1);
+                }}
+                className="rounded-lg border border-line bg-ink-900 px-3 py-1.5 text-xs text-bone focus:border-gold focus:outline-none"
+              >
+                <option value="all">All Stances</option>
+                <option value="buy">Buy (78–100)</option>
+                <option value="accumulate">Accumulate (66–77)</option>
+                <option value="hold">Hold (47–65)</option>
+                <option value="trim">Trim (34–46)</option>
+                <option value="avoid">Avoid (0–33)</option>
+              </select>
+
+              <span className="text-xs text-muted font-mono">
+                {explorerTotal.toLocaleString()} Total Matches
+              </span>
             </div>
           </div>
 
@@ -410,49 +548,99 @@ export default function PipelineStatusDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line/60">
-                {displayedAssets.slice(0, 20).map((row) => (
-                  <tr key={row.symbol} className="hover:bg-ink-850/50 transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Link href={`/ticker/${row.symbol}`} className="font-mono font-bold text-bone hover:text-gold-bright">
-                          ${row.symbol}
-                        </Link>
-                        <span className="text-[10px] text-muted truncate max-w-[120px]">{row.name}</span>
+                {explorerLoading ? (
+                  <tr>
+                    <td colSpan={8} className="py-12 text-center text-muted">
+                      <div className="flex items-center justify-center gap-2">
+                        <RefreshCw className="h-4 w-4 animate-spin text-gold" />
+                        <span>Querying 2,000+ asset scoring universe...</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-right font-mono text-bone">
-                      ${row.price >= 1 ? row.price.toLocaleString(undefined, { maximumFractionDigits: 2 }) : row.price.toFixed(5)}
-                    </td>
-                    <td className={`px-4 py-3 text-right font-mono ${row.change24h >= 0 ? "text-up" : "text-down"}`}>
-                      {row.change24h >= 0 ? "+" : ""}{(row.change24h * 100).toFixed(2)}%
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono font-bold text-gold-bright">
-                      {row.score} / 100
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className={`inline-block rounded-full border px-2 py-0.5 text-[10px] font-semibold ${stanceColor(row.stance)}`}>
-                        {row.stance}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono text-bone">
-                      ${row.invalidationLevel >= 1 ? row.invalidationLevel.toLocaleString(undefined, { maximumFractionDigits: 2 }) : row.invalidationLevel.toFixed(5)}
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono text-muted">
-                      {row.riskGrade}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <button
-                        type="button"
-                        onClick={() => inspectAsset(row.symbol)}
-                        className="rounded bg-line/60 px-2 py-1 text-[10px] text-muted hover:text-bone hover:bg-gold/20 transition-colors"
-                      >
-                        Audit Math
-                      </button>
+                  </tr>
+                ) : explorerAssets.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="py-12 text-center text-muted">
+                      No assets found matching the selected filters.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  explorerAssets.map((row) => (
+                    <tr key={row.symbol} className="hover:bg-ink-850/50 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <Link href={`/ticker/${row.symbol}`} className="font-mono font-bold text-bone hover:text-gold-bright">
+                            ${row.symbol}
+                          </Link>
+                          <span className="text-[10px] text-muted truncate max-w-[140px]">{row.name}</span>
+                          <span className="rounded bg-line/50 px-1 py-0.2 font-mono text-[9px] text-muted uppercase">
+                            {row.kind}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono text-bone">
+                        ${row.price >= 1 ? row.price.toLocaleString(undefined, { maximumFractionDigits: 2 }) : row.price.toFixed(5)}
+                      </td>
+                      <td className={`px-4 py-3 text-right font-mono ${row.change24h >= 0 ? "text-up" : "text-down"}`}>
+                        {row.change24h >= 0 ? "+" : ""}{(row.change24h * 100).toFixed(2)}%
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono font-bold text-gold-bright">
+                        {row.score} / 100
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-block rounded-full border px-2 py-0.5 text-[10px] font-semibold ${stanceColor(row.stance)}`}>
+                          {row.stance}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono text-bone">
+                        ${row.invalidationLevel >= 1 ? row.invalidationLevel.toLocaleString(undefined, { maximumFractionDigits: 2 }) : row.invalidationLevel.toFixed(5)}
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono text-muted">
+                        {row.riskGrade}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          type="button"
+                          onClick={() => inspectAsset(row.symbol)}
+                          className="rounded bg-line/60 px-2 py-1 text-[10px] text-muted hover:text-bone hover:bg-gold/20 transition-colors"
+                        >
+                          Audit Math
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
+          </div>
+
+          {/* Pagination Controls */}
+          <div className="flex items-center justify-between border-t border-line/60 pt-3 text-xs text-muted">
+            <span className="font-mono">
+              Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, explorerTotal)} of {explorerTotal.toLocaleString()} assets
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className="flex items-center gap-1 rounded border border-line px-3 py-1 hover:text-bone disabled:opacity-40 transition"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+                <span>Prev</span>
+              </button>
+              <span className="font-mono font-semibold text-bone">
+                Page {page} of {totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+                className="flex items-center gap-1 rounded border border-line px-3 py-1 hover:text-bone disabled:opacity-40 transition"
+              >
+                <span>Next</span>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
         </div>
       )}

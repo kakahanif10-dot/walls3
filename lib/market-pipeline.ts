@@ -11,6 +11,38 @@ export type ProviderStatus = {
   lastSync: string;
 };
 
+export type HistogramBin = {
+  binIndex: number;
+  minScore: number;
+  maxScore: number;
+  label: string;
+  count: number;
+  percentage: number;
+  stockCount: number;
+  cryptoCount: number;
+  memeCount: number;
+  stance: Metrics["stance"];
+  sampleSymbols: string[];
+};
+
+export type ScoreDistribution = {
+  totalAssets: number;
+  mean: number;
+  median: number;
+  q1: number;
+  q3: number;
+  stdDev: number;
+  skewness: string;
+  stanceCounts: {
+    buy: number;
+    accumulate: number;
+    hold: number;
+    trim: number;
+    avoid: number;
+  };
+  bins: HistogramBin[];
+};
+
 export type PipelineMetrics = {
   totalAssets: number;
   stocksCount: number;
@@ -23,6 +55,12 @@ export type PipelineMetrics = {
   lastSyncTime: string;
   executionDurationMs: number;
   providers: ProviderStatus[];
+  distribution: ScoreDistribution;
+  distributionByKind: {
+    stock: ScoreDistribution;
+    crypto: ScoreDistribution;
+    meme: ScoreDistribution;
+  };
 };
 
 export type ScoredAssetItem = {
@@ -241,6 +279,112 @@ async function ingestNasdaqLeaders(symbols: string[]): Promise<{ quotes: Record<
 }
 
 /* --------------------------------------------------------------------------
+   HISTOGRAM & STATISTICAL SCORE DISTRIBUTION ENGINE
+   -------------------------------------------------------------------------- */
+export function computeScoreDistribution(items: ScoredAssetItem[]): ScoreDistribution {
+  const total = items.length;
+  if (total === 0) {
+    return {
+      totalAssets: 0,
+      mean: 50,
+      median: 50,
+      q1: 40,
+      q3: 60,
+      stdDev: 0,
+      skewness: "Neutral",
+      stanceCounts: { buy: 0, accumulate: 0, hold: 0, trim: 0, avoid: 0 },
+      bins: [],
+    };
+  }
+
+  const scores = items.map((i) => i.score).sort((a, b) => a - b);
+  const sum = scores.reduce((acc, s) => acc + s, 0);
+  const mean = Math.round((sum / total) * 10) / 10;
+  const median = scores[Math.floor(total / 2)];
+  const q1 = scores[Math.floor(total * 0.25)];
+  const q3 = scores[Math.floor(total * 0.75)];
+
+  const variance = scores.reduce((acc, s) => acc + Math.pow(s - mean, 2), 0) / total;
+  const stdDev = Math.round(Math.sqrt(variance) * 10) / 10;
+
+  let skewness = "Neutral / Symmetric Normal";
+  if (mean > median + 2.5) skewness = "Bullish Momentum Skew (Right Tail)";
+  else if (mean < median - 2.5) skewness = "Bearish Breakdown Skew (Left Tail)";
+
+  const stanceCounts = {
+    buy: 0,
+    accumulate: 0,
+    hold: 0,
+    trim: 0,
+    avoid: 0,
+  };
+
+  // 20 bins of 5 points each: [0-4], [5-9], ..., [95-100]
+  const NUM_BINS = 20;
+  const bins: HistogramBin[] = Array.from({ length: NUM_BINS }, (_, i) => {
+    const minScore = i * 5;
+    const maxScore = i === NUM_BINS - 1 ? 100 : i * 5 + 4;
+    const mid = (minScore + maxScore) / 2;
+    let stance: Metrics["stance"] = "Hold";
+    if (mid >= 78) stance = "Buy";
+    else if (mid >= 66) stance = "Accumulate";
+    else if (mid >= 47) stance = "Hold";
+    else if (mid >= 34) stance = "Trim";
+    else stance = "Avoid";
+
+    return {
+      binIndex: i,
+      minScore,
+      maxScore,
+      label: `${minScore}-${maxScore}`,
+      count: 0,
+      percentage: 0,
+      stockCount: 0,
+      cryptoCount: 0,
+      memeCount: 0,
+      stance,
+      sampleSymbols: [],
+    };
+  });
+
+  for (const item of items) {
+    const s = Math.max(0, Math.min(100, item.score));
+    const binIdx = Math.min(NUM_BINS - 1, Math.floor(s / 5));
+    const bin = bins[binIdx];
+    bin.count++;
+    if (item.kind === "stock") bin.stockCount++;
+    else if (item.kind === "crypto") bin.cryptoCount++;
+    else if (item.kind === "meme") bin.memeCount++;
+
+    if (bin.sampleSymbols.length < 5) {
+      bin.sampleSymbols.push(item.symbol);
+    }
+
+    if (item.stance === "Buy") stanceCounts.buy++;
+    else if (item.stance === "Accumulate") stanceCounts.accumulate++;
+    else if (item.stance === "Hold") stanceCounts.hold++;
+    else if (item.stance === "Trim") stanceCounts.trim++;
+    else stanceCounts.avoid++;
+  }
+
+  for (const bin of bins) {
+    bin.percentage = Math.round((bin.count / total) * 1000) / 10;
+  }
+
+  return {
+    totalAssets: total,
+    mean,
+    median,
+    q1,
+    q3,
+    stdDev,
+    skewness,
+    stanceCounts,
+    bins,
+  };
+}
+
+/* --------------------------------------------------------------------------
    CORE PIPELINE EXECUTION & ALGORITHMIC SCORING ENGINE (2,000+ ASSETS)
    -------------------------------------------------------------------------- */
 export async function runFullMarketPipeline(force = false): Promise<{
@@ -375,6 +519,14 @@ export async function runFullMarketPipeline(force = false): Promise<{
       },
     ];
 
+    // Compute score distributions across the entire universe and per asset class
+    const distribution = computeScoreDistribution(scoredList);
+    const distributionByKind = {
+      stock: computeScoreDistribution(scoredList.filter((a) => a.kind === "stock")),
+      crypto: computeScoreDistribution(scoredList.filter((a) => a.kind === "crypto")),
+      meme: computeScoreDistribution(scoredList.filter((a) => a.kind === "meme")),
+    };
+
     const pipelineMetrics: PipelineMetrics = {
       totalAssets: scoredList.length,
       stocksCount: stockScores.length,
@@ -387,6 +539,8 @@ export async function runFullMarketPipeline(force = false): Promise<{
       lastSyncTime: nowIso,
       executionDurationMs,
       providers: providerTelemetry,
+      distribution,
+      distributionByKind,
     };
 
     lastPipelineRun = {
