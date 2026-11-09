@@ -85,7 +85,7 @@ export default async function HomePage() {
 
             <dl className="mt-10 grid max-w-lg grid-cols-3 gap-6 border-t border-line/60 pt-7">
               {[
-                { k: "24", v: "assets tracked" },
+                { k: "118", v: "assets tracked" },
                 { k: "6", v: "research desks" },
                 { k: "4", v: "academy courses" },
               ].map((item) => (
@@ -223,23 +223,23 @@ export default async function HomePage() {
               {
                 href: "/markets",
                 eyebrow: "Equities",
-                title: "Twelve franchises we can defend",
-                body: "AI infrastructure, software, financials, energy and consumer staples — scored on structure and momentum with fundamentals as context.",
-                meta: "12 names · daily updates",
+                title: "S&P 500 & Nasdaq leaders",
+                body: "AI infrastructure, semis, software, financials, pharma and staples — scored on structure and momentum with invalidation levels.",
+                meta: "42 names · S&P 500 & Nasdaq",
               },
               {
                 href: "/crypto",
                 eyebrow: "Digital assets",
-                title: "Flow, float and liquidity",
-                body: "No cash flow to discount, so we price the regime instead: real yields, dollar direction, ETF flow and on-chain activity.",
-                meta: "8 assets · volatility sized",
+                title: "Binance & major ecosystem alpha",
+                body: "Bitcoin, Ethereum, Solana, and 35+ major L1/L2 and DeFi leaders traded on Binance. Scored on liquidity regime and float.",
+                meta: "38 assets · Binance & L1/L2s",
               },
               {
                 href: "/meme-coins",
                 eyebrow: "Speculative",
-                title: "Attention markets, graded as risk",
-                body: "Concentration, order-book depth and narrative half-life. Hard position caps and mechanical exits, not conviction plays.",
-                meta: "6 assets · risk-first",
+                title: "Pump.fun & viral meme risk",
+                body: "From Doge to 35+ pump.fun viral breakouts (Fartcoin, Goat, Act, Pnut, Moodeng). Hard position caps and mechanical exits.",
+                meta: "38 assets · pump.fun & viral",
               },
             ].map((card) => (
               <Link

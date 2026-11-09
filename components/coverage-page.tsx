@@ -9,11 +9,11 @@ const COPY: Record<
 > = {
   stock: {
     eyebrow: "Equity coverage",
-    title: "US equities, scored on trend",
-    sub: "Twelve large-cap franchises across AI infrastructure, software, financials, energy and consumer. Each one carries a transparent trend score, a stance, and an invalidation level.",
-    note: "Coverage is deliberately concentrated: twelve names we can actually maintain a view on beats two hundred we cannot.",
+    title: "S&P 500 & Nasdaq equities, scored on trend",
+    sub: "Over 40 large-cap franchises across AI infrastructure, semiconductors, cloud software, financials, pharma, energy, and retail. Each carries a transparent trend score, stance, and invalidation level.",
+    note: "Institutional-grade coverage across mega-caps and high-beta momentum leaders, scored cleanly on technical structure and momentum.",
     stats: [
-      { label: "Names covered", hint: "mega & large cap" },
+      { label: "Names covered", hint: "S&P 500 & Nasdaq" },
       { label: "Median score", hint: "cross-sector" },
       { label: "Above 50-day", hint: "trend participation" },
       { label: "Avg. volatility", hint: "60-day realised" },
@@ -21,11 +21,11 @@ const COPY: Record<
   },
   crypto: {
     eyebrow: "Digital assets",
-    title: "Digital assets, without the narrative tax",
-    sub: "Bitcoin, Ethereum and the infrastructure layers where real usage settles. Valued on flow, float and liquidity — the only durable variables in an asset class with no cash flows.",
+    title: "Binance & ecosystem assets, without the narrative tax",
+    sub: "Bitcoin, Ethereum, Solana, and 35+ major L1/L2 and DeFi leaders traded on Binance. Valued on flow, float, and liquidity with continuous real-time price updates.",
     note: "Crypto has no valuation floor. It has a liquidity ceiling. Every stance here is sized around that difference.",
     stats: [
-      { label: "Assets covered", hint: "L1s, L2s, oracles" },
+      { label: "Assets covered", hint: "Binance & L1/L2s" },
       { label: "Median score", hint: "sector composite" },
       { label: "Above 50-day", hint: "trend participation" },
       { label: "Avg. volatility", hint: "60-day realised" },
@@ -33,11 +33,11 @@ const COPY: Record<
   },
   meme: {
     eyebrow: "Speculative markets",
-    title: "Meme coins, graded as risk — not investments",
-    sub: "We cover this sector because subscribers ask, and because ignoring it is not analysis. There is no fundamental case to make here: only concentration, depth and narrative half-life.",
-    note: "Our conviction ceiling for this sector is deliberately low. A high score means the tape is working, not that the asset is sound.",
+    title: "Pump.fun & viral memes, graded as risk",
+    sub: "From Doge and Pepe to 35+ pump.fun viral breakouts (Fartcoin, Goat, Act, Pnut, Moodeng, Popcat, SPX). There is no fundamental case to make here: only concentration, order-book depth, and bonding curve momentum.",
+    note: "Our conviction ceiling for this sector is deliberately disciplined. A high score means the tape is working, not that the asset is fundamentally sound.",
     stats: [
-      { label: "Assets covered", hint: "attention markets" },
+      { label: "Assets covered", hint: "pump.fun & viral" },
       { label: "Median score", hint: "sector composite" },
       { label: "Above 50-day", hint: "trend participation" },
       { label: "Avg. volatility", hint: "60-day realised" },

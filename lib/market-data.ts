@@ -341,8 +341,9 @@ function fresh<T>(entry: CacheEntry<T> | undefined, ttl: number): entry is Cache
 
 async function loadQuotes(): Promise<Record<string, FeedQuote>> {
   const out: Record<string, FeedQuote> = {};
-  const stocks = ASSETS.filter((asset) => asset.kind === "stock");
-  const crypto = ASSETS.filter((asset) => asset.kind !== "stock");
+  // Prioritize benchmark leaders for real-time live fetches
+  const stocks = ASSETS.filter((asset) => asset.kind === "stock").slice(0, 10);
+  const crypto = ASSETS.filter((asset) => asset.kind !== "stock").slice(0, 12);
 
   const stockResults = await limited(
     stocks.map((asset) => async () => {
@@ -401,7 +402,7 @@ async function loadQuotes(): Promise<Record<string, FeedQuote>> {
 
 async function loadHistory(): Promise<Record<string, Point[]>> {
   const out: Record<string, Point[]> = {};
-  const stale = ASSETS.filter((asset) => !fresh(historyCache.get(asset.symbol), HISTORY_TTL));
+  const stale = ASSETS.slice(0, 12).filter((asset) => !fresh(historyCache.get(asset.symbol), HISTORY_TTL));
 
   await limited(
     stale.map((asset: Asset) => async () => {

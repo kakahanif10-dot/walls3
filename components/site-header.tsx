@@ -10,8 +10,10 @@ const LINKS = [
   { href: "/markets", label: "Markets" },
   { href: "/crypto", label: "Crypto" },
   { href: "/meme-coins", label: "Meme coins" },
-  { href: "/research", label: "Research" },
+  { href: "/chat", label: "Live Chat", live: true },
   { href: "/academy", label: "Academy" },
+  { href: "/academy/watch", label: "Watch Video" },
+  { href: "/research", label: "Research" },
   { href: "/pricing", label: "Pricing" },
 ];
 
@@ -38,13 +40,16 @@ export default function SiteHeader() {
             <Link
               key={link.href}
               href={link.href}
-              className={`rounded-full px-3.5 py-1.5 text-sm transition-colors ${
+              className={`relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs xl:text-sm transition-colors ${
                 isActive(link.href)
                   ? "bg-ink-800 text-bone"
                   : "text-muted hover:bg-ink-850 hover:text-bone"
               }`}
             >
               {link.label}
+              {"live" in link && link.live && (
+                <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+              )}
             </Link>
           ))}
         </nav>

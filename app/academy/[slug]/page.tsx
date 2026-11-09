@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { COURSES, COURSE_BY_SLUG } from "@/lib/content";
+import WatchableVideoPlayer from "@/components/watchable-video-player";
 
 export function generateStaticParams() {
   return COURSES.map((c) => ({ slug: c.slug }));
@@ -44,13 +45,19 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
             <span><span className="font-mono text-bone">{minutes}</span> minutes</span>
             <span><span className="font-mono text-bone">{course.level}</span> level</span>
             <span>Instructor: <span className="text-bone/85">{course.instructor}</span></span>
+            <span className="text-gold-bright font-medium">★ Includes Interactive Video Classroom</span>
           </div>
         </div>
       </section>
 
+      {/* Embedded Watchable Video Player */}
+      <section className="mx-auto max-w-7xl px-5 pt-8">
+        <WatchableVideoPlayer courseTitle={course.title} />
+      </section>
+
       <section className="mx-auto grid max-w-7xl gap-10 px-5 py-12 lg:grid-cols-[1.5fr_0.7fr]">
         <div>
-          <h2 className="font-display text-2xl text-bone">Curriculum</h2>
+          <h2 className="font-display text-2xl text-bone">Syllabus & Transcript Breakdown</h2>
           <div className="mt-5 space-y-3">
             {course.lessons.map((lesson, i) => (
               <details

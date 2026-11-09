@@ -4,9 +4,10 @@ const COLUMNS = [
   {
     title: "Coverage",
     links: [
-      { href: "/markets", label: "US equities" },
-      { href: "/crypto", label: "Digital assets" },
-      { href: "/meme-coins", label: "Meme coins" },
+      { href: "/markets", label: "S&P 500 & Nasdaq" },
+      { href: "/crypto", label: "Binance crypto" },
+      { href: "/meme-coins", label: "Pump.fun memes" },
+      { href: "/chat", label: "Live Trading Chat" },
       { href: "/ticker/BTC", label: "Bitcoin trend score" },
       { href: "/ticker/NVDA", label: "NVIDIA trend score" },
     ],
@@ -24,6 +25,7 @@ const COLUMNS = [
     title: "Academy",
     links: [
       { href: "/academy", label: "All courses" },
+      { href: "/academy/watch", label: "Watch Video Studio" },
       { href: "/academy/reading-trends", label: "Reading a Trend" },
       { href: "/academy/crypto-without-hype", label: "Crypto Without Hype" },
       { href: "/academy/portfolio-construction", label: "Portfolio Construction" },
@@ -33,6 +35,7 @@ const COLUMNS = [
     title: "Company",
     links: [
       { href: "/pricing", label: "Plans & pricing" },
+      { href: "/chat", label: "Discord Community" },
       { href: "/watchlist", label: "Your watchlist" },
       { href: "/disclaimer", label: "Disclaimer & methodology" },
     ],
@@ -50,10 +53,10 @@ export default function SiteFooter() {
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted">
               Rules-based trend analysis and research across equities, digital assets and
-              speculative markets — plus the education to use it responsibly.
+              speculative markets — plus real watchable video education and Discord live chat.
             </p>
             <p className="mt-5 text-xs leading-relaxed text-muted/70">
-              26 tracked assets · 6 research desks · 4 courses
+              118 tracked assets · 6 research desks · 4 video courses
             </p>
           </div>
 
