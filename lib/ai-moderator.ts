@@ -185,9 +185,37 @@ export function handleAIModeratorQuery(input: string): { reply: string; predicti
   const clean = input.trim();
   const lower = clean.toLowerCase();
 
-  // Check for /predict or /stance commands
-  const matchSymbol = lower.match(/(?:\/predict|\/stance|\$|predict|prediksi|cek|bagaimana)\s+([a-z0-9]+)/i);
-  const potentialTicker = matchSymbol ? matchSymbol[1].toUpperCase() : null;
+  // 1. Direct ticker lookup (e.g. "NVDA", "$NVDA", "sol", "btc", "fartcoin")
+  const strippedClean = clean.toUpperCase().replace(/^\$/, "").trim();
+  if (ASSET_BY_SYMBOL[strippedClean]) {
+    const pred = generateMinutePrediction(strippedClean);
+    const asset = ASSET_BY_SYMBOL[strippedClean];
+    const reply = `🤖 **Nexus Sentinel AI Analysis for $${asset.symbol} (${asset.name})**\n` +
+      `• **Stance:** ${pred.stance} (${pred.confidence}% Conviction)\n` +
+      `• **Current Price:** ${fmtPrice(pred.currentPrice)}\n` +
+      `• **Targets:** T1: ${fmtPrice(pred.target1)} | T2: ${fmtPrice(pred.target2)}\n` +
+      `• **Invalidation Stop:** ${fmtPrice(pred.invalidationLevel)} (Thesis invalid below this)\n` +
+      `• **Technical Read:** ${pred.technicalMechanism}\n` +
+      `• **Horizon:** ${pred.timeHorizon} | **Catalyst Watch:** ${pred.catalystAlert}\n` +
+      `_Signal recorded at ${pred.wibTime} WIB / ${pred.utcTime} UTC._`;
+    return { reply, prediction: pred };
+  }
+
+  // 2. Check for /predict or /stance or keywords (e.g. "/predict nvda", "analisa btc", "how is sol")
+  const matchSymbol = lower.match(/(?:\/predict|\/stance|\$|predict|prediksi|cek|bagaimana|analisa|target|entry|review)\s+([a-z0-9]+)/i);
+  let potentialTicker = matchSymbol ? matchSymbol[1].toUpperCase() : null;
+
+  // Also check if any known ticker appears as a standalone word in the sentence
+  if (!potentialTicker) {
+    const words = clean.toUpperCase().split(/[\s,?!]+/);
+    for (const w of words) {
+      const candidate = w.replace(/^\$/, "");
+      if (candidate.length >= 2 && ASSET_BY_SYMBOL[candidate]) {
+        potentialTicker = candidate;
+        break;
+      }
+    }
+  }
 
   if (potentialTicker && ASSET_BY_SYMBOL[potentialTicker]) {
     const pred = generateMinutePrediction(potentialTicker);

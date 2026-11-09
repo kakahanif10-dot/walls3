@@ -4,38 +4,40 @@ import { ASSETS, ASSET_BY_SYMBOL, byKind } from "./market";
 import { series, metricsFor, fmtPrice, fmtPct } from "./market";
 import { formatTimeZones, generateMinutePrediction, handleAIModeratorQuery } from "./ai-moderator";
 
-test("Asset Universe has at least 600 instruments with 500+ S&P 500 / Nasdaq stocks", () => {
-  assert.ok(ASSETS.length >= 600, `Expected at least 600 assets, found ${ASSETS.length}`);
+test("Asset Universe has 2,000+ instruments with 800 stocks, 831 cryptos, and 407 meme coins", () => {
+  assert.ok(ASSETS.length >= 2000, `Expected at least 2000 assets, found ${ASSETS.length}`);
 
   const stocks = byKind("stock");
   const cryptos = byKind("crypto");
   const memes = byKind("meme");
 
-  assert.ok(stocks.length >= 500, `Expected >= 500 stocks, got ${stocks.length}`);
-  assert.ok(cryptos.length >= 35, `Expected >= 35 cryptos, got ${cryptos.length}`);
-  assert.ok(memes.length >= 35, `Expected >= 35 meme coins, got ${memes.length}`);
+  assert.equal(stocks.length, 800, `Expected exactly 800 stocks, got ${stocks.length}`);
+  assert.equal(cryptos.length, 831, `Expected exactly 831 cryptos, got ${cryptos.length}`);
+  assert.equal(memes.length, 407, `Expected exactly 407 meme coins, got ${memes.length}`);
 
-  // Test S&P 500 & Nasdaq leaders
+  // Test S&P 500, Nasdaq, and growth leaders
   assert.ok(ASSET_BY_SYMBOL["NVDA"], "NVDA must exist");
   assert.ok(ASSET_BY_SYMBOL["AAPL"], "AAPL must exist");
-  assert.ok(ASSET_BY_SYMBOL["TSLA"], "TSLA must exist");
-  assert.ok(ASSET_BY_SYMBOL["PLTR"], "PLTR must exist");
-  assert.ok(ASSET_BY_SYMBOL["INTU"], "INTU must exist");
-  assert.ok(ASSET_BY_SYMBOL["TXN"], "TXN must exist");
-  assert.ok(ASSET_BY_SYMBOL["CAT"], "CAT must exist");
-  assert.ok(ASSET_BY_SYMBOL["BKNG"], "BKNG must exist");
+  assert.ok(ASSET_BY_SYMBOL["CAVA"], "CAVA must exist");
+  assert.ok(ASSET_BY_SYMBOL["BABA"], "BABA must exist");
+  assert.ok(ASSET_BY_SYMBOL["RDDT"], "RDDT must exist");
+  assert.ok(ASSET_BY_SYMBOL["RKLB"], "RKLB must exist");
 
-  // Test Binance and major cryptos
+  // Test Binance, Coinbase, and major cryptos
   assert.ok(ASSET_BY_SYMBOL["BTC"], "BTC must exist");
   assert.ok(ASSET_BY_SYMBOL["SOL"], "SOL must exist");
-  assert.ok(ASSET_BY_SYMBOL["BNB"], "BNB must exist");
-  assert.ok(ASSET_BY_SYMBOL["SUI"], "SUI must exist");
+  assert.ok(ASSET_BY_SYMBOL["ALGO"], "ALGO must exist");
+  assert.ok(ASSET_BY_SYMBOL["VET"], "VET must exist");
+  assert.ok(ASSET_BY_SYMBOL["FIL"], "FIL must exist");
+  assert.ok(ASSET_BY_SYMBOL["STRK"], "STRK must exist");
 
   // Test pump.fun and viral memes
   assert.ok(ASSET_BY_SYMBOL["FARTCOIN"], "FARTCOIN must exist");
   assert.ok(ASSET_BY_SYMBOL["GOAT"], "GOAT must exist");
-  assert.ok(ASSET_BY_SYMBOL["PNUT"], "PNUT must exist");
-  assert.ok(ASSET_BY_SYMBOL["MOODENG"], "MOODENG must exist");
+  assert.ok(ASSET_BY_SYMBOL["FARTO"], "FARTO must exist");
+  assert.ok(ASSET_BY_SYMBOL["GRIF"], "GRIF must exist");
+  assert.ok(ASSET_BY_SYMBOL["VIRT"], "VIRT must exist");
+  assert.ok(ASSET_BY_SYMBOL["CHILL"], "CHILL must exist");
 });
 
 test("Metrics and series calculation generate non-zero realistic metrics for all asset types", () => {

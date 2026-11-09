@@ -56,6 +56,29 @@ const CHANNELS = [
   { id: "breakout-radar", name: "breakout-radar", topic: "Quantitative 20-EMA / VWAP momentum expansion alerts", category: "QUANT ALERTS" },
 ];
 
+function playChatChime(type: "send" | "receive" = "send") {
+  if (typeof window === "undefined") return;
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const freq = type === "send" ? 540 : 720;
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(type === "send" ? 680 : 880, ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.06, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.13);
+  } catch {
+    // ignore audio context restrictions
+  }
+}
+
 const INITIAL_MESSAGES: ChatMessage[] = [
   {
     id: "msg-1",
@@ -70,10 +93,10 @@ const INITIAL_MESSAGES: ChatMessage[] = [
       isVerified: true,
     },
     content:
-      "Welcome to the NextWall Street Live Floor. I am your real-time AI Moderator monitoring 625+ instruments across S&P 500, Nasdaq, Binance crypto, and pump.fun meme coins. You can send real messages, request instant signals (/predict [symbol]), or ask market questions in Indonesian or English.",
+      "🟢 **LIVE TRADING FLOOR ONLINE & INTERACTIVE**\nWelcome to the NextWall Street live trading floor. You can send real messages, ask market questions in Indonesian or English, audit any ticker (/predict [symbol]), or post custom community trade setups. Over 625+ instruments are monitored in real time.",
     timestamp: new Date(Date.now() - 300000).toISOString(),
     timeLabel: "10:35 WIB",
-    reactions: { "🚀": 14, "💎": 9, "🧠": 18 },
+    reactions: { "🚀": 18, "💎": 12, "🧠": 24 },
     userReactions: {},
   },
   {
@@ -112,7 +135,7 @@ const INITIAL_MESSAGES: ChatMessage[] = [
   },
   {
     id: "msg-4",
-    channelId: "general-trading",
+    channelId: "crypto-signals",
     author: {
       name: "Mara Lindqvist",
       avatar: "👩🏼‍💻",
@@ -122,10 +145,44 @@ const INITIAL_MESSAGES: ChatMessage[] = [
     },
     content:
       "Solana DeFi velocity is absorbing liquidity from Ethereum mainnet. If SOL holds $214 on the 1-hour close, next liquidity target is $228. Invalidation at $206.50.",
-    timestamp: new Date(Date.now() - 120000).toISOString(),
+    timestamp: new Date(Date.now() - 150000).toISOString(),
     timeLabel: "10:38 WIB",
     reactions: { "💎": 15, "📈": 9 },
     userReactions: { "💎": true },
+  },
+  {
+    id: "msg-stock-1",
+    channelId: "stock-scalping",
+    author: {
+      name: "ScalpMaster_NY",
+      avatar: "⚡",
+      role: "pro-trader",
+      roleLabel: "SCALPER",
+      roleColor: "bg-amber-500/20 text-amber-300 border-amber-500/40",
+    },
+    content:
+      "Nasdaq futures showing absorption at yesterday's Value Area High. Watching TSLA 5-minute VWAP reclaim for an intraday push to $412.",
+    timestamp: new Date(Date.now() - 110000).toISOString(),
+    timeLabel: "10:38 WIB",
+    reactions: { "🔥": 8, "⚡": 14 },
+    userReactions: {},
+  },
+  {
+    id: "msg-meme-1",
+    channelId: "meme-pump-fun",
+    author: {
+      name: "AlphaWhale_Sol",
+      avatar: "🐋",
+      role: "community",
+      roleLabel: "DEGEN DESK",
+      roleColor: "bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/40",
+    },
+    content:
+      "Bonding curve on pump.fun is filling fast on newest AI agent tokens. Friendly reminder: 2% maximum portfolio risk per token, take 50% profit at +25%!",
+    timestamp: new Date(Date.now() - 90000).toISOString(),
+    timeLabel: "10:39 WIB",
+    reactions: { "🚀": 24, "🎯": 13 },
+    userReactions: {},
   },
   {
     id: "pred-init-nvda",
@@ -166,7 +223,7 @@ const INITIAL_MESSAGES: ChatMessage[] = [
   },
   {
     id: "pred-init-fartcoin",
-    channelId: "general-trading",
+    channelId: "meme-pump-fun",
     author: {
       name: "Nexus Sentinel AI",
       avatar: "🤖",
@@ -322,6 +379,7 @@ export default function DiscordLiveChat() {
     if (!trimmed) return;
 
     setInputText("");
+    playChatChime("send");
 
     const date = new Date();
     const { wibTime } = formatTimeZones(date);
@@ -334,7 +392,7 @@ export default function DiscordLiveChat() {
         name: userName,
         avatar: userAvatar,
         role: "pro-trader",
-        roleLabel: "SUBSCRIBER",
+        roleLabel: "ACTIVE TRADER",
         roleColor: "bg-gold/20 text-gold-bright border-gold/40",
       },
       content: trimmed,
@@ -357,6 +415,7 @@ export default function DiscordLiveChat() {
       const data = await res.json();
 
       setIsTypingAI(false);
+      playChatChime("receive");
 
       const aiReplyMsg: ChatMessage = {
         id: `ai-reply-${Date.now()}`,
@@ -379,8 +438,33 @@ export default function DiscordLiveChat() {
       };
 
       setMessages((prev) => [...prev, aiReplyMsg]);
+
+      // Occasionally add a realistic simulated community floor reply to simulate bustling Discord trading floor
+      if (Math.random() > 0.45) {
+        setTimeout(() => {
+          const floorReplies = [
+            { name: "JakartaTrader_88", avatar: "🇮🇩", role: "community" as const, roleLabel: "PRO TRADER", roleColor: "bg-blue-500/20 text-blue-400 border-blue-500/40", text: `Setuju bro! Gua lagi perhatiin order book-nya juga di tape, bid-ask spread aman.` },
+            { name: "Daniel Okafor", avatar: "👨🏾‍💼", role: "pro-trader" as const, roleLabel: "HEAD OF STRATEGY", roleColor: "bg-gold/20 text-gold-bright border-gold/40", text: `Good call. Remember to check the 20-day moving average slope before committing full sizing.` },
+            { name: "ScalpMaster_NY", avatar: "⚡", role: "pro-trader" as const, roleLabel: "SCALPER", roleColor: "bg-amber-500/20 text-amber-300 border-amber-500/40", text: `Solid setup. Setting my invalidation stop exactly as modeled.` },
+          ];
+          const randomReply = floorReplies[Math.floor(Math.random() * floorReplies.length)];
+          const traderMsg: ChatMessage = {
+            id: `floor-${Date.now()}`,
+            channelId: activeChannelId,
+            author: randomReply,
+            content: randomReply.text,
+            timestamp: new Date().toISOString(),
+            timeLabel: `${formatTimeZones().wibTime} WIB`,
+            reactions: { "👍": 2, "🔥": 1 },
+            userReactions: {},
+          };
+          setMessages((prev) => [...prev, traderMsg]);
+          playChatChime("receive");
+        }, 1200);
+      }
     } catch {
       setIsTypingAI(false);
+      playChatChime("receive");
       const fallback = handleAIModeratorQuery(trimmed);
       const aiReplyMsg: ChatMessage = {
         id: `ai-reply-${Date.now()}`,
@@ -888,15 +972,16 @@ export default function DiscordLiveChat() {
         {/* Input Bar with Instant Command Execution */}
         <div className="p-4 bg-[#313338] border-t border-[#1f2023]">
           {/* Quick interactive slash command pills: Clicking immediately executes and sends! */}
-          <div className="mb-2 flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-            <span className="text-[11px] font-semibold text-[#949ba4] shrink-0">Click to Send:</span>
+          <div className="mb-2.5 flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+            <span className="text-[11px] font-semibold text-gold shrink-0">Click to Send:</span>
             {[
-              { label: "/predict NVDA", query: "/predict NVDA" },
-              { label: "/predict BTC", query: "/predict BTC" },
-              { label: "/predict SOL", query: "/predict SOL" },
-              { label: "/predict FARTCOIN", query: "/predict FARTCOIN" },
-              { label: "/predict GOAT", query: "/predict GOAT" },
+              { label: "⚡ /predict NVDA", query: "/predict NVDA" },
+              { label: "⚡ /predict BTC", query: "/predict BTC" },
+              { label: "⚡ /predict SOL", query: "/predict SOL" },
+              { label: "⚡ /predict FARTCOIN", query: "/predict FARTCOIN" },
+              { label: "⚡ /predict TSLA", query: "/predict TSLA" },
               { label: "🕒 Jam Market", query: "Jam pasar sekarang buka apa tutup?" },
+              { label: "🎯 Rekomendasi Hari Ini", query: "Rekomendasi aset terbaik hari ini apa?" },
             ].map((chip) => (
               <button
                 key={chip.label}
@@ -918,6 +1003,12 @@ export default function DiscordLiveChat() {
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
               placeholder={`Message #${currentChannel.name} (type /predict [symbol] or ask in Indonesian/English, press Enter to send)...`}
               className="flex-1 bg-transparent text-sm text-white placeholder-[#80848e] focus:outline-none"
             />
@@ -933,13 +1024,17 @@ export default function DiscordLiveChat() {
             <button
               type="submit"
               disabled={!inputText.trim()}
-              className="flex items-center gap-1.5 rounded-lg bg-gold px-4 py-1.5 text-xs font-bold text-ink-950 transition-all hover:bg-gold-bright disabled:opacity-40"
+              className="flex items-center gap-1.5 rounded-lg bg-gold px-4 py-1.5 text-xs font-bold text-ink-950 transition-all hover:bg-gold-bright disabled:opacity-40 shadow-sm"
               aria-label="Send message"
             >
               <Send className="h-3.5 w-3.5" />
               <span>Send</span>
             </button>
           </form>
+          <div className="mt-1.5 flex items-center justify-between text-[10px] text-[#949ba4] px-1">
+            <span>🟢 <strong>Interactive Floor:</strong> Real messages enabled. Press Enter to send.</span>
+            <span>AI Desk monitoring S&P 500, Nasdaq, Binance & Pump.fun</span>
+          </div>
         </div>
       </div>
 

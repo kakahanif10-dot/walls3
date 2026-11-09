@@ -13,6 +13,9 @@ export type Asset = {
 };
 
 import { SP500_NASDAQ_ASSETS } from "./sp500-nasdaq-assets";
+import { ADDITIONAL_STOCKS } from "./additional-stocks";
+import { ADDITIONAL_CRYPTOS } from "./additional-cryptos";
+import { ADDITIONAL_MEMECOINS } from "./additional-memecoins";
 
 const BASE_ASSETS: Asset[] = [
   /* ==========================================================================
@@ -1315,7 +1318,13 @@ const BASE_ASSETS: Asset[] = [
   },
 ];
 
-export const ASSETS: Asset[] = [...BASE_ASSETS, ...SP500_NASDAQ_ASSETS];
+export const ASSETS: Asset[] = [
+  ...BASE_ASSETS,
+  ...SP500_NASDAQ_ASSETS,
+  ...ADDITIONAL_STOCKS,
+  ...ADDITIONAL_CRYPTOS,
+  ...ADDITIONAL_MEMECOINS,
+];
 
 export const ASSET_BY_SYMBOL: Record<string, Asset> = Object.fromEntries(
   ASSETS.map((a) => [a.symbol, a]),

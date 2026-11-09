@@ -29,12 +29,15 @@ Provide a sharp, 2-to-3-bullet professional trader analysis with:
 3. Concise technical mechanism (RSI, moving averages, order book float).
 Keep formatting clean with bold text and emojis (like in Discord). Avoid generic disclaimers. Indonesian or English matching the user language.`;
 
-        const response = await ai.models.generateContent({
-          model: "gemini-2.5-flash",
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+        const geminiPromise = ai.models.generateContent({
+          model: "gemini-3.8-flash",
           contents: prompt,
-        });
+        }).catch(() => null);
 
-        if (response.text) {
+        const response: any = await Promise.race([geminiPromise, timeoutPromise]);
+
+        if (response && response.text) {
           return NextResponse.json({
             reply: response.text,
             prediction: fallbackResult.prediction,

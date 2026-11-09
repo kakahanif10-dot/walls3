@@ -43,9 +43,10 @@ export default function WatchStudioPage() {
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {VIDEO_LESSONS_20.map((lesson, idx) => (
-            <div
+            <Link
               key={lesson.id}
-              className="flex flex-col justify-between rounded-xl border border-line bg-ink-900/60 p-4 transition-all hover:border-gold/50 hover:bg-ink-900"
+              href={`/academy/watch?lesson=${lesson.id}#video-studio-player`}
+              className="group flex flex-col justify-between rounded-xl border border-line bg-ink-900/60 p-4 transition-all hover:border-gold/60 hover:bg-ink-900 hover:shadow-lg"
             >
               <div>
                 <div className="flex items-center justify-between text-[11px] text-muted">
@@ -54,7 +55,7 @@ export default function WatchStudioPage() {
                     {lesson.durationLabel}
                   </span>
                 </div>
-                <h4 className="mt-2.5 font-display text-base text-bone line-clamp-2 leading-snug">
+                <h4 className="mt-2.5 font-display text-base text-bone line-clamp-2 leading-snug group-hover:text-gold-bright transition-colors">
                   {lesson.title}
                 </h4>
                 <div className="mt-2 flex items-center gap-2">
@@ -70,12 +71,15 @@ export default function WatchStudioPage() {
                 </p>
               </div>
 
-              <div className="mt-4 border-t border-line/60 pt-3">
-                <p className="text-[11px] text-muted">
-                  Instructor: <span className="text-bone font-medium">{lesson.instructor}</span>
+              <div className="mt-4 border-t border-line/60 pt-3 flex items-center justify-between">
+                <p className="text-[11px] text-muted truncate">
+                  {lesson.instructor}
                 </p>
+                <span className="shrink-0 flex items-center gap-1 text-[11px] font-semibold text-gold group-hover:translate-x-0.5 transition-transform">
+                  Watch ▶
+                </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
