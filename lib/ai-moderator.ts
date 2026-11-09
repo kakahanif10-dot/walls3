@@ -19,6 +19,10 @@ export type MinutePrediction = {
   timestamp: string;
   wibTime: string;
   utcTime: string;
+  estTime?: string;
+  score?: number;
+  riskRewardRatio?: string;
+  realizedVol?: number;
 };
 
 export type ChatMessage = {
@@ -66,7 +70,7 @@ export function formatTimeZones(date = new Date()) {
     second: "2-digit",
   });
 
-  // Check market status (US Eastern)
+  // Check market status (US Eastern Time)
   const estHours = Number(
     date.toLocaleTimeString("en-US", { timeZone: "America/New_York", hour: "2-digit", hour12: false }),
   );
@@ -78,15 +82,15 @@ export function formatTimeZones(date = new Date()) {
 
   let sessionStatus = "Closed";
   if (day === 0 || day === 6) {
-    sessionStatus = "Weekend Closed";
+    sessionStatus = "Weekend Crypto Active";
   } else if (totalEstMins >= 570 && totalEstMins < 960) {
-    sessionStatus = "US Regular Open";
+    sessionStatus = "US Regular Open (NYSE/NASDAQ)";
   } else if (totalEstMins >= 240 && totalEstMins < 570) {
-    sessionStatus = "US Pre-Market";
+    sessionStatus = "US Pre-Market Session";
   } else if (totalEstMins >= 960 && totalEstMins < 1200) {
-    sessionStatus = "US After-Hours";
+    sessionStatus = "US After-Hours Session";
   } else {
-    sessionStatus = "Overnight Session";
+    sessionStatus = "Overnight Global Macro Flow";
   }
 
   return { wibTime, utcTime, estTime, sessionStatus };
@@ -94,11 +98,11 @@ export function formatTimeZones(date = new Date()) {
 
 /**
  * Generates an institutional-grade, minute-by-minute technical market prediction
- * for an asset from the 118-instrument universe.
+ * with advanced quantitative English terminology.
  */
 export function generateMinutePrediction(forceSymbol?: string, seedIndex?: number): MinutePrediction {
   const date = new Date();
-  const { wibTime, utcTime } = formatTimeZones(date);
+  const { wibTime, utcTime, estTime } = formatTimeZones(date);
   const minute = date.getMinutes() + (seedIndex ?? 0);
 
   // Pick asset: either forced or rotated based on current minute and seed
@@ -106,59 +110,69 @@ export function generateMinutePrediction(forceSymbol?: string, seedIndex?: numbe
   if (forceSymbol && ASSET_BY_SYMBOL[forceSymbol.toUpperCase()]) {
     asset = ASSET_BY_SYMBOL[forceSymbol.toUpperCase()];
   } else {
-    // Alternate between stock, crypto, and pump.fun meme to ensure variety
-    const kinds: ("stock" | "crypto" | "meme")[] = ["stock", "crypto", "meme"];
-    const targetKind = kinds[minute % 3];
-    const kindAssets = ASSETS.filter((a) => a.kind === targetKind);
-    asset = kindAssets[minute % kindAssets.length] || ASSETS[0];
+    // Priority benchmark symbols for institutional alerts
+    const curatedLeaders = [
+      "NVDA", "BTC", "SOL", "AAPL", "MSFT", "ETH", "AMZN", "GOOGL", "AVAX", "LINK",
+      "TSLA", "SPY", "QQQ", "FARTCOIN", "GOAT", "PEPE", "SUI", "NEAR", "AMD", "META"
+    ];
+    const candidateSym = curatedLeaders[minute % curatedLeaders.length];
+    asset = ASSET_BY_SYMBOL[candidateSym] || ASSETS[minute % ASSETS.length] || ASSETS[0];
   }
 
   const m = metricsFor(asset);
   const price = m.last > 0 ? m.last : asset.base;
 
-  // Compute stance and target levels
   let stance: MinutePrediction["stance"];
   let target1: number;
   let target2: number;
   let invalidationLevel: number;
   let mechanism: string;
   let horizon: MinutePrediction["timeHorizon"];
+  let rrRatio: string;
 
   if (m.score >= 68) {
     stance = "STRONG BUY / LONG";
-    target1 = price * (asset.kind === "meme" ? 1.18 : asset.kind === "crypto" ? 1.065 : 1.035);
-    target2 = price * (asset.kind === "meme" ? 1.38 : asset.kind === "crypto" ? 1.12 : 1.07);
-    invalidationLevel = price * (asset.kind === "meme" ? 0.91 : asset.kind === "crypto" ? 0.965 : 0.985);
-    mechanism = `Bullish continuation: Tape trading above 20-day SMA ($${m.sma20.toFixed(2)}) with RSI at ${m.rsi.toFixed(0)}. Institutional order flow expanding on structural breakout.`;
+    target1 = price * (asset.kind === "meme" ? 1.185 : asset.kind === "crypto" ? 1.068 : 1.038);
+    target2 = price * (asset.kind === "meme" ? 1.380 : asset.kind === "crypto" ? 1.125 : 1.072);
+    invalidationLevel = price * (asset.kind === "meme" ? 0.915 : asset.kind === "crypto" ? 0.965 : 0.982);
+    rrRatio = "1 : 3.4";
     horizon = asset.kind === "meme" ? "5m Scalp" : asset.kind === "crypto" ? "15m Intraday" : "1h Momentum";
+
+    mechanism = `Institutional order flow expansion: Price trading decisively above the 20-day exponential moving average ($${m.sma20.toFixed(2)}) with positive slope curvature. Relative Strength Index (RSI) holding at ${m.rsi.toFixed(0)}, confirming bullish trend momentum without immediate exhaustion. Buy-side delta acceleration on the Level 2 tape confirms structural continuation toward Target 1.`;
   } else if (m.score >= 52) {
     stance = "ACCUMULATE / DIP";
-    target1 = price * (asset.kind === "meme" ? 1.12 : asset.kind === "crypto" ? 1.045 : 1.025);
-    target2 = price * (asset.kind === "meme" ? 1.25 : asset.kind === "crypto" ? 1.09 : 1.05);
-    invalidationLevel = price * (asset.kind === "meme" ? 0.88 : asset.kind === "crypto" ? 0.95 : 0.975);
-    mechanism = `Pullback test into value area: 50-day moving average holding with positive slope. Volatility at ${(m.vol * 100).toFixed(0)}% annualised suggests asymmetric risk/reward.`;
+    target1 = price * (asset.kind === "meme" ? 1.125 : asset.kind === "crypto" ? 1.045 : 1.028);
+    target2 = price * (asset.kind === "meme" ? 1.260 : asset.kind === "crypto" ? 1.092 : 1.055);
+    invalidationLevel = price * (asset.kind === "meme" ? 0.885 : asset.kind === "crypto" ? 0.948 : 0.974);
+    rrRatio = "1 : 2.6";
     horizon = asset.kind === "stock" ? "24h Swing" : "15m Intraday";
+
+    mechanism = `Value area mean-reversion retest: Pullback into dynamic 50-day moving average ($${m.sma50.toFixed(2)}) support band with decreasing selling volume. Annualized realized volatility at ${(m.vol * 100).toFixed(1)}% creates an asymmetric risk/reward window. Institutional bid depth absorbs liquidity with minimal slippage.`;
   } else if (m.score >= 38) {
     stance = "TRIM / PROFIT";
-    target1 = price * 0.96;
-    target2 = price * 0.92;
-    invalidationLevel = price * 1.03;
-    mechanism = `Momentum deceleration: 14-day RSI divergence detected near range highs ($${m.high52.toFixed(2)}). Recommend taking partials and tightening trailing stops.`;
+    target1 = price * 0.958;
+    target2 = price * 0.915;
+    invalidationLevel = price * 1.032;
+    rrRatio = "1 : 1.8";
     horizon = "15m Intraday";
+
+    mechanism = `Momentum deceleration warning: Bearish divergence emerging on the 30-session Rate of Change (ROC) near key technical resistance shelf ($${m.high52.toFixed(2)}). Tape velocity shows signs of buyer fatigue and smart-money distribution. Recommend mechanical profit trimming and tightening trailing invalidation stops.`;
   } else {
     stance = "AVOID / SHORT";
-    target1 = price * (asset.kind === "meme" ? 0.78 : asset.kind === "crypto" ? 0.92 : 0.96);
-    target2 = price * (asset.kind === "meme" ? 0.65 : asset.kind === "crypto" ? 0.86 : 0.93);
-    invalidationLevel = price * 1.045;
-    mechanism = `Bearish breakdown: Price trading below 50-day & 200-day moving averages with negative rate-of-change. Rallies represent exit liquidity rather than sustainable entries.`;
+    target1 = price * (asset.kind === "meme" ? 0.760 : asset.kind === "crypto" ? 0.915 : 0.955);
+    target2 = price * (asset.kind === "meme" ? 0.620 : asset.kind === "crypto" ? 0.850 : 0.920);
+    invalidationLevel = price * 1.048;
+    rrRatio = "1 : 2.8";
     horizon = "24h Swing";
+
+    mechanism = `Structural breakdown regime: Spot price slicing below both 50-day and 200-day moving averages ($${m.sma200.toFixed(2)}) on heavy distribution volume. Negative moving average convergence divergence confirms lack of institutional sponsor support. Any counter-trend bounce represents exit liquidity rather than sustainable entry.`;
   }
 
-  const confidence = Math.min(96, Math.max(72, m.confidence + (asset.kind === "meme" ? -4 : 2)));
-  const catalystAlert = asset.catalysts[minute % asset.catalysts.length] || "Volume profile test";
+  const confidence = Math.min(96, Math.max(74, m.confidence + (asset.kind === "meme" ? -3 : 2)));
+  const catalystAlert = asset.catalysts[minute % asset.catalysts.length] || "Institutional order block mitigation";
 
   return {
-    id: `pred-${asset.symbol}-${Date.now()}`,
+    id: `pred-${asset.symbol}-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
     symbol: asset.symbol,
     name: asset.name,
     kind: asset.kind,
@@ -175,7 +189,224 @@ export function generateMinutePrediction(forceSymbol?: string, seedIndex?: numbe
     timestamp: date.toISOString(),
     wibTime,
     utcTime,
+    estTime,
+    score: m.score,
+    riskRewardRatio: rrRatio,
+    realizedVol: Math.round(m.vol * 1000) / 10,
   };
+}
+
+/**
+ * Generates an institutional-grade Hourly Market Synthesis & Liquidity Regime Report
+ * by the automated AI Moderator.
+ */
+export function generateHourlyMarketSynthesis(hoursAgo = 0): ChatMessage {
+  const date = new Date(Date.now() - hoursAgo * 3600 * 1000);
+  const { wibTime, utcTime, estTime, sessionStatus } = formatTimeZones(date);
+
+  const hourlyThemes = [
+    {
+      title: "GLOBAL MACRO & NET LIQUIDITY REGIME",
+      summary: "Treasury General Account (TGA) absorption and Reverse Repo drawdown metrics indicate stabilized bank reserves. US tech mega-caps maintain positive gamma positioning.",
+      leaders: "$NVDA (+2.8%), $MSFT (+1.4%), $SOL (+4.6%)",
+      invalidationNote: "S&P 500 invalidation floor anchored at 5,880. Trend models remain in disciplined Buy/Accumulate mode.",
+    },
+    {
+      title: "SEMICONDUCTOR & AI INFRASTRUCTURE CYCLE",
+      summary: "Hyperscaler capex guidance updates show sustained data center cluster expansion. Advanced packaging bottlenecks (CoWoS) at TSMC remain the primary revenue velocity governor.",
+      leaders: "$TSM (+3.2%), $AVGO (+2.1%), $AMD (+1.8%)",
+      invalidationNote: "Semiconductor sector trend score stands at 74/100. Watch 20-EMA retests on high-beta leaders.",
+    },
+    {
+      title: "DIGITAL ASSET LIQUIDITY & DERIVATIVES FLOW",
+      summary: "Bitcoin institutional ETF net inflows absorb daily miner emissions by a factor of 2.4x. Solana DEX velocity overtakes alternative Layer-1 networks on viral pump.fun volume.",
+      leaders: "$BTC ($96,420), $SOL ($218.50), $LINK ($18.90)",
+      invalidationNote: "Aggregate crypto realized volatility is 54.2%. Hard stop discipline required on speculative altcoins.",
+    },
+    {
+      title: "PUMP.FUN BONDING CURVE & SPECULATIVE SENTIMENT",
+      summary: "Bonding curve graduation velocity at 8.4% on Solana DEXs. Top-100 wallet concentration analysis reveals smart-money rotation into narrative leaders.",
+      leaders: "$FARTCOIN (+14.2%), $GOAT (+9.5%), $PEPE (+6.1%)",
+      invalidationNote: "Risk rule enforcement: Maintain hard 2% total portfolio allocation cap and never average down into broken structure.",
+    },
+    {
+      title: "FIXED INCOME & 2s10s YIELD CURVE DYNAMICS",
+      summary: "US 10-year Treasury yields consolidate near 4.38%. The 2s10s yield curve un-inversion indicates market transition from rate shock to growth normalization.",
+      leaders: "$SPY (+0.8%), $QQQ (+1.1%), $TLT (-0.4%)",
+      invalidationNote: "Equities breadth index holding at 58% bullish. Continue trailing protective stops along 20-day moving averages.",
+    },
+  ];
+
+  const theme = hourlyThemes[hoursAgo % hourlyThemes.length];
+
+  const content =
+    `🏛️ **HOURLY MARKET SYNTHESIS & LIQUIDITY REGIME — [${wibTime} WIB / ${utcTime} UTC / ${estTime} EST]**\n` +
+    `*Session Status:* \`${sessionStatus}\`\n\n` +
+    `📊 **${theme.title}**\n` +
+    `${theme.summary}\n\n` +
+    `⚡ **Active Momentum Leaders:** ${theme.leaders}\n` +
+    `🛡️ **Risk Architecture:** ${theme.invalidationNote}\n\n` +
+    `_Automated AI Moderator synthesizes market data 24/7. Continuous real-time predictions regenerate every 60 seconds._`;
+
+  return {
+    id: `hourly-synthesis-${date.getTime()}`,
+    channelId: "general-trading",
+    author: {
+      name: "Nexus Sentinel AI",
+      avatar: "🤖",
+      role: "ai-mod",
+      roleLabel: "BOT MOD",
+      roleColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40",
+      isBot: true,
+      isVerified: true,
+    },
+    content,
+    timestamp: date.toISOString(),
+    timeLabel: `${wibTime} WIB`,
+    reactions: { "🧠": 28, "🚀": 19, "💎": 22 },
+    userReactions: {},
+  };
+}
+
+/**
+ * Generates an automated, non-stagnant stream of past and current hourly messages
+ * so the Discord chat is continuously populated across the 24-hour cycle.
+ */
+export function generateContinuousFloorHistory(): ChatMessage[] {
+  const messages: ChatMessage[] = [];
+  const now = Date.now();
+
+  // Create hourly timeline checkpoints for the last 6 hours
+  const hoursToCheckpoint = [6, 5, 4, 3, 2, 1, 0];
+
+  const simulatedDeskTraders = [
+    {
+      name: "Daniel Okafor",
+      avatar: "👨🏾‍💼",
+      role: "head-desk" as const,
+      roleLabel: "HEAD OF STRATEGY",
+      roleColor: "bg-gold/20 text-gold-bright border-gold/40",
+      isVerified: true,
+      messages: [
+        "Semiconductor tape is holding up remarkably well. $NVDA printing higher swing lows above the 20-day SMA. As always: we trade price structure, not headlines.",
+        "Macro liquidity remains supportive. Notice how institutional bids step in every time $SPY touches the 50-day average. Discipline over excitement.",
+        "Reminder for all floor traders: evaluate your position sizing using 14-day ATR. An equal-dollar position in micro-cap memes vs mega-cap equities is asymmetric risk suicide.",
+      ],
+    },
+    {
+      name: "Mara Lindqvist",
+      avatar: "👩🏼‍💻",
+      role: "quant" as const,
+      roleLabel: "CRYPTO LEAD",
+      roleColor: "bg-purple-500/20 text-purple-400 border-purple-500/40",
+      isVerified: true,
+      messages: [
+        "Solana decentralized exchange velocity continues to outpace Ethereum mainnet. If $SOL sustains above $214 on the 1-hour close, liquidity target is $228. Invalidation at $206.50.",
+        "On-chain forensics check: top-100 wallet concentration on the latest trending pump.fun memes is sitting at 46%. Keep allocations strictly under 2% portfolio equity.",
+        "Bitcoin perpetual funding rates have completely normalized to 0.008% across major venues. Leverage flush complete; spot tape leading the basis expansion.",
+      ],
+    },
+    {
+      name: "Priya Raghunathan",
+      avatar: "👩🏽‍💼",
+      role: "quant" as const,
+      roleLabel: "QUANT RESEARCH",
+      roleColor: "bg-blue-500/20 text-blue-400 border-blue-500/40",
+      isVerified: true,
+      messages: [
+        "Volume Profile calculation update across the 2,038 asset universe: 68% of stocks are currently trading inside or above their session Value Area High (VAH).",
+        "Our 5-factor scoring model ($c_1$ through $c_5$) just upgraded 18 equities from Hold to Accumulate on 30-session ROC momentum inflections.",
+        "Realized 60-day volatility in mega-cap tech compressed to 21.4%. Historical backtests show volatility compression precedes explosive directional expansions.",
+      ],
+    },
+    {
+      name: "JakartaTrader_88",
+      avatar: "🇮🇩",
+      role: "pro-trader" as const,
+      roleLabel: "PRO TRADER",
+      roleColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40",
+      isVerified: false,
+      messages: [
+        "Mantap analisa AI Mod! Gua baru entry scalping di $SOL pas retest $214. Level invalidasi udah dipasang persis di bawah swing low.",
+        "Pagi rekan-rekan trading floor! Sektor meme coin pump.fun volume hari ini cukup aktif. Selalu jaga batas risiko 2% ya.",
+        "Order book tape di Nasdaq pre-market keliatan tebel di bid side. Mengikuti sinyal Buy dari Nexus Sentinel AI.",
+      ],
+    },
+    {
+      name: "ScalpMaster_NY",
+      avatar: "⚡",
+      role: "pro-trader" as const,
+      roleLabel: "INSTITUTIONAL SCALPER",
+      roleColor: "bg-amber-500/20 text-amber-300 border-amber-500/40",
+      isVerified: true,
+      messages: [
+        "Filled on $NVDA continuation alert at $187.40. Target 1 set to $194.50 with a tight trailing stop. Execution speed is everything.",
+        "Tape reading Level 2 on $BTC: large iceberg order absorbing asks at $96,400. Bullish accumulation signature.",
+        "Just audited $FARTCOIN on /predict. Respecting the invalidation stop strictly. Green on the session.",
+      ],
+    },
+  ];
+
+  for (const hoursAgo of hoursToCheckpoint) {
+    const hourDate = new Date(now - hoursAgo * 3600 * 1000);
+    const { wibTime } = formatTimeZones(hourDate);
+
+    // 1. Add Hourly AI Synthesis Report
+    messages.push(generateHourlyMarketSynthesis(hoursAgo));
+
+    // 2. Add 1-2 Automated Minute Predictions from AI Moderator
+    const symbols = hoursAgo % 2 === 0 ? ["NVDA", "BTC"] : ["SOL", "AAPL"];
+    for (let sIdx = 0; sIdx < symbols.length; sIdx++) {
+      const predDate = new Date(hourDate.getTime() + (sIdx * 12 + 8) * 60 * 1000);
+      const { wibTime: predWib } = formatTimeZones(predDate);
+      const prediction = generateMinutePrediction(symbols[sIdx], hoursAgo * 10 + sIdx);
+
+      messages.push({
+        id: `auto-pred-${hoursAgo}-${sIdx}-${predDate.getTime()}`,
+        channelId: sIdx === 0 ? "general-trading" : "crypto-signals",
+        author: {
+          name: "Nexus Sentinel AI",
+          avatar: "🤖",
+          role: "ai-mod",
+          roleLabel: "BOT MOD",
+          roleColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40",
+          isBot: true,
+          isVerified: true,
+        },
+        content: `⚡ **AUTOMATED MINUTE ALPHA ALERT: $${prediction.symbol} (${prediction.name})**\nReal-time technical prediction generated at ${predWib} WIB. Confidence: ${prediction.confidence}%.`,
+        prediction,
+        timestamp: predDate.toISOString(),
+        timeLabel: `${predWib} WIB`,
+        reactions: { "🚀": 14 + sIdx * 5, "💎": 11, "🔥": 8 },
+        userReactions: {},
+      });
+    }
+
+    // 3. Add 1-2 realistic trader replies
+    const trader1 = simulatedDeskTraders[(hoursAgo * 2) % simulatedDeskTraders.length];
+    const traderMsg1Date = new Date(hourDate.getTime() + 18 * 60 * 1000);
+    messages.push({
+      id: `floor-chat-${hoursAgo}-1`,
+      channelId: "general-trading",
+      author: {
+        name: trader1.name,
+        avatar: trader1.avatar,
+        role: trader1.role,
+        roleLabel: trader1.roleLabel,
+        roleColor: trader1.roleColor,
+        isVerified: trader1.isVerified,
+      },
+      content: trader1.messages[hoursAgo % trader1.messages.length],
+      timestamp: traderMsg1Date.toISOString(),
+      timeLabel: `${formatTimeZones(traderMsg1Date).wibTime} WIB`,
+      reactions: { "📈": 9, "👍": 12 },
+      userReactions: {},
+    });
+  }
+
+  // Sort chronologically ascending
+  messages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  return messages;
 }
 
 /**
@@ -190,14 +421,15 @@ export function handleAIModeratorQuery(input: string): { reply: string; predicti
   if (ASSET_BY_SYMBOL[strippedClean]) {
     const pred = generateMinutePrediction(strippedClean);
     const asset = ASSET_BY_SYMBOL[strippedClean];
-    const reply = `🤖 **Nexus Sentinel AI Analysis for $${asset.symbol} (${asset.name})**\n` +
-      `• **Stance:** ${pred.stance} (${pred.confidence}% Conviction)\n` +
-      `• **Current Price:** ${fmtPrice(pred.currentPrice)}\n` +
-      `• **Targets:** T1: ${fmtPrice(pred.target1)} | T2: ${fmtPrice(pred.target2)}\n` +
-      `• **Invalidation Stop:** ${fmtPrice(pred.invalidationLevel)} (Thesis invalid below this)\n` +
-      `• **Technical Read:** ${pred.technicalMechanism}\n` +
+    const reply = `🤖 **Nexus Sentinel AI Analysis: $${asset.symbol} (${asset.name})**\n` +
+      `• **Stance:** **${pred.stance}** (${pred.confidence}% Model Conviction)\n` +
+      `• **Current Price:** ${fmtPrice(pred.currentPrice)} | **Trend Score:** ${pred.score}/100\n` +
+      `• **Targets:** Target 1: ${fmtPrice(pred.target1)} | Target 2: ${fmtPrice(pred.target2)}\n` +
+      `• **Invalidation Stop:** ${fmtPrice(pred.invalidationLevel)} (Hard risk boundary)\n` +
+      `• **Risk/Reward:** ${pred.riskRewardRatio} | **60d Realized Vol:** ${pred.realizedVol}%\n` +
+      `• **Technical Mechanism:** ${pred.technicalMechanism}\n` +
       `• **Horizon:** ${pred.timeHorizon} | **Catalyst Watch:** ${pred.catalystAlert}\n` +
-      `_Signal recorded at ${pred.wibTime} WIB / ${pred.utcTime} UTC._`;
+      `_Signal registered at ${pred.wibTime} WIB / ${pred.utcTime} UTC / ${pred.estTime} EST._`;
     return { reply, prediction: pred };
   }
 
@@ -205,7 +437,6 @@ export function handleAIModeratorQuery(input: string): { reply: string; predicti
   const matchSymbol = lower.match(/(?:\/predict|\/stance|\$|predict|prediksi|cek|bagaimana|analisa|target|entry|review)\s+([a-z0-9]+)/i);
   let potentialTicker = matchSymbol ? matchSymbol[1].toUpperCase() : null;
 
-  // Also check if any known ticker appears as a standalone word in the sentence
   if (!potentialTicker) {
     const words = clean.toUpperCase().split(/[\s,?!]+/);
     for (const w of words) {
@@ -220,59 +451,62 @@ export function handleAIModeratorQuery(input: string): { reply: string; predicti
   if (potentialTicker && ASSET_BY_SYMBOL[potentialTicker]) {
     const pred = generateMinutePrediction(potentialTicker);
     const asset = ASSET_BY_SYMBOL[potentialTicker];
-    const reply = `🤖 **Nexus Sentinel AI Analysis for $${asset.symbol} (${asset.name})**\n` +
-      `• **Stance:** ${pred.stance} (${pred.confidence}% Conviction)\n` +
-      `• **Current Price:** ${fmtPrice(pred.currentPrice)}\n` +
-      `• **Targets:** T1: ${fmtPrice(pred.target1)} | T2: ${fmtPrice(pred.target2)}\n` +
-      `• **Invalidation Stop:** ${fmtPrice(pred.invalidationLevel)} (Thesis invalid below this)\n` +
-      `• **Technical Read:** ${pred.technicalMechanism}\n` +
+    const reply = `🤖 **Nexus Sentinel AI Analysis: $${asset.symbol} (${asset.name})**\n` +
+      `• **Stance:** **${pred.stance}** (${pred.confidence}% Model Conviction)\n` +
+      `• **Current Price:** ${fmtPrice(pred.currentPrice)} | **Trend Score:** ${pred.score}/100\n` +
+      `• **Targets:** Target 1: ${fmtPrice(pred.target1)} | Target 2: ${fmtPrice(pred.target2)}\n` +
+      `• **Invalidation Stop:** ${fmtPrice(pred.invalidationLevel)} (Hard risk boundary)\n` +
+      `• **Risk/Reward:** ${pred.riskRewardRatio} | **60d Realized Vol:** ${pred.realizedVol}%\n` +
+      `• **Technical Mechanism:** ${pred.technicalMechanism}\n` +
       `• **Horizon:** ${pred.timeHorizon} | **Catalyst Watch:** ${pred.catalystAlert}\n` +
-      `_Signal recorded at ${pred.wibTime} WIB / ${pred.utcTime} UTC._`;
+      `_Signal registered at ${pred.wibTime} WIB / ${pred.utcTime} UTC / ${pred.estTime} EST._`;
 
     return { reply, prediction: pred };
   }
 
-  // Indonesian / English query responses
-  if (lower.includes("jam") || lower.includes("waktu") || lower.includes("clock") || lower.includes("time")) {
+  // Global Clock / Time query
+  if (lower.includes("jam") || lower.includes("waktu") || lower.includes("clock") || lower.includes("time") || lower.includes("hour")) {
     const { wibTime, utcTime, estTime, sessionStatus } = formatTimeZones();
     return {
-      reply: `🕒 **Live Global Market Clocks:**\n` +
+      reply: `🕒 **NextWall Street Global Trading Clocks:**\n` +
         `• 🇮🇩 **WIB (Waktu Indonesia Barat):** \`${wibTime} WIB\`\n` +
-        `• 🌐 **UTC (Market Standard):** \`${utcTime} UTC\`\n` +
-        `• 🇺🇸 **EST (Wall Street NY):** \`${estTime} EST\`\n` +
-        `• 📊 **Market Session:** \`${sessionStatus}\`\n` +
-        `_AI predictions regenerate automatically every 60 seconds._`,
+        `• 🌐 **UTC (Market Benchmark):** \`${utcTime} UTC\`\n` +
+        `• 🇺🇸 **EST (Wall Street New York):** \`${estTime} EST\`\n` +
+        `• 📊 **Current Market Session:** \`${sessionStatus}\`\n` +
+        `_Continuous AI predictions execute every 60 seconds. Hourly macro updates generate 24/7._`,
     };
   }
 
   if (lower.includes("pump") || lower.includes("meme") || lower.includes("fartcoin") || lower.includes("goat")) {
     const pred = generateMinutePrediction("FARTCOIN");
     return {
-      reply: `🚀 **Pump.fun & Meme Sector Scan:**\n` +
-        `Tracking 38+ pump.fun and viral memes. Sector breadth is elevated on bonding curve volume.\n` +
-        `Top active signal: **$FARTCOIN** at ${fmtPrice(pred.currentPrice)} (${pred.stance}, ${pred.confidence}% Conviction).\n` +
-        `⚠️ **Risk Protocol Reminder:** Cap total meme exposure under 2% and never average down into broken structure.`,
+      reply: `🚀 **Pump.fun & Viral Meme Sector Forensics:**\n` +
+        `Tracking 407+ pump.fun and meme assets across Solana and Base. High retail order flow momentum observed.\n` +
+        `Active Radar Focus: **$FARTCOIN** at ${fmtPrice(pred.currentPrice)} (${pred.stance}, ${pred.confidence}% Conviction).\n` +
+        `⚠️ **Institutional Risk Protocol:** Cap total meme exposure under 2% portfolio equity and never average down into broken price structure.`,
       prediction: pred,
     };
   }
 
-  if (lower.includes("rekomendasi") || lower.includes("best") || lower.includes("terbaik") || lower.includes("alpha")) {
+  if (lower.includes("rekomendasi") || lower.includes("best") || lower.includes("terbaik") || lower.includes("alpha") || lower.includes("top")) {
     const topStock = generateMinutePrediction("NVDA");
     const topCrypto = generateMinutePrediction("SOL");
     return {
       reply: `⚡ **High-Conviction Alpha Radar:**\n` +
-        `1. **Equities:** $NVDA (${topStock.stance}) — Target: ${fmtPrice(topStock.target1)}, Invalidation: ${fmtPrice(topStock.invalidationLevel)}\n` +
-        `2. **Crypto:** $SOL (${topCrypto.stance}) — Target: ${fmtPrice(topCrypto.target1)}, Invalidation: ${fmtPrice(topCrypto.invalidationLevel)}\n` +
-        `Type \`/predict [symbol]\` to audit any of our 118 tracked instruments.`,
+        `1. **Equities Leader:** $NVDA (${topStock.stance}) — Target: ${fmtPrice(topStock.target1)}, Stop: ${fmtPrice(topStock.invalidationLevel)}\n` +
+        `2. **Crypto Leader:** $SOL (${topCrypto.stance}) — Target: ${fmtPrice(topCrypto.target1)}, Stop: ${fmtPrice(topCrypto.invalidationLevel)}\n` +
+        `Type \`/predict [symbol]\` to audit any instrument across our 2,038 tracked universe.`,
     };
   }
 
-  // General helpful response
+  // General welcome response
   const generalPred = generateMinutePrediction();
   return {
-    reply: `👋 **Nexus Sentinel AI online.** I monitor 118 instruments (S&P 500, Nasdaq, Binance Crypto, Pump.fun Memes) and post real-time alpha predictions every minute.\n\n` +
-      `• Type \`/predict [ticker]\` (e.g. \`/predict NVDA\`, \`/predict BTC\`, \`/predict FARTCOIN\`) for instant technical audits.\n` +
-      `• Ask about market hours, session timings, or invalidation stops anytime!`,
+    reply: `👋 **Nexus Sentinel AI Online & Monitoring 2,038 Assets.**\n\n` +
+      `• **Real-Time Minute Predictions:** Generating automated technical alpha predictions every 60 seconds.\n` +
+      `• **Continuous Hourly Macro Synthesis:** Synthesizing liquidity and sector flows every hour.\n` +
+      `• **Audit Any Symbol:** Type \`/predict [ticker]\` (e.g. \`/predict NVDA\`, \`/predict BTC\`, \`/predict SOL\`, \`/predict FARTCOIN\`).\n` +
+      `• **Market Clocks:** Ask about time or market sessions anytime!`,
     prediction: generalPred,
   };
 }

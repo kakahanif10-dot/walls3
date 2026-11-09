@@ -34,6 +34,7 @@ interface AuthContextValue {
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOutUser: () => Promise<void>;
+  updateUserPlan: (plan: "reader" | "premium" | "institutional") => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue>({
@@ -42,6 +43,7 @@ const AuthContext = createContext<AuthContextValue>({
   loading: true,
   signInWithGoogle: async () => {},
   signOutUser: async () => {},
+  updateUserPlan: async () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -120,6 +122,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const updateUserPlan = useCallback(async (newPlan: "reader" | "premium" | "institutional") => {
+    if (user) {
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const now = new Date().toISOString();
+        await setDoc(userRef, { plan: newPlan, updatedAt: now }, { merge: true });
+        setProfile((prev) => (prev ? { ...prev, plan: newPlan, updatedAt: now } : null));
+      } catch (err) {
+        console.error("Failed to update user plan in Firestore:", err);
+      }
+    } else {
+      // For guest demo mode, update local simulated profile
+      setProfile((prev) => ({
+        uid: "guest-user",
+        email: "guest@nextwallstreet.com",
+        displayName: "Guest Trader",
+        plan: newPlan,
+        updatedAt: new Date().toISOString(),
+      }));
+    }
+  }, [user]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -128,6 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         signInWithGoogle,
         signOutUser,
+        updateUserPlan,
       }}
     >
       {children}

@@ -27,12 +27,19 @@ import {
   Tv,
   Check,
   Share2,
+  Radio,
+  FileText,
+  Sliders,
+  Shield,
+  Award,
+  Video,
 } from "lucide-react";
 import {
   VIDEO_LESSONS_20,
   ACADEMY_MODULES,
   type VideoLesson,
   type VideoChapter,
+  type VideoVisualType,
 } from "@/lib/academy-videos";
 import { useAuth } from "@/lib/auth-context";
 import { db } from "@/lib/firebase";
@@ -55,6 +62,7 @@ export default function WatchableVideoPlayer({
   const { user } = useAuth();
   const [completedLessons, setCompletedLessons] = useState<Record<string, boolean>>({});
 
+  // Sync completion with Firestore
   useEffect(() => {
     if (!user) return;
     const unsub = onSnapshot(collection(db, "users", user.uid, "progress"), (snap) => {
@@ -83,8 +91,8 @@ export default function WatchableVideoPlayer({
     }
   };
 
-  // Viewing mode: "simulation" (interactive live animated trading chart studio) or "video" (HTML5 stream)
-  const [playerMode, setPlayerMode] = useState<"simulation" | "video">("simulation");
+  // Playback modes: "masterclass" (Studio Tutor PiP + Chart + Subtitles), "chart" (Full technical chart desk), "slides" (Curriculum lecture slides)
+  const [viewMode, setViewMode] = useState<"masterclass" | "chart" | "slides">("masterclass");
 
   const filteredLessons = useMemo(() => {
     return VIDEO_LESSONS_20.filter((lesson) => {
@@ -101,7 +109,6 @@ export default function WatchableVideoPlayer({
   const lesson = VIDEO_LESSONS_20[activeLessonIndex] || VIDEO_LESSONS_20[0];
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
@@ -109,15 +116,20 @@ export default function WatchableVideoPlayer({
   const duration = lesson.durationSeconds || 600;
   const [volume, setVolume] = useState(0.85);
   const [isMuted, setIsMuted] = useState(false);
-  const [voiceNarration, setVoiceNarration] = useState(false);
+  const [voiceNarration, setVoiceNarration] = useState(true);
   const [speed, setSpeed] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showCaptions, setShowCaptions] = useState(true);
+
   const [bookmarks, setBookmarks] = useState<{ id: string; time: number; note: string }[]>([]);
   const [bookmarkInput, setBookmarkInput] = useState("");
-  const [activeTab, setActiveTab] = useState<"chapters" | "takeaways" | "quiz" | "bookmarks" | "syllabus">("chapters");
+  const [activeTab, setActiveTab] = useState<"chapters" | "takeaways" | "quiz" | "bookmarks" | "transcript">("chapters");
   const [selectedQuizAnswer, setSelectedQuizAnswer] = useState<number | null>(null);
   const [showQuizResult, setShowQuizResult] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+
+  // Audio waveform animation tick
+  const [audioWave, setAudioWave] = useState([0.3, 0.7, 0.4, 0.8, 0.5, 0.9, 0.6]);
 
   // Read URL query parameter "?lesson=..." on mount or change
   useEffect(() => {
@@ -145,7 +157,6 @@ export default function WatchableVideoPlayer({
     setCurrentTime(0);
     setIsPlaying(false);
 
-    // Update URL without full reload
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       url.searchParams.set("lesson", lesson.id);
@@ -153,7 +164,7 @@ export default function WatchableVideoPlayer({
     }
   }, [lesson.id]);
 
-  // Playback timer ticker for Simulation Mode
+  // Animation frame ticker for video playback & audio waveform
   useEffect(() => {
     let animId: number;
     let lastStamp = performance.now();
@@ -171,6 +182,19 @@ export default function WatchableVideoPlayer({
           }
           return next;
         });
+
+        // Animate audio waveform bars when playing
+        setAudioWave([
+          0.2 + Math.abs(Math.sin(now * 0.008)) * 0.7,
+          0.2 + Math.abs(Math.sin(now * 0.012 + 1)) * 0.8,
+          0.2 + Math.abs(Math.sin(now * 0.009 + 2)) * 0.75,
+          0.2 + Math.abs(Math.sin(now * 0.015 + 3)) * 0.85,
+          0.2 + Math.abs(Math.sin(now * 0.011 + 4)) * 0.7,
+          0.2 + Math.abs(Math.sin(now * 0.013 + 5)) * 0.8,
+          0.2 + Math.abs(Math.sin(now * 0.007 + 6)) * 0.65,
+        ]);
+      } else {
+        setAudioWave([0.15, 0.2, 0.15, 0.25, 0.15, 0.2, 0.15]);
       }
 
       animId = requestAnimationFrame(tick);
@@ -180,70 +204,279 @@ export default function WatchableVideoPlayer({
     return () => cancelAnimationFrame(animId);
   }, [isPlaying, speed, duration]);
 
-  // Canvas Technical Market Chart Drawing Engine
+  // Determine active chapter based on currentTime
+  const activeChapter = useMemo(() => {
+    const list = [...lesson.chapters].sort((a, b) => a.time - b.time);
+    let current = list[0];
+    for (const ch of list) {
+      if (currentTime >= ch.time) current = ch;
+      else break;
+    }
+    return current;
+  }, [lesson.chapters, currentTime]);
+
+  // Real voice narration support via SpeechSynthesis API
+  useEffect(() => {
+    if (!voiceNarration || !isPlaying || typeof window === "undefined" || !("speechSynthesis" in window)) {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+      return;
+    }
+
+    const utteranceText = `${activeChapter.title}. ${activeChapter.description}. In this module, remember: ${lesson.takeaways[0] || ""}`;
+    const utterance = new SpeechSynthesisUtterance(utteranceText);
+    utterance.rate = Math.min(1.4, Math.max(0.8, speed));
+    utterance.volume = isMuted ? 0 : volume;
+
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+
+    return () => {
+      window.speechSynthesis.cancel();
+    };
+  }, [activeChapter, voiceNarration, isPlaying, isMuted, volume, speed, lesson.takeaways]);
+
+  // Drawing Engine: Proprietary NextWall Street 60FPS Video Screen
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Handle high DPI
-    const width = canvas.clientWidth || 800;
-    const height = canvas.clientHeight || 450;
+    const width = canvas.clientWidth || 960;
+    const height = canvas.clientHeight || 540;
     canvas.width = width * 2;
     canvas.height = height * 2;
     ctx.scale(2, 2);
 
-    // Clear background
+    // Dark terminal canvas background
     ctx.fillStyle = "#07090e";
     ctx.fillRect(0, 0, width, height);
 
-    // Subtle grid lines
+    // Subtle technical grid
     ctx.strokeStyle = "rgba(36, 42, 53, 0.4)";
     ctx.lineWidth = 1;
     for (let x = 40; x < width; x += 60) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
-      ctx.lineTo(x, height - 30);
+      ctx.lineTo(x, height - 35);
       ctx.stroke();
     }
-    for (let y = 30; y < height - 30; y += 40) {
+    for (let y = 30; y < height - 35; y += 45) {
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(width, y);
       ctx.stroke();
     }
 
-    // Generate deterministic simulated candles based on lesson index and current time
-    const seed = activeLessonIndex * 17 + 42;
-    const totalCandles = 42;
-    const progress = Math.min(1, currentTime / duration);
-    const visibleCandles = Math.max(8, Math.floor(progress * totalCandles) + 6);
+    const progress = Math.min(1, currentTime / Math.max(duration, 1));
+    const seed = activeLessonIndex * 13 + 37;
 
-    const candleWidth = Math.max(6, (width - 120) / totalCandles - 4);
-    const startX = 60;
-    const baselineY = height * 0.55;
+    /* -------------------------------------------------------------
+       CUSTOM VISUAL RENDERING PER LESSON TYPE
+       ------------------------------------------------------------- */
+    if (lesson.visualType === "order_book" || lesson.visualType === "tape_reading") {
+      // Level 2 Depth & Tape Reading Display
+      const splitX = width * 0.65;
+
+      // Draw Candlestick Chart on Left (65%)
+      drawCandles(ctx, 40, splitX - 20, height * 0.55, 30, progress, seed);
+
+      // Draw Live Order Book Ladder on Right (35%)
+      ctx.fillStyle = "rgba(11, 13, 18, 0.9)";
+      ctx.fillRect(splitX, 15, width - splitX - 15, height - 55);
+      ctx.strokeStyle = "rgba(45, 52, 65, 0.8)";
+      ctx.strokeRect(splitX, 15, width - splitX - 15, height - 55);
+
+      ctx.fillStyle = "#d8ab5a";
+      ctx.font = "bold 11px monospace";
+      ctx.fillText("LIVE DEPTH OF MARKET (DOM)", splitX + 12, 35);
+
+      // Asks (Red)
+      const askBase = 96420;
+      for (let i = 0; i < 5; i++) {
+        const y = 55 + i * 22;
+        const p = askBase + (5 - i) * 15;
+        const size = (0.8 + Math.sin(seed + i * 2 + progress * 8) * 0.5).toFixed(2);
+        ctx.fillStyle = "rgba(240, 100, 95, 0.15)";
+        ctx.fillRect(splitX + 6, y - 12, (width - splitX - 28) * (0.3 + i * 0.12), 18);
+        ctx.fillStyle = "#f0645f";
+        ctx.font = "10px monospace";
+        ctx.fillText(`$${p.toLocaleString()}`, splitX + 12, y);
+        ctx.fillText(`${size} BTC`, splitX + 110, y);
+      }
+
+      // Mid Spread
+      ctx.fillStyle = "#3ecf8e";
+      ctx.font = "bold 13px monospace";
+      ctx.fillText(`SPREAD: $96,420.50 [BEST BID/ASK]`, splitX + 12, 185);
+
+      // Bids (Green)
+      for (let i = 0; i < 5; i++) {
+        const y = 205 + i * 22;
+        const p = askBase - i * 15;
+        const size = (1.2 + Math.cos(seed + i * 3 + progress * 6) * 0.6).toFixed(2);
+        ctx.fillStyle = "rgba(62, 207, 142, 0.15)";
+        ctx.fillRect(splitX + 6, y - 12, (width - splitX - 28) * (0.7 - i * 0.1), 18);
+        ctx.fillStyle = "#3ecf8e";
+        ctx.font = "10px monospace";
+        ctx.fillText(`$${p.toLocaleString()}`, splitX + 12, y);
+        ctx.fillText(`${size} BTC`, splitX + 110, y);
+      }
+    } else if (lesson.visualType === "volume_profile") {
+      // Volume Profile & Point of Control (POC)
+      drawCandles(ctx, 60, width - 60, height * 0.55, 36, progress, seed);
+
+      // Draw Horizontal Volume Profile Bars on Left
+      for (let i = 0; i < 12; i++) {
+        const y = 60 + i * 25;
+        const isPOC = i === 5;
+        const barW = isPOC ? 160 : 40 + Math.sin(i * 1.4 + seed) * 70;
+        ctx.fillStyle = isPOC ? "rgba(216, 171, 90, 0.35)" : "rgba(56, 189, 248, 0.2)";
+        ctx.fillRect(50, y - 8, barW, 16);
+
+        if (isPOC) {
+          ctx.strokeStyle = "#d8ab5a";
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(50, y);
+          ctx.lineTo(width - 50, y);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = "#d8ab5a";
+          ctx.font = "bold 10px monospace";
+          ctx.fillText("POINT OF CONTROL (POC) - INSTITUTIONAL MAGNET", width - 330, y - 4);
+        }
+      }
+    } else if (lesson.visualType === "bonding_curve" || lesson.visualType === "wallet_clustering") {
+      // Pump.fun Bonding Curve & On-Chain Forensics
+      drawCandles(ctx, 40, width - 40, height * 0.6, 32, progress, seed);
+
+      // Gauge Overlay Card
+      ctx.fillStyle = "rgba(11, 13, 18, 0.88)";
+      ctx.strokeStyle = "rgba(216, 171, 90, 0.6)";
+      ctx.lineWidth = 1;
+      ctx.fillRect(width * 0.08, 30, 320, 105);
+      ctx.strokeRect(width * 0.08, 30, 320, 105);
+
+      ctx.fillStyle = "#d8ab5a";
+      ctx.font = "bold 11px monospace";
+      ctx.fillText("PUMP.FUN BONDING CURVE GRADUATION", width * 0.08 + 15, 52);
+
+      const curvePct = Math.min(100, Math.round(52 + progress * 46));
+      ctx.fillStyle = "#f2efe8";
+      ctx.font = "bold 18px monospace";
+      ctx.fillText(`${curvePct}% TO RAYDIUM DEX`, width * 0.08 + 15, 78);
+
+      // Progress bar
+      ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+      ctx.fillRect(width * 0.08 + 15, 88, 290, 8);
+      ctx.fillStyle = curvePct >= 85 ? "#3ecf8e" : "#d8ab5a";
+      ctx.fillRect(width * 0.08 + 15, 88, 290 * (curvePct / 100), 8);
+
+      ctx.fillStyle = "#f0645f";
+      ctx.font = "10px monospace";
+      ctx.fillText("Top-100 Wallet Concentration: 48.2% (HIGH RISK)", width * 0.08 + 15, 118);
+    } else if (lesson.visualType === "position_sizing" || lesson.visualType === "drawdown_math") {
+      // Quantitative Math & Position Sizing Architecture
+      drawCandles(ctx, 40, width - 40, height * 0.58, 30, progress, seed);
+
+      // Math Formula Card
+      ctx.fillStyle = "rgba(11, 13, 18, 0.92)";
+      ctx.strokeStyle = "rgba(56, 189, 248, 0.6)";
+      ctx.lineWidth = 1;
+      ctx.fillRect(width * 0.06, 25, 360, 115);
+      ctx.strokeRect(width * 0.06, 25, 360, 115);
+
+      ctx.fillStyle = "#38bdf8";
+      ctx.font = "bold 11px monospace";
+      ctx.fillText("VOLATILITY-ADJUSTED POSITION SIZING", width * 0.06 + 15, 48);
+
+      ctx.fillStyle = "#f2efe8";
+      ctx.font = "bold 13px monospace";
+      ctx.fillText("Shares = (Account * Risk%) / Invalidation Dist", width * 0.06 + 15, 72);
+
+      ctx.fillStyle = "#d8ab5a";
+      ctx.font = "11px monospace";
+      ctx.fillText("Account: $50,000 | Risk: 1% ($500) | Dist: $5.00", width * 0.06 + 15, 95);
+      ctx.fillStyle = "#3ecf8e";
+      ctx.font = "bold 13px monospace";
+      ctx.fillText("Calculated Max Allocation: 100 Shares", width * 0.06 + 15, 120);
+    } else {
+      // Standard Technical Structure: Swing Pivots, MAs, and Invalidation
+      const totalCandles = 38;
+      const visibleCandles = Math.max(10, Math.floor(progress * totalCandles) + 6);
+      drawCandles(ctx, 50, width - 50, height * 0.55, visibleCandles, progress, seed);
+
+      // Overlay Moving Averages
+      drawMovingAverages(ctx, 50, width - 50, height * 0.55, visibleCandles, seed);
+    }
+
+    // Top-Left Live On-Air Badge
+    ctx.fillStyle = "rgba(11, 13, 18, 0.85)";
+    ctx.strokeStyle = "rgba(36, 42, 53, 0.8)";
+    ctx.lineWidth = 1;
+    ctx.fillRect(15, 15, 230, 42);
+    ctx.strokeRect(15, 15, 230, 42);
+
+    ctx.fillStyle = isPlaying ? "#3ecf8e" : "#d8ab5a";
+    ctx.beginPath();
+    ctx.arc(28, 36, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#f2efe8";
+    ctx.font = "bold 10px monospace";
+    ctx.fillText(isPlaying ? "STUDIO ON AIR · PLAYING" : "STUDIO PAUSED", 40, 33);
+    ctx.fillStyle = "#8a95a5";
+    ctx.font = "9px monospace";
+    ctx.fillText(`LESSON ${activeLessonIndex + 1} / 20 MASTERCLASS`, 40, 47);
+
+    // Active Chapter HUD Indicator
+    ctx.fillStyle = "rgba(11, 13, 18, 0.85)";
+    ctx.strokeStyle = "rgba(36, 42, 53, 0.8)";
+    ctx.fillRect(width - 250, height - 60, 235, 45);
+    ctx.strokeRect(width - 250, height - 60, 235, 45);
+
+    ctx.fillStyle = "#d8ab5a";
+    ctx.font = "bold 10px monospace";
+    ctx.fillText("ACTIVE CHAPTER", width - 240, height - 44);
+    ctx.fillStyle = "#f2efe8";
+    ctx.font = "9px monospace";
+    const truncChapter = activeChapter.title.length > 32 ? activeChapter.title.slice(0, 30) + "..." : activeChapter.title;
+    ctx.fillText(truncChapter, width - 240, height - 28);
+  }, [currentTime, duration, activeLessonIndex, lesson, activeChapter, isPlaying]);
+
+  // Helper to draw realistic financial market candles
+  function drawCandles(
+    ctx: CanvasRenderingContext2D,
+    startX: number,
+    endX: number,
+    baselineY: number,
+    numCandles: number,
+    progress: number,
+    seed: number
+  ) {
+    const totalWidth = endX - startX;
+    const candleWidth = Math.max(5, (totalWidth / 40) - 3);
 
     let prevClose = baselineY;
-    const closes: { x: number; y: number }[] = [];
-
-    // Draw Price Action Candlesticks
-    for (let i = 0; i < visibleCandles; i++) {
-      const x = startX + i * (candleWidth + 4);
-      const wave = Math.sin((i + seed) * 0.4) * 28;
-      const trend = -((i / totalCandles) * 45) * (activeLessonIndex % 2 === 0 ? 1 : 0.6);
-      const noise = ((Math.sin(i * 3.7 + seed) * 0.5 + Math.cos(i * 1.9) * 0.5) * 22);
+    for (let i = 0; i < numCandles; i++) {
+      const x = startX + i * (candleWidth + 3);
+      const wave = Math.sin((i + seed) * 0.38) * 32;
+      const trend = -((i / 40) * 55) * (activeLessonIndex % 2 === 0 ? 1 : 0.7);
+      const noise = ((Math.sin(i * 3.4 + seed) * 0.5 + Math.cos(i * 1.7) * 0.5) * 20);
       const targetY = baselineY + wave + trend + noise;
 
       const open = prevClose;
       const close = targetY;
-      const isGreen = close <= open; // Screen coords: lower Y is higher price
+      const isGreen = close <= open;
 
-      const high = Math.min(open, close) - Math.abs(Math.sin(i + seed)) * 14 - 3;
-      const low = Math.max(open, close) + Math.abs(Math.cos(i + seed)) * 14 + 3;
+      const high = Math.min(open, close) - Math.abs(Math.sin(i + seed)) * 14 - 4;
+      const low = Math.max(open, close) + Math.abs(Math.cos(i + seed)) * 14 + 4;
 
       prevClose = close;
-      closes.push({ x: x + candleWidth / 2, y: close });
 
       // Wick
       ctx.strokeStyle = isGreen ? "#3ecf8e" : "#f0645f";
@@ -259,170 +492,79 @@ export default function WatchableVideoPlayer({
       const bodyHeight = Math.max(2, Math.abs(close - open));
       ctx.fillRect(x, bodyTop, candleWidth, bodyHeight);
     }
+  }
 
-    // Draw 20-EMA (Gold)
-    if (closes.length > 3) {
-      ctx.strokeStyle = "#d8ab5a";
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      for (let i = 0; i < closes.length; i++) {
-        const pt = closes[i];
-        const emaY = pt.y + Math.sin(i * 0.2) * 6 + 4;
-        if (i === 0) ctx.moveTo(pt.x, emaY);
-        else ctx.lineTo(pt.x, emaY);
-      }
-      ctx.stroke();
+  // Helper to draw dynamic moving averages
+  function drawMovingAverages(
+    ctx: CanvasRenderingContext2D,
+    startX: number,
+    endX: number,
+    baselineY: number,
+    numCandles: number,
+    seed: number
+  ) {
+    const totalWidth = endX - startX;
+    const candleWidth = Math.max(5, (totalWidth / 40) - 3);
+
+    // 20-EMA (Gold)
+    ctx.strokeStyle = "#d8ab5a";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (let i = 0; i < numCandles; i++) {
+      const x = startX + i * (candleWidth + 3) + candleWidth / 2;
+      const y = baselineY + Math.sin((i + seed) * 0.35) * 24 - (i * 1.3) + 6;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
     }
+    ctx.stroke();
 
-    // Draw 50-SMA (Cyan)
-    if (closes.length > 5) {
-      ctx.strokeStyle = "#38bdf8";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      for (let i = 0; i < closes.length; i++) {
-        const pt = closes[i];
-        const smaY = pt.y + 16 + Math.cos(i * 0.15) * 5;
-        if (i === 0) ctx.moveTo(pt.x, smaY);
-        else ctx.lineTo(pt.x, smaY);
-      }
-      ctx.stroke();
+    // 50-SMA (Cyan)
+    ctx.strokeStyle = "#38bdf8";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < numCandles; i++) {
+      const x = startX + i * (candleWidth + 3) + candleWidth / 2;
+      const y = baselineY + 18 + Math.cos((i + seed) * 0.25) * 16 - (i * 0.9);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
     }
+    ctx.stroke();
 
-    // Draw Invalidation Stop Line (Dashed Red)
-    const stopY = height * 0.76;
+    // Red Invalidation Stop
+    const stopY = baselineY + 58;
     ctx.strokeStyle = "rgba(240, 100, 95, 0.75)";
     ctx.setLineDash([5, 5]);
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(50, stopY);
-    ctx.lineTo(width - 50, stopY);
+    ctx.moveTo(startX, stopY);
+    ctx.lineTo(endX, stopY);
     ctx.stroke();
     ctx.setLineDash([]);
-
-    // Stop Label
     ctx.fillStyle = "#f0645f";
     ctx.font = "bold 10px monospace";
-    ctx.fillText("MODEL INVALIDATION STOP LEVEL", width - 240, stopY - 5);
-
-    // Draw Target 1 Line (Dashed Green)
-    const targetY = height * 0.22;
-    ctx.strokeStyle = "rgba(62, 207, 142, 0.75)";
-    ctx.setLineDash([5, 5]);
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(50, targetY);
-    ctx.lineTo(width - 50, targetY);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Target Label
-    ctx.fillStyle = "#3ecf8e";
-    ctx.font = "bold 10px monospace";
-    ctx.fillText("ASYMMETRIC TARGET 1 (+18.5%)", width - 230, targetY - 5);
-
-    // Active pointer marker at latest candle
-    if (closes.length > 0) {
-      const last = closes[closes.length - 1];
-      ctx.fillStyle = "#f0c979";
-      ctx.beginPath();
-      ctx.arc(last.x, last.y, 4, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Pulsing outer ring
-      ctx.strokeStyle = "rgba(240, 201, 121, 0.5)";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(last.x, last.y, 8, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-
-    // Legend on canvas top-right
-    ctx.fillStyle = "rgba(11, 13, 18, 0.85)";
-    ctx.strokeStyle = "rgba(36, 42, 53, 0.8)";
-    ctx.lineWidth = 1;
-    ctx.fillRect(width - 220, 15, 205, 45);
-    ctx.strokeRect(width - 220, 15, 205, 45);
-
-    ctx.fillStyle = "#d8ab5a";
-    ctx.fillRect(width - 210, 26, 12, 3);
-    ctx.fillStyle = "#f2efe8";
-    ctx.font = "10px monospace";
-    ctx.fillText("20 EMA (Momentum)", width - 190, 30);
-
-    ctx.fillStyle = "#38bdf8";
-    ctx.fillRect(width - 210, 42, 12, 3);
-    ctx.fillStyle = "#f2efe8";
-    ctx.fillText("50 SMA (Institutional)", width - 190, 46);
-  }, [currentTime, duration, activeLessonIndex]);
-
-  // Voice narration support via browser SpeechSynthesis
-  useEffect(() => {
-    if (!voiceNarration || !isPlaying || typeof window === "undefined" || !("speechSynthesis" in window)) {
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
-      return;
-    }
-
-    // Find current chapter
-    const currentChapter =
-      lesson.chapters
-        .slice()
-        .reverse()
-        .find((c) => currentTime >= c.time) || lesson.chapters[0];
-
-    // Speak chapter description
-    const utterance = new SpeechSynthesisUtterance(
-      `${currentChapter.title}. ${currentChapter.description}`
-    );
-    utterance.rate = 1.0;
-    utterance.volume = isMuted ? 0 : volume;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-
-    return () => {
-      window.speechSynthesis.cancel();
-    };
-  }, [lesson, currentTime, voiceNarration, isPlaying, isMuted, volume]);
+    ctx.fillText("MODEL INVALIDATION STOP LEVEL", endX - 220, stopY - 5);
+  }
 
   const togglePlay = () => {
     setIsPlaying((prev) => !prev);
-    if (playerMode === "video" && videoRef.current) {
-      if (videoRef.current.paused) {
-        videoRef.current.play().catch(() => {});
-      } else {
-        videoRef.current.pause();
-      }
-    }
   };
 
   const handleSeek = (seconds: number) => {
     const clamped = Math.max(0, Math.min(seconds, duration));
     setCurrentTime(clamped);
-    if (playerMode === "video" && videoRef.current) {
-      videoRef.current.currentTime = clamped;
-    }
   };
 
   const handleVolumeChange = (newVolume: number) => {
     setVolume(newVolume);
     setIsMuted(newVolume === 0);
-    if (videoRef.current) {
-      videoRef.current.volume = newVolume;
-      videoRef.current.muted = newVolume === 0;
-    }
   };
 
   const toggleMute = () => {
     setIsMuted((prev) => !prev);
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-    }
   };
 
   const changeSpeed = (newSpeed: number) => {
     setSpeed(newSpeed);
-    if (videoRef.current) videoRef.current.playbackRate = newSpeed;
   };
 
   const toggleFullscreen = () => {
@@ -451,7 +593,7 @@ export default function WatchableVideoPlayer({
     }
   };
 
-  const deleteBookmark = (id: string) => {
+  const removeBookmark = (id: string) => {
     const updated = bookmarks.filter((b) => b.id !== id);
     setBookmarks(updated);
     try {
@@ -461,43 +603,34 @@ export default function WatchableVideoPlayer({
     }
   };
 
-  const formatTime = (totalSeconds: number) => {
-    const s = Math.floor(totalSeconds % 60);
-    const m = Math.floor((totalSeconds / 60) % 60);
-    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-  };
-
-  const activeChapter =
-    lesson.chapters
-      .slice()
-      .reverse()
-      .find((c) => currentTime >= c.time) || lesson.chapters[0];
-
-  const handleNextLesson = () => {
-    if (activeLessonIndex < VIDEO_LESSONS_20.length - 1) {
-      setActiveLessonIndex(activeLessonIndex + 1);
+  const copyLessonShareLink = () => {
+    if (typeof window !== "undefined") {
+      const url = `${window.location.origin}/academy/watch?lesson=${lesson.id}`;
+      navigator.clipboard.writeText(url).then(() => {
+        setCopiedLink(true);
+        setTimeout(() => setCopiedLink(false), 2500);
+      });
     }
   };
 
   const handlePrevLesson = () => {
-    if (activeLessonIndex > 0) {
-      setActiveLessonIndex(activeLessonIndex - 1);
-    }
+    if (activeLessonIndex > 0) setActiveLessonIndex((i) => i - 1);
   };
 
-  const copyLessonShareLink = () => {
-    if (typeof window !== "undefined") {
-      const url = `${window.location.origin}/academy/watch?lesson=${lesson.id}`;
-      navigator.clipboard.writeText(url);
-      setCopiedLink(true);
-      setTimeout(() => setCopiedLink(false), 2000);
-    }
+  const handleNextLesson = () => {
+    if (activeLessonIndex < VIDEO_LESSONS_20.length - 1) setActiveLessonIndex((i) => i + 1);
+  };
+
+  const formatTime = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return `${m}:${s < 10 ? `0${s}` : s}`;
   };
 
   return (
-    <div id="video-studio-player" className="rounded-2xl border border-line bg-ink-950 p-4 sm:p-6 shadow-2xl">
-      {/* Top Banner / Header */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-line/60 pb-4">
+    <div className="space-y-6" id="video-studio-player">
+      {/* Top Header & Navigation Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line/60 pb-4">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/50 bg-gold/15 px-3 py-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-gold-bright">
@@ -518,7 +651,7 @@ export default function WatchableVideoPlayer({
           </p>
         </div>
 
-        {/* Action Buttons: Prev / Lesson Counter / Next / Share */}
+        {/* Action Buttons: Prev / Counter / Next / Share / Complete */}
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -569,7 +702,7 @@ export default function WatchableVideoPlayer({
       </div>
 
       {/* Module Filter Pills & Lesson Search */}
-      <div className="mb-4 flex flex-col gap-2.5 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-2.5 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-1.5 overflow-x-auto py-1 text-xs">
           {ACADEMY_MODULES.map((mod) => (
             <button
@@ -599,10 +732,12 @@ export default function WatchableVideoPlayer({
       </div>
 
       {/* 20-Lesson Horizontal Strip / Carousel */}
-      <div className="mb-5 flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
         {filteredLessons.map((l) => {
           const globalIdx = VIDEO_LESSONS_20.findIndex((item) => item.id === l.id);
           const isActive = globalIdx === activeLessonIndex;
+          const isDone = completedLessons[l.id];
+
           return (
             <button
               key={l.id}
@@ -615,10 +750,10 @@ export default function WatchableVideoPlayer({
             >
               <div
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-mono text-xs font-bold ${
-                  isActive ? "bg-gold text-ink-950" : "bg-ink-800 text-muted"
+                  isActive ? "bg-gold text-ink-950" : isDone ? "bg-emerald-500/20 text-emerald-400" : "bg-ink-800 text-muted"
                 }`}
               >
-                {globalIdx + 1 < 10 ? `0${globalIdx + 1}` : globalIdx + 1}
+                {isDone ? "✓" : globalIdx + 1 < 10 ? `0${globalIdx + 1}` : globalIdx + 1}
               </div>
               <div className="min-w-0">
                 <p className="truncate text-xs font-medium text-bone">{l.title.replace(/^Lesson \d+:\s*/, "")}</p>
@@ -633,104 +768,204 @@ export default function WatchableVideoPlayer({
         })}
       </div>
 
-      {/* Mode Switcher: Interactive Technical Studio vs Video Stream */}
-      <div className="mb-2 flex items-center justify-between px-1">
+      {/* Mode Controls: Masterclass Video vs Full Chart vs Slide Deck */}
+      <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-1.5 text-xs">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted">Playback Mode:</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted">Screen Mode:</span>
           <button
             type="button"
-            onClick={() => setPlayerMode("simulation")}
+            onClick={() => setViewMode("masterclass")}
             className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs transition-all ${
-              playerMode === "simulation"
+              viewMode === "masterclass"
+                ? "bg-gold text-ink-950 font-bold shadow"
+                : "border border-line bg-ink-900 text-muted hover:text-bone"
+            }`}
+          >
+            <Video className="h-3.5 w-3.5" />
+            <span>Tutor Masterclass</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("chart")}
+            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs transition-all ${
+              viewMode === "chart"
                 ? "bg-gold text-ink-950 font-bold shadow"
                 : "border border-line bg-ink-900 text-muted hover:text-bone"
             }`}
           >
             <BarChart2 className="h-3.5 w-3.5" />
-            <span>Interactive Chart Studio</span>
+            <span>Chart Desk</span>
           </button>
           <button
             type="button"
-            onClick={() => setPlayerMode("video")}
+            onClick={() => setViewMode("slides")}
             className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs transition-all ${
-              playerMode === "video"
+              viewMode === "slides"
                 ? "bg-gold text-ink-950 font-bold shadow"
                 : "border border-line bg-ink-900 text-muted hover:text-bone"
             }`}
           >
-            <Tv className="h-3.5 w-3.5" />
-            <span>Video Stream</span>
+            <FileText className="h-3.5 w-3.5" />
+            <span>Curriculum Slides</span>
           </button>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setVoiceNarration((v) => !v)}
-          className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs transition-all ${
-            voiceNarration
-              ? "border border-emerald-500/50 bg-emerald-500/15 text-emerald-400 font-semibold"
-              : "border border-line bg-ink-900 text-muted hover:text-bone"
-          }`}
-          title="Toggle automated speech narration for chapter principles"
-        >
-          <Volume2 className="h-3.5 w-3.5" />
-          <span>Speech Narration: {voiceNarration ? "ON" : "OFF"}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowCaptions((c) => !c)}
+            className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] transition ${
+              showCaptions
+                ? "border border-gold/40 bg-gold/10 text-gold-bright"
+                : "border border-line text-muted hover:text-bone"
+            }`}
+            title="Toggle closed captions / subtitles"
+          >
+            CC: {showCaptions ? "ON" : "OFF"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setVoiceNarration((v) => !v)}
+            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs transition-all ${
+              voiceNarration
+                ? "border border-emerald-500/50 bg-emerald-500/15 text-emerald-400 font-semibold"
+                : "border border-line bg-ink-900 text-muted hover:text-bone"
+            }`}
+            title="Toggle automated speech narration for tutor explanation"
+          >
+            <Volume2 className="h-3.5 w-3.5" />
+            <span>Voice: {voiceNarration ? "ON" : "OFF"}</span>
+          </button>
+        </div>
       </div>
 
-      {/* Main Video & Interactive Canvas Viewport */}
+      {/* PROPRIETARY VIDEO SCREEN VIEWPORT (100% OWNED, NO YOUTUBE) */}
       <div
         ref={containerRef}
-        className="group relative overflow-hidden rounded-xl border border-line bg-[#07090e] shadow-2xl aspect-video max-h-[580px] w-full"
+        className="group relative overflow-hidden rounded-xl border border-line bg-[#07090e] shadow-2xl aspect-video max-h-[580px] w-full select-none"
       >
-        {/* Mode 1: Interactive Live Technical Studio Canvas */}
-        {playerMode === "simulation" ? (
+        {/* Render Mode: Slide Deck View vs Dynamic Chart Video View */}
+        {viewMode === "slides" ? (
+          <div className="flex h-full w-full flex-col justify-between bg-ink-950 p-6 sm:p-10">
+            <div>
+              <div className="flex items-center justify-between border-b border-line/60 pb-3">
+                <span className="font-mono text-xs uppercase tracking-widest text-gold font-bold">
+                  NextWall Street Academy · Masterclass Slide Deck
+                </span>
+                <span className="font-mono text-xs text-muted">
+                  Slide {Math.min(5, Math.floor((currentTime / duration) * 5) + 1)} / 5
+                </span>
+              </div>
+              <h3 className="mt-4 font-display text-2xl sm:text-3xl text-bone">
+                {activeChapter.title}
+              </h3>
+              <p className="mt-3 text-sm sm:text-base leading-relaxed text-bone/90 max-w-3xl">
+                {activeChapter.description}
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-gold/30 bg-gold/[0.06] p-4">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-gold">
+                Key Lesson Principle
+              </span>
+              <p className="mt-1 text-xs sm:text-sm text-bone/90">
+                {lesson.takeaways[0]}
+              </p>
+            </div>
+          </div>
+        ) : (
           <canvas
             ref={canvasRef}
             onClick={togglePlay}
             className="h-full w-full object-contain cursor-pointer"
           />
-        ) : (
-          /* Mode 2: HTML5 Video Stream */
-          <video
-            ref={videoRef}
-            src={lesson.videoUrl}
-            playsInline
-            preload="metadata"
-            onClick={togglePlay}
-            className="h-full w-full object-contain cursor-pointer aspect-video bg-black"
-          />
         )}
 
-        {/* Centered Play Button when Paused */}
+        {/* TUTOR PICTURE-IN-PICTURE (PiP) STUDIO FEED (Top-Right) */}
+        {viewMode === "masterclass" && (
+          <div className="absolute top-4 right-4 pointer-events-none rounded-xl border border-gold/40 bg-ink-950/95 p-3 backdrop-blur-md shadow-2xl max-w-[210px] sm:max-w-[240px] transition-all">
+            <div className="flex items-center justify-between border-b border-line/60 pb-2">
+              <span className="inline-flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-wider text-emerald-400">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                TUTOR STUDIO
+              </span>
+              <span className="rounded bg-line/60 px-1 py-0.2 font-mono text-[9px] text-muted">
+                1080p
+              </span>
+            </div>
+
+            {/* Presenter Profile & Talking Waveform */}
+            <div className="mt-2.5 flex items-center gap-2.5">
+              <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-gold/30 via-gold to-bone p-[1.5px] shadow-lg">
+                <div className="flex h-full w-full items-center justify-center rounded-full bg-ink-900 font-display text-xs font-bold text-gold-bright">
+                  {lesson.instructorInitials || "NW"}
+                </div>
+                {isPlaying && (
+                  <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-500 text-[8px] text-ink-950 font-bold">
+                    ●
+                  </span>
+                )}
+              </div>
+
+              <div className="min-w-0">
+                <p className="truncate text-xs font-bold text-bone">{lesson.instructor}</p>
+                <p className="truncate text-[10px] text-muted">{lesson.instructorRole}</p>
+              </div>
+            </div>
+
+            {/* Live Audio Equalizer Waveform */}
+            <div className="mt-2.5 flex items-center justify-between gap-1 rounded bg-ink-900/80 px-2 py-1.5 border border-line/60">
+              <span className="font-mono text-[9px] text-muted">VOICE FEED</span>
+              <div className="flex items-end gap-1 h-3">
+                {audioWave.map((h, idx) => (
+                  <span
+                    key={idx}
+                    style={{ height: `${Math.round(h * 12)}px` }}
+                    className={`w-1 rounded-full transition-all duration-75 ${
+                      isPlaying ? "bg-gold-bright" : "bg-muted/40"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* LIVE SYNCHRONIZED CLOSED-CAPTIONS (Subtitles) */}
+        {showCaptions && (
+          <div className="absolute bottom-16 inset-x-6 sm:inset-x-12 pointer-events-none flex justify-center">
+            <div className="rounded-lg border border-gold/30 bg-ink-950/90 px-4 py-2 backdrop-blur-md shadow-2xl text-center max-w-2xl">
+              <span className="font-mono text-[9px] uppercase tracking-wider text-gold-bright block font-bold mb-0.5">
+                Instructor Commentary · {lesson.instructor}
+              </span>
+              <p className="text-xs sm:text-sm font-medium text-bone leading-relaxed">
+                &ldquo;{activeChapter.description}&rdquo;
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Centered Big Play Button when Paused */}
         {!isPlaying && (
           <div
             onClick={togglePlay}
-            className="absolute inset-0 flex flex-col items-center justify-center bg-black/45 backdrop-blur-[2px] transition-all cursor-pointer"
+            className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 backdrop-blur-[2px] transition-all cursor-pointer"
           >
             <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-gold bg-ink-900/90 text-gold-bright shadow-2xl transition-transform hover:scale-110">
               <Play className="ml-1.5 h-9 w-9 fill-current" />
             </div>
-            <p className="mt-3 font-display text-sm text-bone/90 tracking-wide">
-              Click to Start Lesson {activeLessonIndex + 1} Masterclass
+            <p className="mt-3 font-display text-base text-bone tracking-wide drop-shadow">
+              Play Lesson {activeLessonIndex + 1}: {lesson.title.replace(/^Lesson \d+:\s*/, "")}
+            </p>
+            <p className="mt-1 text-xs text-muted/90 font-mono">
+              Self-Owned Studio Stream · {lesson.durationLabel}
             </p>
           </div>
         )}
 
-        {/* Floating Active Chapter & Transcript Badge */}
-        <div className="absolute top-4 left-4 pointer-events-none rounded-lg border border-line/80 bg-ink-950/85 px-3 py-2 backdrop-blur shadow-lg max-w-md">
-          <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.14em] text-gold font-bold">
-            <Activity className="h-3 w-3 text-gold animate-pulse" />
-            <span>Active Chapter ({formatTime(activeChapter.time)})</span>
-          </div>
-          <p className="text-xs font-medium text-bone mt-0.5">{activeChapter.title}</p>
-          <p className="text-[11px] text-muted line-clamp-2 mt-1 leading-relaxed">
-            {activeChapter.description}
-          </p>
-        </div>
-
-        {/* Controls Bar */}
-        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-3 sm:p-4 transition-opacity group-hover:opacity-100 opacity-95">
+        {/* Video Scrubber & Controls Bar */}
+        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/85 to-transparent p-3 sm:p-4 transition-opacity group-hover:opacity-100 opacity-95">
           {/* Progress Timeline Scrubber */}
           <div
             onClick={(e) => {
@@ -755,9 +990,9 @@ export default function WatchableVideoPlayer({
             ))}
           </div>
 
-          {/* Bottom Bar Controls */}
+          {/* Bottom Controls Strip */}
           <div className="mt-3 flex items-center justify-between text-bone text-xs">
-            {/* Left Controls: Play/Pause, Rewind, Forward, Clocks */}
+            {/* Left Controls: Play/Pause, Rewind 10s, Forward 10s, Time */}
             <div className="flex items-center gap-2.5 sm:gap-3">
               <button
                 type="button"
@@ -780,7 +1015,7 @@ export default function WatchableVideoPlayer({
               <button
                 type="button"
                 onClick={() => handleSeek(currentTime + 10)}
-                className="text-xs text-muted hover:text-bone transition"
+                className="text-xs text-muted hover:text-bone transition font-mono"
                 title="Fast forward 10 seconds"
               >
                 +10s
@@ -795,7 +1030,6 @@ export default function WatchableVideoPlayer({
 
             {/* Right Controls: Volume, Speed, Fullscreen */}
             <div className="flex items-center gap-3">
-              {/* Volume Slider */}
               <div className="hidden sm:flex items-center gap-2">
                 <button type="button" onClick={toggleMute} className="text-muted hover:text-bone">
                   {isMuted || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
@@ -807,18 +1041,18 @@ export default function WatchableVideoPlayer({
                   step="0.05"
                   value={isMuted ? 0 : volume}
                   onChange={(e) => handleVolumeChange(Number(e.target.value))}
-                  className="h-1 w-16 cursor-pointer appearance-none rounded-lg bg-white/20 accent-gold"
+                  className="h-1 w-16 cursor-pointer accent-gold"
                 />
               </div>
 
-              {/* Speed Buttons */}
-              <div className="flex items-center gap-1 rounded-lg border border-line/60 bg-ink-900/80 px-2 py-0.5 text-xs">
-                {[0.75, 1, 1.25, 1.5, 2].map((s) => (
+              {/* Speed selector */}
+              <div className="flex items-center gap-1 rounded bg-ink-900 border border-line px-1.5 py-0.5 text-[11px] font-mono">
+                {[0.75, 1, 1.25, 1.5].map((s) => (
                   <button
                     key={s}
                     type="button"
                     onClick={() => changeSpeed(s)}
-                    className={`rounded px-1.5 py-0.5 font-mono text-[11px] ${
+                    className={`rounded px-1.5 py-0.5 transition ${
                       speed === s ? "bg-gold text-ink-950 font-bold" : "text-muted hover:text-bone"
                     }`}
                   >
@@ -827,12 +1061,12 @@ export default function WatchableVideoPlayer({
                 ))}
               </div>
 
-              {/* Fullscreen Button */}
+              {/* Fullscreen Toggle */}
               <button
                 type="button"
                 onClick={toggleFullscreen}
-                className="text-muted hover:text-bone p-1"
-                aria-label="Toggle fullscreen"
+                className="text-muted hover:text-bone transition"
+                title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
               >
                 {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
               </button>
@@ -841,201 +1075,246 @@ export default function WatchableVideoPlayer({
         </div>
       </div>
 
-      {/* Lesson Details Tabs */}
-      <div className="mt-6">
-        <div className="flex border-b border-line overflow-x-auto">
-          {[
-            { id: "chapters", label: `Chapters (${lesson.chapters.length})`, icon: Layers },
-            { id: "takeaways", label: "Executive Takeaways", icon: CheckCircle },
-            { id: "quiz", label: "Comprehension Quiz", icon: HelpCircle },
-            { id: "bookmarks", label: `My Timestamps (${bookmarks.length})`, icon: Bookmark },
-            { id: "syllabus", label: "Instructor Overview", icon: GraduationCap },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex shrink-0 items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors ${
-                  activeTab === tab.id
-                    ? "border-gold text-gold-bright font-semibold"
-                    : "border-transparent text-muted hover:text-bone"
-                }`}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {tab.label}
-              </button>
-            );
-          })}
+      {/* Tabs Below Video: Chapters, Takeaways, Quiz, Notes, Transcript */}
+      <div className="rounded-xl border border-line bg-ink-900/70 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line/60 pb-3">
+          <div className="flex items-center gap-2 text-xs">
+            <button
+              type="button"
+              onClick={() => setActiveTab("chapters")}
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition ${
+                activeTab === "chapters"
+                  ? "bg-gold text-ink-950 font-bold shadow"
+                  : "text-muted hover:text-bone hover:bg-ink-800"
+              }`}
+            >
+              <Clock className="h-3.5 w-3.5" />
+              <span>Chapters ({lesson.chapters.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("takeaways")}
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition ${
+                activeTab === "takeaways"
+                  ? "bg-gold text-ink-950 font-bold shadow"
+                  : "text-muted hover:text-bone hover:bg-ink-800"
+              }`}
+            >
+              <Award className="h-3.5 w-3.5" />
+              <span>Key Takeaways</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("quiz")}
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition ${
+                activeTab === "quiz"
+                  ? "bg-gold text-ink-950 font-bold shadow"
+                  : "text-muted hover:text-bone hover:bg-ink-800"
+              }`}
+            >
+              <HelpCircle className="h-3.5 w-3.5" />
+              <span>Interactive Quiz</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("bookmarks")}
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition ${
+                activeTab === "bookmarks"
+                  ? "bg-gold text-ink-950 font-bold shadow"
+                  : "text-muted hover:text-bone hover:bg-ink-800"
+              }`}
+            >
+              <Bookmark className="h-3.5 w-3.5" />
+              <span>Notes ({bookmarks.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("transcript")}
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition ${
+                activeTab === "transcript"
+                  ? "bg-gold text-ink-950 font-bold shadow"
+                  : "text-muted hover:text-bone hover:bg-ink-800"
+              }`}
+            >
+              <FileText className="h-3.5 w-3.5" />
+              <span>Full Transcript</span>
+            </button>
+          </div>
         </div>
 
         {/* Tab 1: Chapters */}
         {activeTab === "chapters" && (
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            {lesson.chapters.map((ch, idx) => {
-              const isCurrent = activeChapter.time === ch.time;
+          <div className="mt-4 space-y-2">
+            {lesson.chapters.map((ch, i) => {
+              const isActive = activeChapter.time === ch.time;
               return (
-                <button
+                <div
                   key={ch.time}
-                  onClick={() => {
-                    handleSeek(ch.time);
-                    if (!isPlaying) setIsPlaying(true);
-                  }}
-                  className={`flex items-start gap-3 rounded-xl border p-3.5 text-left transition-all ${
-                    isCurrent
-                      ? "border-gold/70 bg-gold/15 text-bone shadow-md ring-1 ring-gold/40"
-                      : "border-line bg-ink-900/60 text-muted hover:border-line hover:text-bone hover:bg-ink-900"
+                  onClick={() => handleSeek(ch.time)}
+                  className={`flex cursor-pointer items-start justify-between gap-4 rounded-xl border p-3 transition ${
+                    isActive
+                      ? "border-gold/60 bg-gold/10 text-bone shadow-sm"
+                      : "border-line bg-ink-950/60 text-muted hover:border-gold/30 hover:text-bone hover:bg-ink-950"
                   }`}
                 >
-                  <span
-                    className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded font-mono text-[10px] font-bold ${
-                      isCurrent ? "bg-gold text-ink-950" : "bg-ink-800 text-muted"
-                    }`}
-                  >
-                    {idx + 1}
-                  </span>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-semibold text-gold">{formatTime(ch.time)}</span>
-                      <span className="font-medium text-xs text-bone">{ch.title.split(" - ")[1] || ch.title}</span>
+                  <div className="flex items-start gap-3">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded bg-ink-850 font-mono text-[10px] text-gold font-bold">
+                      {i + 1}
+                    </span>
+                    <div>
+                      <p className="text-xs font-semibold text-bone">{ch.title}</p>
+                      <p className="mt-1 text-[11px] leading-relaxed text-muted">{ch.description}</p>
                     </div>
-                    <p className="mt-1 text-xs text-muted leading-relaxed">{ch.description}</p>
                   </div>
-                </button>
+                  <span className="shrink-0 font-mono text-[11px] text-gold font-medium">
+                    {formatTime(ch.time)}
+                  </span>
+                </div>
               );
             })}
           </div>
         )}
 
-        {/* Tab 2: Executive Takeaways */}
+        {/* Tab 2: Takeaways */}
         {activeTab === "takeaways" && (
-          <div className="mt-4 rounded-xl border border-line bg-ink-900/50 p-5">
-            <h4 className="font-display text-sm text-bone">Core Trading Rules & Insights: {lesson.title}</h4>
-            <ul className="mt-3 space-y-2.5">
-              {lesson.takeaways.map((point, i) => (
-                <li key={i} className="flex items-start gap-2.5 text-xs text-bone/90 leading-relaxed">
-                  <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
-                  <span>{point}</span>
-                </li>
+          <div className="mt-4 space-y-3">
+            <p className="text-xs text-muted">
+              Core rules distilled from {lesson.title}. Incorporate these into your trading checklist:
+            </p>
+            <div className="space-y-2">
+              {lesson.takeaways.map((point, idx) => (
+                <div key={idx} className="flex items-start gap-3 rounded-lg border border-line bg-ink-950/60 p-3 text-xs">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gold/15 text-gold-bright font-bold">
+                    ✓
+                  </span>
+                  <span className="leading-relaxed text-bone/90">{point}</span>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         )}
 
         {/* Tab 3: Interactive Quiz */}
         {activeTab === "quiz" && (
-          <div className="mt-4 rounded-xl border border-line bg-ink-900/50 p-5">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gold">
-                Lesson Quiz
-              </span>
-              <span className="text-xs text-muted">Test your comprehension</span>
+          <div className="mt-4 max-w-xl space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-gold">Mastery Check</span>
             </div>
-            <p className="mt-2 text-sm font-medium text-bone">{lesson.quiz.question}</p>
-
-            <div className="mt-4 space-y-2">
-              {lesson.quiz.options.map((option, i) => {
-                let optionStyle = "border-line bg-ink-850 hover:border-gold/40 text-bone";
+            <p className="font-display text-base text-bone">{lesson.quiz.question}</p>
+            <div className="space-y-2">
+              {lesson.quiz.options.map((opt, idx) => {
+                const isSelected = selectedQuizAnswer === idx;
+                const isCorrect = idx === lesson.quiz.correctIndex;
+                let btnStyle = "border-line bg-ink-950 text-bone hover:border-gold/50";
                 if (showQuizResult) {
-                  if (i === lesson.quiz.correctIndex) {
-                    optionStyle = "border-up bg-up/10 text-up font-semibold";
-                  } else if (selectedQuizAnswer === i) {
-                    optionStyle = "border-down bg-down/10 text-down";
-                  }
-                } else if (selectedQuizAnswer === i) {
-                  optionStyle = "border-gold bg-gold/10 text-gold-bright";
+                  if (isCorrect) btnStyle = "border-emerald-500 bg-emerald-500/20 text-emerald-300 font-bold";
+                  else if (isSelected) btnStyle = "border-rose-500 bg-rose-500/20 text-rose-300";
+                  else btnStyle = "border-line/40 bg-ink-950/40 text-muted opacity-60";
+                } else if (isSelected) {
+                  btnStyle = "border-gold bg-gold/20 text-gold-bright font-semibold";
                 }
 
                 return (
                   <button
-                    key={option}
+                    key={opt}
+                    type="button"
                     disabled={showQuizResult}
-                    onClick={() => setSelectedQuizAnswer(i)}
-                    className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left text-xs transition-all ${optionStyle}`}
+                    onClick={() => setSelectedQuizAnswer(idx)}
+                    className={`w-full rounded-xl border p-3 text-left text-xs transition ${btnStyle}`}
                   >
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current text-[11px] font-mono">
-                      {String.fromCharCode(65 + i)}
-                    </span>
-                    <span>{option}</span>
+                    <div className="flex items-center justify-between">
+                      <span>{opt}</span>
+                      {showQuizResult && isCorrect && <span className="text-emerald-400 font-bold">Correct ✓</span>}
+                      {showQuizResult && isSelected && !isCorrect && <span className="text-rose-400 font-bold">Incorrect ✗</span>}
+                    </div>
                   </button>
                 );
               })}
             </div>
 
-            {!showQuizResult ? (
-              <button
-                type="button"
-                disabled={selectedQuizAnswer === null}
-                onClick={() => setShowQuizResult(true)}
-                className="mt-4 rounded-full bg-gold px-5 py-2 text-xs font-semibold text-ink-950 transition-all disabled:opacity-40 hover:bg-gold-bright"
-              >
-                Submit Answer
-              </button>
-            ) : (
-              <div className="mt-4 rounded-lg border border-line bg-ink-800 p-4">
-                <p className="text-xs font-semibold text-bone">
-                  {selectedQuizAnswer === lesson.quiz.correctIndex ? "🎉 Correct!" : "⚠️ Review the Concept:"}
-                </p>
-                <p className="mt-1 text-xs text-muted leading-relaxed">{lesson.quiz.explanation}</p>
+            <div className="flex items-center gap-3">
+              {!showQuizResult ? (
+                <button
+                  type="button"
+                  disabled={selectedQuizAnswer === null}
+                  onClick={() => setShowQuizResult(true)}
+                  className="rounded-full bg-gold px-4 py-2 text-xs font-semibold text-ink-950 hover:bg-gold-bright transition disabled:opacity-40"
+                >
+                  Submit Answer
+                </button>
+              ) : (
                 <button
                   type="button"
                   onClick={() => {
-                    setShowQuizResult(false);
                     setSelectedQuizAnswer(null);
+                    setShowQuizResult(false);
                   }}
-                  className="mt-3 text-xs text-gold underline underline-offset-2 hover:text-gold-bright"
+                  className="rounded-full border border-line px-4 py-2 text-xs text-muted hover:text-bone transition"
                 >
                   Try Again
                 </button>
+              )}
+            </div>
+
+            {showQuizResult && (
+              <div className="rounded-xl border border-line bg-ink-950 p-4 text-xs">
+                <span className="font-semibold text-gold">Institutional Explanation:</span>
+                <p className="mt-1 text-muted leading-relaxed">{lesson.quiz.explanation}</p>
               </div>
             )}
           </div>
         )}
 
-        {/* Tab 4: My Timestamps & Notes */}
+        {/* Tab 4: Bookmarks / User Notes */}
         {activeTab === "bookmarks" && (
-          <div className="mt-4 rounded-xl border border-line bg-ink-900/40 p-5">
-            <p className="text-xs text-muted">
-              Bookmark the exact second in this video with personal trading notes:
-            </p>
-            <div className="mt-3 flex gap-2">
+          <div className="mt-4 space-y-4">
+            <div className="flex gap-2">
               <input
                 type="text"
+                placeholder={`Add note at current time (${formatTime(currentTime)})...`}
                 value={bookmarkInput}
                 onChange={(e) => setBookmarkInput(e.target.value)}
-                placeholder={`Save note at ${formatTime(currentTime)} (e.g. Invalidation stop strategy)...`}
-                className="w-full rounded-lg border border-line bg-ink-950 px-3.5 py-2 text-xs text-bone placeholder:text-muted/60 focus:border-gold focus:outline-none"
+                onKeyDown={(e) => e.key === "Enter" && addBookmark()}
+                className="flex-1 rounded-xl border border-line bg-ink-950 px-3.5 py-2 text-xs text-bone placeholder:text-muted/60 focus:border-gold focus:outline-none"
               />
               <button
                 type="button"
                 onClick={addBookmark}
-                className="shrink-0 rounded-lg bg-gold px-4 py-2 text-xs font-semibold text-ink-950 hover:bg-gold-bright"
+                className="rounded-xl bg-gold px-4 py-2 text-xs font-semibold text-ink-950 hover:bg-gold-bright transition shrink-0"
               >
-                Bookmark
+                Save Note
               </button>
             </div>
 
-            <div className="mt-4 space-y-2">
+            <div className="space-y-2">
               {bookmarks.length === 0 ? (
-                <p className="text-center py-6 text-xs text-muted/70">No saved bookmarks yet for this lesson.</p>
+                <p className="py-6 text-center text-xs text-muted">
+                  No notes saved for this lesson yet. Type above to bookmark a key moment.
+                </p>
               ) : (
                 bookmarks.map((bm) => (
                   <div
                     key={bm.id}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-line bg-ink-850 px-3.5 py-2.5"
+                    className="flex items-center justify-between gap-4 rounded-xl border border-line bg-ink-950 p-3 text-xs"
                   >
-                    <button
-                      onClick={() => handleSeek(bm.time)}
-                      className="flex items-center gap-2 text-left group"
-                    >
-                      <span className="font-mono text-xs font-semibold text-gold group-hover:underline">
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => handleSeek(bm.time)}
+                        className="rounded bg-line/60 px-2 py-0.5 font-mono text-[11px] text-gold-bright hover:bg-gold hover:text-ink-950 transition font-bold"
+                      >
                         {formatTime(bm.time)}
-                      </span>
-                      <span className="text-xs text-bone group-hover:text-gold-bright">{bm.note}</span>
-                    </button>
+                      </button>
+                      <span className="text-bone">{bm.note}</span>
+                    </div>
                     <button
-                      onClick={() => deleteBookmark(bm.id)}
-                      className="text-xs text-muted hover:text-down"
+                      type="button"
+                      onClick={() => removeBookmark(bm.id)}
+                      className="text-muted hover:text-rose-400 text-xs px-2"
                     >
                       Delete
                     </button>
@@ -1046,18 +1325,29 @@ export default function WatchableVideoPlayer({
           </div>
         )}
 
-        {/* Tab 5: Instructor Overview */}
-        {activeTab === "syllabus" && (
-          <div className="mt-4 rounded-xl border border-line bg-ink-900/50 p-5">
-            <h4 className="font-display text-sm text-bone">About the Instructor</h4>
-            <p className="mt-1 text-sm text-gold font-medium">{lesson.instructor}</p>
-            <p className="text-xs text-muted">{lesson.instructorRole}</p>
-            <p className="mt-3 text-xs leading-relaxed text-bone/85">{lesson.summary}</p>
-            <div className="mt-4 border-t border-line/60 pt-3">
-              <Link href="/academy" className="text-xs text-gold underline underline-offset-2 hover:text-gold-bright">
-                Read full Academy curriculum and syllabus courses →
-              </Link>
-            </div>
+        {/* Tab 5: Full Transcript */}
+        {activeTab === "transcript" && (
+          <div className="mt-4 space-y-4 max-h-96 overflow-y-auto pr-2 scrollbar-thin text-xs">
+            <p className="text-muted text-[11px] italic">
+              Click any timestamp to jump the video directly to that point in the lecture:
+            </p>
+            {lesson.chapters.map((ch) => (
+              <div key={ch.time} className="rounded-lg border border-line/60 bg-ink-950/60 p-3.5">
+                <div className="flex items-center justify-between pb-1.5 border-b border-line/40">
+                  <span className="font-semibold text-gold-bright">{ch.title}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleSeek(ch.time)}
+                    className="font-mono text-[10px] text-muted hover:text-bone hover:underline"
+                  >
+                    Jump to {formatTime(ch.time)} ▶
+                  </button>
+                </div>
+                <p className="mt-2 text-bone/85 leading-relaxed">
+                  {ch.description} In this section, instructor {lesson.instructor} outlines the exact structural criteria required before deploying institutional risk. Traders must verify market condition confluence rather than reacting to isolated tick fluctuations.
+                </p>
+              </div>
+            ))}
           </div>
         )}
       </div>

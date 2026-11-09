@@ -4,6 +4,28 @@ export type VideoChapter = {
   description: string;
 };
 
+export type VideoVisualType =
+  | "structure"
+  | "moving_averages"
+  | "invalidation"
+  | "sr_flips"
+  | "order_book"
+  | "volume_profile"
+  | "tape_reading"
+  | "liquidity_sweeps"
+  | "bonding_curve"
+  | "wallet_clustering"
+  | "scalp_playbook"
+  | "narrative_cycle"
+  | "position_sizing"
+  | "drawdown_math"
+  | "execution_checklist"
+  | "hedging_beta"
+  | "fed_liquidity"
+  | "ai_capex"
+  | "earnings_pead"
+  | "premarket_flow";
+
 export type VideoLesson = {
   id: string;
   title: string;
@@ -14,6 +36,8 @@ export type VideoLesson = {
   videoUrl: string;
   instructor: string;
   instructorRole: string;
+  instructorInitials: string;
+  visualType: VideoVisualType;
   chapters: VideoChapter[];
   summary: string;
   takeaways: string[];
@@ -43,9 +67,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Beginner",
     durationSeconds: 660,
     durationLabel: "11:00",
-    videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-structure-101.mp4",
     instructor: "Daniel Okafor",
     instructorRole: "Head of Equity Strategy",
+    instructorInitials: "DO",
+    visualType: "structure",
     summary:
       "A trend is a sequence of higher highs and higher lows until it is not. Learn how to map structural swing pivots on S&P 500, Nasdaq equities, and crypto charts without getting fooled by indicator lag.",
     chapters: [
@@ -79,9 +105,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Beginner",
     durationSeconds: 580,
     durationLabel: "09:40",
-    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-moving-averages.mp4",
     instructor: "Daniel Okafor",
     instructorRole: "Head of Equity Strategy",
+    instructorInitials: "DO",
+    visualType: "moving_averages",
     summary:
       "Master the dynamic interplay between the 20-EMA (short momentum), 50-SMA (institutional accumulation), and 200-SMA (macro regime filter). Avoid over-trading chop and ride multi-month trends.",
     chapters: [
@@ -115,9 +143,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Intermediate",
     durationSeconds: 610,
     durationLabel: "10:10",
-    videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-invalidation-stops.mp4",
     instructor: "Daniel Okafor",
     instructorRole: "Head of Equity Strategy",
+    instructorInitials: "DO",
+    visualType: "invalidation",
     summary:
       "If you do not know where you are wrong before entering, you are not trading: you are gambling. Learn how to place structural invalidation stops that market makers cannot easily trigger.",
     chapters: [
@@ -151,9 +181,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Intermediate",
     durationSeconds: 590,
     durationLabel: "09:50",
-    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/transcoded/c/c0/Big_Buck_Bunny_4K.webm/Big_Buck_Bunny_4K.webm.360p.vp9.webm",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-sr-flips.mp4",
     instructor: "Daniel Okafor",
     instructorRole: "Head of Equity Strategy",
+    instructorInitials: "DO",
+    visualType: "sr_flips",
     summary:
       "Prior resistance becomes future support: the foundational law of technical market memory. How to execute high-probability retests after multi-month consolidation breakouts.",
     chapters: [
@@ -189,9 +221,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Intermediate",
     durationSeconds: 720,
     durationLabel: "12:00",
-    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/transcoded/f/f1/Sintel_movie_4K.webm/Sintel_movie_4K.webm.360p.vp9.webm",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-crypto-liquidity.mp4",
     instructor: "Mara Lindqvist",
     instructorRole: "Digital Assets Strategist",
+    instructorInitials: "ML",
+    visualType: "order_book",
     summary:
       "When evaluating Bitcoin, Solana, and Binance altcoins, there are no discounted cash flows. Here is how to price global liquidity, real yields, stablecoin float, and exchange order books.",
     chapters: [
@@ -225,9 +259,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Advanced",
     durationSeconds: 650,
     durationLabel: "10:50",
-    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/transcoded/8/87/Schlossbergbahn_in_Graz_-_downhill.webm/Schlossbergbahn_in_Graz_-_downhill.webm.360p.vp9.webm",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-volume-profile.mp4",
     instructor: "Priya Raghunathan",
     instructorRole: "Quantitative Research Analyst",
+    instructorInitials: "PR",
+    visualType: "volume_profile",
     summary:
       "Traditional charts show volume over time; Volume Profile shows volume at price. Learn how to identify High Volume Nodes (HVN), Low Volume Nodes (LVN), and Value Area High/Low boundaries.",
     chapters: [
@@ -261,9 +297,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Advanced",
     durationSeconds: 620,
     durationLabel: "10:20",
-    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/transcoded/4/4d/Cheetah_%28Acinonyx_jubatus%29_female_running_at_full_speed.webm/Cheetah_%28Acinonyx_jubatus%29_female_running_at_full_speed.webm.360p.vp9.webm",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-order-book-depth.mp4",
     instructor: "Mara Lindqvist",
     instructorRole: "Digital Assets Strategist",
+    instructorInitials: "ML",
+    visualType: "tape_reading",
     summary:
       "Decode the Time & Sales tape and Level 2 order book. Spot spoofing, iceberg orders, and aggressive market sweeps that precede massive directional expansions in tech stocks and crypto.",
     chapters: [
@@ -297,9 +335,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Intermediate",
     durationSeconds: 640,
     durationLabel: "10:40",
-    videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-liquidity-sweeps.mp4",
     instructor: "Priya Raghunathan",
     instructorRole: "Quantitative Research Analyst",
+    instructorInitials: "PR",
+    visualType: "liquidity_sweeps",
     summary:
       "Stop hunts are not conspiracies: they are mathematical market-making realities. Discover where buy-stop and sell-stop liquidity pools cluster, and how to trade the resulting rejection wicks.",
     chapters: [
@@ -335,9 +375,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Intermediate",
     durationSeconds: 540,
     durationLabel: "09:00",
-    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-pump-fun-risk.mp4",
     instructor: "Daniel Okafor",
     instructorRole: "Head of Equity Strategy",
+    instructorInitials: "DO",
+    visualType: "bonding_curve",
     summary:
       "From Fartcoin and Goat to viral pump.fun tokens: an institutional breakdown of bonding curves, wallet concentration, narrative half-life, and mechanical profit-taking.",
     chapters: [
@@ -371,9 +413,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Advanced",
     durationSeconds: 630,
     durationLabel: "10:30",
-    videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-onchain-wallet-clusters.mp4",
     instructor: "Mara Lindqvist",
     instructorRole: "Digital Assets Strategist",
+    instructorInitials: "ML",
+    visualType: "wallet_clustering",
     summary:
       "Before trading any high-velocity meme coin, you must inspect the blockchain. Learn how to uncover insider wallet dispersion, dev wallet funding trees, and sniper bot collusion.",
     chapters: [
@@ -407,9 +451,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Advanced",
     durationSeconds: 570,
     durationLabel: "09:30",
-    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/transcoded/c/c0/Big_Buck_Bunny_4K.webm/Big_Buck_Bunny_4K.webm.360p.vp9.webm",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-meme-scalp-playbook.mp4",
     instructor: "Mara Lindqvist",
     instructorRole: "Digital Assets Strategist",
+    instructorInitials: "ML",
+    visualType: "scalp_playbook",
     summary:
       "Scalping 50% intraday meme coin swings requires ruthless discipline. Explore the 5-minute EMA crossover, VWAP reclaim entries, and rapid multi-tier profit taking.",
     chapters: [
@@ -443,9 +489,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Intermediate",
     durationSeconds: 580,
     durationLabel: "09:40",
-    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/transcoded/f/f1/Sintel_movie_4K.webm/Sintel_movie_4K.webm.360p.vp9.webm",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-narrative-halflife.mp4",
     instructor: "Daniel Okafor",
     instructorRole: "Head of Equity Strategy",
+    instructorInitials: "DO",
+    visualType: "narrative_cycle",
     summary:
       "Every meme coin narrative (AI agents, animals, political mascots) has a quantifiable attention half-life. Map Google Trends, Twitter impression spikes, and volume exhaustion.",
     chapters: [
@@ -481,9 +529,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Beginner",
     durationSeconds: 610,
     durationLabel: "10:10",
-    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/transcoded/8/87/Schlossbergbahn_in_Graz_-_downhill.webm/Schlossbergbahn_in_Graz_-_downhill.webm.360p.vp9.webm",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-position-sizing.mp4",
     instructor: "Daniel Okafor",
     instructorRole: "Head of Equity Strategy",
+    instructorInitials: "DO",
+    visualType: "position_sizing",
     summary:
       "Equal dollar sizing is amateur sizing: a $10,000 position in NVDA carries vastly different risk than $10,000 in a micro-cap altcoin. Learn the institutional 1% risk formula.",
     chapters: [
@@ -512,9 +562,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Intermediate",
     durationSeconds: 560,
     durationLabel: "09:20",
-    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/transcoded/4/4d/Cheetah_%28Acinonyx_jubatus%29_female_running_at_full_speed.webm/Cheetah_%28Acinonyx_jubatus%29_female_running_at_full_speed.webm.360p.vp9.webm",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-portfolio-drawdown-maths.mp4",
     instructor: "Priya Raghunathan",
     instructorRole: "Quantitative Research Analyst",
+    instructorInitials: "PR",
+    visualType: "drawdown_math",
     summary:
       "A 50% loss requires a 100% gain just to break even. Understand the asymmetric brutal mathematics of compounding drawdowns and how to prevent catastrophic portfolio destruction.",
     chapters: [
@@ -543,9 +595,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Beginner",
     durationSeconds: 570,
     durationLabel: "09:30",
-    videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-execution-discipline.mp4",
     instructor: "Daniel Okafor",
     instructorRole: "Head of Equity Strategy",
+    instructorInitials: "DO",
+    visualType: "execution_checklist",
     summary:
       "Elite traders do not rely on willpower: they rely on checklists. Transform your trading from reactive emotional clicking to calm, robotic execution with our 5-point verification filter.",
     chapters: [
@@ -579,9 +633,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Advanced",
     durationSeconds: 620,
     durationLabel: "10:20",
-    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-hedging-beta-skew.mp4",
     instructor: "Priya Raghunathan",
     instructorRole: "Quantitative Research Analyst",
+    instructorInitials: "PR",
+    visualType: "hedging_beta",
     summary:
       "When broader markets flash warning signs, selling everything triggers tax drag and emotional whiplash. Learn how institutional quants use beta-weighted short hedges and cash buffers.",
     chapters: [
@@ -617,9 +673,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Intermediate",
     durationSeconds: 670,
     durationLabel: "11:10",
-    videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-fed-liquidity-m2.mp4",
     instructor: "Daniel Okafor",
     instructorRole: "Head of Equity Strategy",
+    instructorInitials: "DO",
+    visualType: "fed_liquidity",
     summary:
       "Stocks and crypto do not float in a vacuum: they float on a sea of global fiat liquidity. Learn how to track central bank balance sheets, Treasury General Account (TGA), and Reverse Repo flows.",
     chapters: [
@@ -653,9 +711,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Advanced",
     durationSeconds: 680,
     durationLabel: "11:20",
-    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/transcoded/c/c0/Big_Buck_Bunny_4K.webm/Big_Buck_Bunny_4K.webm.360p.vp9.webm",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-ai-capex-semis.mp4",
     instructor: "Priya Raghunathan",
     instructorRole: "Quantitative Research Analyst",
+    instructorInitials: "PR",
+    visualType: "ai_capex",
     summary:
       "Deep dive into the second derivative of the AI infrastructure cycle. Learn how Microsoft, Alphabet, Amazon, and Meta capital expenditures dictate NVIDIA, Broadcom, and TSMC earnings.",
     chapters: [
@@ -689,9 +749,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Intermediate",
     durationSeconds: 600,
     durationLabel: "10:00",
-    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/transcoded/f/f1/Sintel_movie_4K.webm/Sintel_movie_4K.webm.360p.vp9.webm",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-earnings-playbook.mp4",
     instructor: "Daniel Okafor",
     instructorRole: "Head of Equity Strategy",
+    instructorInitials: "DO",
+    visualType: "earnings_pead",
     summary:
       "Holding directional positions through earnings is binary roulette unless you understand options market implied move expectations, post-earnings announcement drift (PEAD), and guidance gaps.",
     chapters: [
@@ -725,9 +787,11 @@ export const VIDEO_LESSONS_20: VideoLesson[] = [
     level: "Beginner",
     durationSeconds: 590,
     durationLabel: "09:50",
-    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/transcoded/8/87/Schlossbergbahn_in_Graz_-_downhill.webm/Schlossbergbahn_in_Graz_-_downhill.webm.360p.vp9.webm",
+    videoUrl: "https://stream.nextwallstreet.com/academy/lesson-premarket-routine.mp4",
     instructor: "Daniel Okafor",
     instructorRole: "Head of Equity Strategy",
+    instructorInitials: "DO",
+    visualType: "premarket_flow",
     summary:
       "Consistency in trading stems directly from consistency in preparation. Build your complete 30-minute pre-market routine synchronizing Asia, London, and New York market sessions with NextWall Street.",
     chapters: [
