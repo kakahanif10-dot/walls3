@@ -10,7 +10,7 @@ const COPY: Record<
   stock: {
     eyebrow: "Equity coverage",
     title: "S&P 500 & Nasdaq equities, scored on trend",
-    sub: "Over 40 large-cap franchises across AI infrastructure, semiconductors, cloud software, financials, pharma, energy, and retail. Each carries a transparent trend score, stance, and invalidation level.",
+    sub: "Over 550 large-cap and growth leaders across S&P 500 and Nasdaq spanning AI infrastructure, semiconductors, cloud software, financials, pharma, energy, industrials, and retail. Each carries a transparent trend score, stance, and invalidation level.",
     note: "Institutional-grade coverage across mega-caps and high-beta momentum leaders, scored cleanly on technical structure and momentum.",
     stats: [
       { label: "Names covered", hint: "S&P 500 & Nasdaq" },

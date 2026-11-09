@@ -12,7 +12,9 @@ export type Asset = {
   catalysts: string[];
 };
 
-export const ASSETS: Asset[] = [
+import { SP500_NASDAQ_ASSETS } from "./sp500-nasdaq-assets";
+
+const BASE_ASSETS: Asset[] = [
   /* ==========================================================================
      S&P 500 & NASDAQ EQUITIES (42 Assets)
      ========================================================================== */
@@ -1312,6 +1314,8 @@ export const ASSETS: Asset[] = [
     catalysts: ["Conceptual art world media stunts", "Justin Sun public promotional events", "Tier-1 exchange spot listings"],
   },
 ];
+
+export const ASSETS: Asset[] = [...BASE_ASSETS, ...SP500_NASDAQ_ASSETS];
 
 export const ASSET_BY_SYMBOL: Record<string, Asset> = Object.fromEntries(
   ASSETS.map((a) => [a.symbol, a]),

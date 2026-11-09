@@ -56,7 +56,7 @@ export default function SiteFooter() {
               speculative markets — plus real watchable video education and Discord live chat.
             </p>
             <p className="mt-5 text-xs leading-relaxed text-muted/70">
-              118 tracked assets · 6 research desks · 4 video courses
+              625+ tracked assets · 6 research desks · 20 video masterclasses
             </p>
           </div>
 

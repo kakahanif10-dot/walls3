@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import Link from "next/link";
 import {
   Play,
@@ -17,148 +17,46 @@ import {
   Layers,
   Clock,
   ChevronRight,
+  ChevronLeft,
   TrendingUp,
+  Search,
+  BookOpen,
+  GraduationCap,
 } from "lucide-react";
+import {
+  VIDEO_LESSONS_20,
+  ACADEMY_MODULES,
+  type VideoLesson,
+  type VideoChapter,
+} from "@/lib/academy-videos";
 
-export type VideoChapter = {
-  time: number; // in seconds
-  title: string;
-  description: string;
-};
-
-export type VideoLesson = {
-  id: string;
-  title: string;
-  durationSeconds: number;
-  durationLabel: string;
-  videoUrl: string;
-  instructor: string;
-  instructorRole: string;
-  chapters: VideoChapter[];
-  summary: string;
-  takeaways: string[];
-  quiz: {
-    question: string;
-    options: string[];
-    correctIndex: number;
-    explanation: string;
-  };
-};
-
-export const SAMPLE_VIDEO_LESSONS: VideoLesson[] = [
-  {
-    id: "lesson-structure-101",
-    title: "Lesson 1: Market Structure Before Indicators",
-    durationSeconds: 660,
-    durationLabel: "11:00",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-    instructor: "Daniel Okafor",
-    instructorRole: "Head of Equity Strategy",
-    summary:
-      "A trend is a sequence of higher highs and higher lows until it is not. Learn how to map structural swing pivots on S&P 500, Nasdaq equities, and crypto charts without getting fooled by indicator lag.",
-    chapters: [
-      { time: 0, title: "00:00 - Introduction to Price Structure", description: "Why 80% of indicator signals fail without structural confirmation." },
-      { time: 90, title: "01:30 - Identifying Swing Highs & Lows", description: "Marking clean 3-candle swing pivots on daily and 1-hour timeframes." },
-      { time: 240, title: "04:00 - The 200-Day Structural Boundary", description: "The definitive dividing line between bull and bear market regimes." },
-      { time: 420, title: "07:00 - Defining Invalidation Stops", description: "Finding the exact level where your thesis is proven wrong before entering." },
-      { time: 540, title: "09:00 - Live Chart Walkthrough (NVDA & BTC)", description: "Applying structure reading to live market data." },
-    ],
-    takeaways: [
-      "Always mark the last 3 swing highs and lows before loading any oscillator.",
-      "An uptrend remains structurally valid until a prior swing low breaks on a closing candle.",
-      "The invalidation level is not arbitrary: it sits exactly beyond the key structural pivot.",
-    ],
-    quiz: {
-      question: "In NextWall Street's framework, what determines if an uptrend has broken?",
-      options: [
-        "RSI dropping below 50",
-        "A prior swing low breaking on a confirmed closing basis",
-        "A 5% intraday drop in price",
-        "The 20-day moving average turning red",
-      ],
-      correctIndex: 1,
-      explanation: "Price structure takes precedence over oscillators. A trend is intact until a prior swing low breaks on a closing basis.",
-    },
-  },
-  {
-    id: "lesson-crypto-liquidity",
-    title: "Lesson 2: Crypto Liquidity, Order Books & Float",
-    durationSeconds: 720,
-    durationLabel: "12:00",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-    instructor: "Mara Lindqvist",
-    instructorRole: "Digital Assets Strategist",
-    summary:
-      "When evaluating Bitcoin, Solana, and Binance altcoins, there are no discounted cash flows. Here is how to price global liquidity, real yields, stablecoin float, and exchange order books.",
-    chapters: [
-      { time: 0, title: "00:00 - The Global Liquidity Regime", description: "Mapping M2 expansion and real interest rates to crypto momentum." },
-      { time: 120, title: "02:00 - Float vs. Total Supply Dynamics", description: "Why low float/high FDV coins face perpetual downward pressure." },
-      { time: 300, title: "05:00 - Exchange Order Book Depth", description: "Measuring bid-ask slippage and market-maker inventory skew." },
-      { time: 480, title: "08:00 - Volatility-Scaled Sizing Maths", description: "Sizing crypto so a 40% drawdown is fully survivable." },
-      { time: 630, title: "10:30 - Execution Checklist", description: "Three strict rules for entering liquid digital asset positions." },
-    ],
-    takeaways: [
-      "Crypto has no valuation floor — it has a liquidity ceiling driven by macro conditions.",
-      "Float, not total paper market cap, decides how violently price moves.",
-      "Scale position sizes by realized 60-day volatility rather than fixed dollar allocations.",
-    ],
-    quiz: {
-      question: "Why does the model emphasize float over fully diluted valuation (FDV)?",
-      options: [
-        "Because FDV includes tokens not yet circulating in the order book",
-        "Because all tokens trade at the same speed",
-        "Because FDV is always zero for Bitcoin",
-        "Because market makers only look at social media mentions",
-      ],
-      correctIndex: 0,
-      explanation: "Float represents the actual supply available to trade. Large future unlocks create structural overhead that depresses token price over time.",
-    },
-  },
-  {
-    id: "lesson-pump-fun-risk",
-    title: "Lesson 3: Pump.fun & Meme Coins — The Pure Risk Protocol",
-    durationSeconds: 540,
-    durationLabel: "09:00",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    instructor: "Daniel Okafor",
-    instructorRole: "Head of Equity Strategy",
-    summary:
-      "From Fartcoin and Goat to viral pump.fun tokens: an institutional breakdown of bonding curves, wallet concentration, narrative half-life, and mechanical profit-taking.",
-    chapters: [
-      { time: 0, title: "00:00 - Attention Economics Explained", description: "Why meme coins are liquidity events dressed in community mascots." },
-      { time: 100, title: "01:40 - Top 100 Wallet Concentration", description: "Reading on-chain wallet clusters and bubble maps before buying." },
-      { time: 220, title: "03:40 - Pump.fun Bonding Curve Mechanics", description: "Understanding the migration threshold to Raydium and DEXs." },
-      { time: 360, title: "06:00 - The Distribution Phase Signature", description: "Spotting volume divergence when smart money exits into retail hype." },
-      { time: 460, title: "07:40 - The Hard 2% Portfolio Rule", description: "Never averaging down and taking partial profits mechanically." },
-    ],
-    takeaways: [
-      "If top-100 wallets hold over 40% of supply, the exit door is narrower than the entrance.",
-      "A rising price on declining volume is an immediate liquidity exit signal.",
-      "Never average down on a broken meme trend; the thesis is momentum only.",
-    ],
-    quiz: {
-      question: "What is the primary risk management rule when trading pump.fun meme tokens?",
-      options: [
-        "Hold until a 100x return occurs",
-        "Average down when the coin drops 80%",
-        "Cap total meme exposure under 2% and never average down",
-        "Only buy tokens with animal names",
-      ],
-      correctIndex: 2,
-      explanation: "Because meme tokens have no fundamental anchor, position size is the entire risk control. Capping exposure and never averaging down prevents catastrophic loss.",
-    },
-  },
-];
+export type { VideoLesson, VideoChapter };
+export const SAMPLE_VIDEO_LESSONS = VIDEO_LESSONS_20;
 
 export default function WatchableVideoPlayer({
   initialLessonId,
-  courseTitle = "Technical Analysis & Trend Architecture",
+  courseTitle = "NextWall Street 20-Lesson Trading Academy",
 }: {
   initialLessonId?: string;
   courseTitle?: string;
 }) {
+  const [selectedModule, setSelectedModule] = useState<string>("All Modules");
+  const [searchQuery, setSearchQuery] = useState("");
   const [activeLessonIndex, setActiveLessonIndex] = useState(0);
-  const lesson = SAMPLE_VIDEO_LESSONS[activeLessonIndex] || SAMPLE_VIDEO_LESSONS[0];
+
+  const filteredLessons = useMemo(() => {
+    return VIDEO_LESSONS_20.filter((lesson) => {
+      const matchesModule = selectedModule === "All Modules" || lesson.module === selectedModule;
+      const matchesSearch =
+        !searchQuery.trim() ||
+        lesson.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lesson.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lesson.instructor.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesModule && matchesSearch;
+    });
+  }, [selectedModule, searchQuery]);
+
+  const lesson = VIDEO_LESSONS_20[activeLessonIndex] || VIDEO_LESSONS_20[0];
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -177,10 +75,10 @@ export default function WatchableVideoPlayer({
   const [showQuizResult, setShowQuizResult] = useState(false);
   const [videoError, setVideoError] = useState(false);
 
-  // Sync initial lesson
+  // Sync initial lesson ID
   useEffect(() => {
     if (initialLessonId) {
-      const idx = SAMPLE_VIDEO_LESSONS.findIndex((l) => l.id === initialLessonId);
+      const idx = VIDEO_LESSONS_20.findIndex((l) => l.id === initialLessonId);
       if (idx !== -1) setActiveLessonIndex(idx);
     }
   }, [initialLessonId]);
@@ -298,10 +196,23 @@ export default function WatchableVideoPlayer({
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
-  const activeChapter = lesson.chapters
-    .slice()
-    .reverse()
-    .find((c) => currentTime >= c.time) || lesson.chapters[0];
+  const activeChapter =
+    lesson.chapters
+      .slice()
+      .reverse()
+      .find((c) => currentTime >= c.time) || lesson.chapters[0];
+
+  const handleNextLesson = () => {
+    if (activeLessonIndex < VIDEO_LESSONS_20.length - 1) {
+      setActiveLessonIndex(activeLessonIndex + 1);
+    }
+  };
+
+  const handlePrevLesson = () => {
+    if (activeLessonIndex > 0) {
+      setActiveLessonIndex(activeLessonIndex - 1);
+    }
+  };
 
   return (
     <div className="rounded-2xl border border-line bg-ink-950 p-4 sm:p-6 shadow-2xl">
@@ -311,33 +222,111 @@ export default function WatchableVideoPlayer({
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-gold-bright">
               <Sparkles className="h-3 w-3 text-gold" />
-              Watchable Video Tutorial
+              Watchable Video Academy (20 Lessons)
             </span>
-            <span className="text-xs text-muted">1080p HD Studio</span>
+            <span className="rounded bg-line/60 px-2 py-0.5 text-[10px] font-mono text-muted">
+              {lesson.module}
+            </span>
+            <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-400">
+              {lesson.level}
+            </span>
           </div>
           <h2 className="mt-1 font-display text-xl text-bone sm:text-2xl">{lesson.title}</h2>
           <p className="mt-0.5 text-xs text-muted">
-            Instructor: <span className="text-bone/90 font-medium">{lesson.instructor}</span> ({lesson.instructorRole}) · Course:{" "}
+            Instructor: <span className="text-bone/90 font-medium">{lesson.instructor}</span> ({lesson.instructorRole}) · Curriculum:{" "}
             <span className="text-gold-bright">{courseTitle}</span>
           </p>
         </div>
 
-        {/* Lesson selector pills */}
-        <div className="flex items-center gap-2 overflow-x-auto py-1">
-          {SAMPLE_VIDEO_LESSONS.map((l, idx) => (
+        {/* Navigation buttons: Prev / Next */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            disabled={activeLessonIndex <= 0}
+            onClick={handlePrevLesson}
+            className="flex items-center gap-1 rounded-full border border-line bg-ink-900 px-3 py-1.5 text-xs text-bone transition hover:border-gold/50 disabled:opacity-30"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+            Prev
+          </button>
+          <span className="font-mono text-xs text-muted">
+            <span className="text-gold-bright font-bold">{activeLessonIndex + 1}</span> / 20
+          </span>
+          <button
+            type="button"
+            disabled={activeLessonIndex >= VIDEO_LESSONS_20.length - 1}
+            onClick={handleNextLesson}
+            className="flex items-center gap-1 rounded-full border border-line bg-ink-900 px-3 py-1.5 text-xs text-bone transition hover:border-gold/50 disabled:opacity-30"
+          >
+            Next
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Module filter pills & search */}
+      <div className="mb-4 flex flex-col gap-2.5 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-1.5 overflow-x-auto py-1 text-xs">
+          {ACADEMY_MODULES.map((mod) => (
             <button
-              key={l.id}
-              onClick={() => setActiveLessonIndex(idx)}
-              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
-                activeLessonIndex === idx
-                  ? "border border-gold bg-gold text-ink-950 shadow-md font-semibold"
-                  : "border border-line bg-ink-900 text-muted hover:border-line/80 hover:text-bone"
+              key={mod}
+              onClick={() => setSelectedModule(mod)}
+              className={`whitespace-nowrap rounded-full px-3 py-1 transition-all ${
+                selectedModule === mod
+                  ? "border border-gold bg-gold/20 text-gold-bright font-semibold"
+                  : "border border-line bg-ink-900 text-muted hover:text-bone"
               }`}
             >
-              Lesson {idx + 1}
+              {mod}
             </button>
           ))}
         </div>
+
+        <div className="relative min-w-[200px]">
+          <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Filter 20 video lessons..."
+            className="w-full rounded-full border border-line bg-ink-900 py-1.5 pl-8 pr-3 text-xs text-bone placeholder:text-muted/60 focus:border-gold focus:outline-none"
+          />
+        </div>
+      </div>
+
+      {/* Lesson Horizontal Playlist Strip */}
+      <div className="mb-5 flex gap-2 overflow-x-auto pb-2">
+        {filteredLessons.map((l) => {
+          const globalIdx = VIDEO_LESSONS_20.findIndex((item) => item.id === l.id);
+          const isActive = globalIdx === activeLessonIndex;
+          return (
+            <button
+              key={l.id}
+              onClick={() => setActiveLessonIndex(globalIdx)}
+              className={`flex shrink-0 items-center gap-2 rounded-xl border p-2.5 text-left transition-all max-w-[240px] ${
+                isActive
+                  ? "border-gold bg-gold/15 text-bone shadow-md ring-1 ring-gold/40"
+                  : "border-line bg-ink-900/60 text-muted hover:border-line/80 hover:text-bone"
+              }`}
+            >
+              <div
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-mono text-xs font-bold ${
+                  isActive ? "bg-gold text-ink-950" : "bg-ink-800 text-muted"
+                }`}
+              >
+                {globalIdx + 1}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-xs font-medium">{l.title}</p>
+                <div className="flex items-center gap-2 text-[10px] text-muted">
+                  <span>{l.durationLabel}</span>
+                  <span>·</span>
+                  <span className="truncate">{l.instructor.split(" ")[0]}</span>
+                </div>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       {/* Main Video Viewport Container */}
@@ -398,26 +387,36 @@ export default function WatchableVideoPlayer({
         {/* Video Controls Bar */}
         <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/75 to-transparent p-4 transition-opacity group-hover:opacity-100 opacity-95">
           {/* Progress Bar / Scrubber */}
-          <div className="mb-3 flex items-center gap-2">
-            <input
-              type="range"
-              min={0}
-              max={duration || 100}
-              step={0.5}
-              value={currentTime}
-              onChange={(e) => handleSeek(Number(e.target.value))}
-              className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-line accent-gold focus:outline-none"
-              aria-label="Video scrubber"
+          <div
+            onClick={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const pct = (e.clientX - rect.left) / rect.width;
+              handleSeek(pct * duration);
+            }}
+            className="relative h-2 w-full cursor-pointer rounded-full bg-white/20 transition-all hover:h-2.5"
+          >
+            <div
+              className="h-full rounded-full bg-gold"
+              style={{ width: `${(currentTime / Math.max(duration, 1)) * 100}%` }}
             />
+            {/* Chapter markers on timeline */}
+            {lesson.chapters.map((ch) => (
+              <div
+                key={ch.time}
+                title={ch.title}
+                className="absolute top-0 h-full w-0.5 bg-white/50"
+                style={{ left: `${(ch.time / Math.max(duration, 1)) * 100}%` }}
+              />
+            ))}
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-            {/* Left controls: Play, Pause, Rewind 10s, Time */}
+          {/* Bottom control row */}
+          <div className="mt-3 flex items-center justify-between text-bone">
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={togglePlay}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-gold text-ink-950 hover:bg-gold-bright"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-gold text-ink-950 transition hover:scale-105"
                 aria-label={isPlaying ? "Pause video" : "Play video"}
               >
                 {isPlaying ? <Pause className="h-4 w-4 fill-current" /> : <Play className="ml-0.5 h-4 w-4 fill-current" />}
@@ -426,49 +425,44 @@ export default function WatchableVideoPlayer({
               <button
                 type="button"
                 onClick={() => handleSeek(currentTime - 10)}
-                className="flex h-8 w-8 items-center justify-center rounded-md border border-line/80 bg-ink-900/80 text-bone hover:border-gold/40"
+                className="text-xs text-muted hover:text-bone"
                 title="Rewind 10 seconds"
               >
-                <RotateCcw className="h-3.5 w-3.5" />
+                <RotateCcw className="h-4 w-4" />
               </button>
 
-              {/* Volume */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={toggleMute}
-                  className="text-muted hover:text-bone"
-                  aria-label={isMuted ? "Unmute" : "Mute"}
-                >
+              <div className="flex items-center gap-1.5 font-mono text-xs text-muted">
+                <span className="text-bone">{formatTime(currentTime)}</span>
+                <span>/</span>
+                <span>{formatTime(duration)}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              {/* Volume Slider */}
+              <div className="hidden sm:flex items-center gap-2">
+                <button type="button" onClick={toggleMute} className="text-muted hover:text-bone">
                   {isMuted || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 </button>
                 <input
                   type="range"
-                  min={0}
-                  max={1}
-                  step={0.05}
+                  min="0"
+                  max="1"
+                  step="0.05"
                   value={isMuted ? 0 : volume}
                   onChange={(e) => handleVolumeChange(Number(e.target.value))}
-                  className="hidden h-1.5 w-16 cursor-pointer appearance-none rounded-lg bg-line accent-gold sm:inline-block"
-                  aria-label="Volume"
+                  className="h-1 w-16 cursor-pointer appearance-none rounded-lg bg-white/20 accent-gold"
                 />
               </div>
 
-              {/* Time display */}
-              <span className="font-mono text-xs tabular-nums text-bone/90">
-                {formatTime(currentTime)} <span className="text-muted">/</span> {formatTime(duration)}
-              </span>
-            </div>
-
-            {/* Right controls: Speed, Bookmark, Fullscreen */}
-            <div className="flex items-center gap-2.5">
-              {/* Playback speed selector */}
-              <div className="flex items-center rounded-md border border-line/70 bg-ink-900/80 px-1 py-0.5 text-[11px]">
+              {/* Speed Switcher */}
+              <div className="flex items-center gap-1 rounded-lg border border-line/60 bg-ink-900/80 px-2 py-1 text-xs">
                 {[0.75, 1, 1.25, 1.5, 2].map((s) => (
                   <button
                     key={s}
+                    type="button"
                     onClick={() => changeSpeed(s)}
-                    className={`rounded px-1.5 py-0.5 font-mono ${
+                    className={`rounded px-1.5 py-0.5 font-mono text-[11px] ${
                       speed === s ? "bg-gold text-ink-950 font-bold" : "text-muted hover:text-bone"
                     }`}
                   >
@@ -477,21 +471,12 @@ export default function WatchableVideoPlayer({
                 ))}
               </div>
 
-              <button
-                type="button"
-                onClick={() => setActiveTab("bookmarks")}
-                className="flex items-center gap-1 rounded-md border border-line/70 bg-ink-900/80 px-2.5 py-1 text-[11px] text-bone hover:border-gold/40"
-                title="Save video timestamp bookmark"
-              >
-                <Bookmark className="h-3.5 w-3.5 text-gold" />
-                <span className="hidden sm:inline">Note</span>
-              </button>
-
+              {/* Fullscreen Button */}
               <button
                 type="button"
                 onClick={toggleFullscreen}
-                className="flex h-8 w-8 items-center justify-center rounded-md border border-line/70 bg-ink-900/80 text-bone hover:border-gold/40"
-                aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                className="text-muted hover:text-bone"
+                aria-label="Toggle fullscreen"
               >
                 {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
               </button>
@@ -500,13 +485,13 @@ export default function WatchableVideoPlayer({
         </div>
       </div>
 
-      {/* Tabs navigation below player: Chapters, Key Takeaways, Interactive Quiz, Bookmarks */}
+      {/* Lesson Details Tabs */}
       <div className="mt-6">
-        <div className="flex border-b border-line/70">
+        <div className="flex border-b border-line">
           {[
-            { id: "chapters", label: "Video Chapters & Timestamps", icon: Clock },
+            { id: "chapters", label: "Chapters & Markers", icon: Layers },
             { id: "takeaways", label: "Executive Takeaways", icon: CheckCircle },
-            { id: "quiz", label: "Interactive Knowledge Check", icon: HelpCircle },
+            { id: "quiz", label: "Interactive Quiz", icon: HelpCircle },
             { id: "bookmarks", label: `My Timestamps (${bookmarks.length})`, icon: Bookmark },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -514,7 +499,7 @@ export default function WatchableVideoPlayer({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-all ${
+                className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors ${
                   activeTab === tab.id
                     ? "border-gold text-gold-bright"
                     : "border-transparent text-muted hover:text-bone"
@@ -527,51 +512,49 @@ export default function WatchableVideoPlayer({
           })}
         </div>
 
-        {/* Tab 1: Video Chapters with clickable seek */}
+        {/* Tab 1: Chapters */}
         {activeTab === "chapters" && (
-          <div className="mt-4 space-y-2">
-            <p className="text-xs text-muted mb-3">
-              Click any chapter below to jump the video directly to that lesson segment:
-            </p>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {lesson.chapters.map((ch, idx) => {
-                const isActive = activeChapter.time === ch.time;
-                return (
-                  <button
-                    key={ch.title}
-                    onClick={() => handleSeek(ch.time)}
-                    className={`flex items-start gap-3 rounded-xl border p-3 text-left transition-all ${
-                      isActive
-                        ? "border-gold/60 bg-gold/10 text-bone shadow-sm"
-                        : "border-line bg-ink-900/50 text-muted hover:border-gold/30 hover:text-bone"
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            {lesson.chapters.map((ch, idx) => {
+              const isCurrent = activeChapter.time === ch.time;
+              return (
+                <button
+                  key={ch.time}
+                  onClick={() => handleSeek(ch.time)}
+                  className={`flex items-start gap-3 rounded-xl border p-3.5 text-left transition-all ${
+                    isCurrent
+                      ? "border-gold/60 bg-gold/10 text-bone shadow-md"
+                      : "border-line bg-ink-900/60 text-muted hover:border-line hover:text-bone"
+                  }`}
+                >
+                  <span
+                    className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded font-mono text-[10px] font-bold ${
+                      isCurrent ? "bg-gold text-ink-950" : "bg-ink-800 text-muted"
                     }`}
                   >
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-ink-800 font-mono text-xs text-gold">
-                      {idx + 1}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="font-mono text-xs font-semibold text-gold-bright">{ch.title}</p>
-                      <p className="mt-1 text-xs leading-relaxed text-bone/80 line-clamp-2">{ch.description}</p>
+                    {idx + 1}
+                  </span>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-semibold text-gold">{formatTime(ch.time)}</span>
+                      <span className="font-medium text-xs text-bone">{ch.title.split(" - ")[1] || ch.title}</span>
                     </div>
-                  </button>
-                );
-              })}
-            </div>
+                    <p className="mt-1 text-xs text-muted leading-relaxed">{ch.description}</p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
 
         {/* Tab 2: Executive Takeaways */}
         {activeTab === "takeaways" && (
-          <div className="mt-4 rounded-xl border border-line bg-ink-900/40 p-5">
-            <h4 className="font-display text-sm font-semibold uppercase tracking-wider text-gold">
-              Core Principles from this Lesson
-            </h4>
+          <div className="mt-4 rounded-xl border border-line bg-ink-900/50 p-5">
+            <h4 className="font-display text-sm text-bone">Core Trading Takeaways for {lesson.title}</h4>
             <ul className="mt-3 space-y-2.5">
-              {lesson.takeaways.map((point) => (
-                <li key={point} className="flex items-start gap-3 text-sm text-bone/90">
-                  <span className="mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-up/20 text-up font-bold text-xs">
-                    ✓
-                  </span>
+              {lesson.takeaways.map((point, i) => (
+                <li key={i} className="flex items-start gap-2.5 text-xs text-bone/90 leading-relaxed">
+                  <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
                   <span>{point}</span>
                 </li>
               ))}

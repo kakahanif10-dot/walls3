@@ -85,9 +85,9 @@ export default async function HomePage() {
 
             <dl className="mt-10 grid max-w-lg grid-cols-3 gap-6 border-t border-line/60 pt-7">
               {[
-                { k: "118", v: "assets tracked" },
+                { k: "625+", v: "assets tracked" },
                 { k: "6", v: "research desks" },
-                { k: "4", v: "academy courses" },
+                { k: "20", v: "video masterclasses" },
               ].map((item) => (
                 <div key={item.v}>
                   <dt className="font-display text-3xl text-bone">{item.k}</dt>

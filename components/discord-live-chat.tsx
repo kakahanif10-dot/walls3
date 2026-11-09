@@ -3,85 +3,62 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
-  Send,
-  Sparkles,
-  Clock,
-  Radio,
   Hash,
-  Users,
-  Smile,
-  Shield,
+  Send,
   Zap,
+  Sparkles,
   Bot,
-  Copy,
+  Clock,
   ExternalLink,
-  ChevronRight,
-  TrendingUp,
-  Flame,
-  Search,
+  Copy,
   Check,
-  AlertTriangle,
-  Compass,
+  TrendingUp,
+  Radio,
+  PlusCircle,
+  X,
+  UserPen,
+  RotateCcw,
 } from "lucide-react";
 import {
+  formatTimeZones,
   generateMinutePrediction,
   handleAIModeratorQuery,
-  formatTimeZones,
   type MinutePrediction,
-  type ChatMessage,
 } from "@/lib/ai-moderator";
-import { fmtPrice } from "@/lib/market";
+import { ASSETS } from "@/lib/market-assets";
 
-type Channel = {
+export type ChatMessage = {
   id: string;
-  name: string;
-  topic: string;
-  unreadCount?: number;
-  category: "ANNOUNCEMENTS" | "TRADING FLOORS" | "QUANT ALERTS";
+  channelId: string;
+  author: {
+    name: string;
+    avatar: string;
+    role: "ai-mod" | "pro-trader" | "quant" | "community";
+    roleLabel: string;
+    roleColor: string;
+    isBot?: boolean;
+    isVerified?: boolean;
+  };
+  content: string;
+  prediction?: MinutePrediction;
+  timestamp: string;
+  timeLabel: string;
+  reactions: Record<string, number>;
+  userReactions: Record<string, boolean>;
 };
 
-const CHANNELS: Channel[] = [
-  {
-    id: "ai-minute-predictions",
-    name: "ai-minute-predictions",
-    topic: "Automated real-time technical signals generated every 60 seconds by Nexus Sentinel AI",
-    category: "ANNOUNCEMENTS",
-  },
-  {
-    id: "general-trading",
-    name: "general-trading",
-    topic: "Live market tape discussion across stocks, crypto, and meme coins",
-    category: "TRADING FLOORS",
-  },
-  {
-    id: "stock-scalping",
-    name: "stock-scalping",
-    topic: "S&P 500, Nasdaq, semiconductors (NVDA, AMD), and mega-cap momentum setups",
-    category: "TRADING FLOORS",
-  },
-  {
-    id: "crypto-signals",
-    name: "crypto-signals",
-    topic: "Bitcoin, Solana, Binance altcoins, and institutional liquidity flows",
-    category: "TRADING FLOORS",
-  },
-  {
-    id: "meme-pump-fun",
-    name: "meme-pump-fun",
-    topic: "Pump.fun bonding curves, viral meme breakouts (FARTCOIN, GOAT, PNUT), & risk sizing",
-    category: "TRADING FLOORS",
-  },
-  {
-    id: "breakout-radar",
-    name: "breakout-radar",
-    topic: "High-volume breakout scanner and 50-day moving average retests",
-    category: "QUANT ALERTS",
-  },
+const CHANNELS = [
+  { id: "ai-minute-predictions", name: "ai-minute-predictions", topic: "Automated 60-second quantitative predictions across 625+ assets", category: "ANNOUNCEMENTS" },
+  { id: "general-trading", name: "general-trading", topic: "Live market tape discussion across stocks, crypto, and meme coins", category: "TRADING FLOORS" },
+  { id: "stock-scalping", name: "stock-scalping", topic: "S&P 500 and Nasdaq order flow, swing levels, and earnings setups", category: "TRADING FLOORS" },
+  { id: "crypto-signals", name: "crypto-signals", topic: "Binance spot/perp momentum, funding rates, and liquidity sweeps", category: "TRADING FLOORS" },
+  { id: "meme-pump-fun", name: "meme-pump-fun", topic: "Pump.fun bonding curve breakouts, viral meta, and 2% risk sizing", category: "TRADING FLOORS" },
+  { id: "breakout-radar", name: "breakout-radar", topic: "Quantitative 20-EMA / VWAP momentum expansion alerts", category: "QUANT ALERTS" },
 ];
 
 const INITIAL_MESSAGES: ChatMessage[] = [
   {
-    id: "m-1",
+    id: "msg-1",
     channelId: "general-trading",
     author: {
       name: "Nexus Sentinel AI",
@@ -92,47 +69,49 @@ const INITIAL_MESSAGES: ChatMessage[] = [
       isBot: true,
       isVerified: true,
     },
-    content: "Welcome to the NextWall Street Live Floor. I am your real-time AI Moderator monitoring 118 instruments across S&P 500, Nasdaq, Binance crypto, and pump.fun meme coins. An automated prediction is published every minute with explicit invalidation stops.",
-    timestamp: new Date(Date.now() - 360000).toISOString(),
+    content:
+      "Welcome to the NextWall Street Live Floor. I am your real-time AI Moderator monitoring 625+ instruments across S&P 500, Nasdaq, Binance crypto, and pump.fun meme coins. You can send real messages, request instant signals (/predict [symbol]), or ask market questions in Indonesian or English.",
+    timestamp: new Date(Date.now() - 300000).toISOString(),
     timeLabel: "10:35 WIB",
     reactions: { "🚀": 14, "💎": 9, "🧠": 18 },
     userReactions: {},
   },
   {
-    id: "m-2",
+    id: "msg-2",
     channelId: "general-trading",
     author: {
       name: "Daniel Okafor",
       avatar: "👨🏾‍💼",
-      role: "head-desk",
+      role: "pro-trader",
       roleLabel: "HEAD OF STRATEGY",
       roleColor: "bg-gold/20 text-gold-bright border-gold/40",
-      isVerified: true,
     },
-    content: "Watching the semiconductor complex into today's session. NVDA holding above its 20-day SMA ($187.40) while AMD consolidates. Remember: we don't argue with structure.",
-    timestamp: new Date(Date.now() - 280000).toISOString(),
+    content:
+      "Watching the semiconductor complex into today's session. NVDA holding above its 20-day SMA ($187.40) while AMD consolidates. Remember: we don't argue with structure.",
+    timestamp: new Date(Date.now() - 240000).toISOString(),
     timeLabel: "10:36 WIB",
     reactions: { "📈": 12, "🔥": 8 },
-    userReactions: {},
+    userReactions: { "📈": true },
   },
   {
-    id: "m-3",
+    id: "msg-3",
     channelId: "general-trading",
     author: {
       name: "JakartaTrader_88",
       avatar: "🇮🇩",
-      role: "pro-trader",
+      role: "community",
       roleLabel: "PRO TRADER",
       roleColor: "bg-blue-500/20 text-blue-400 border-blue-500/40",
     },
-    content: "Pagi tim! Volume pump fun meme coin FARTCOIN dan GOAT pagi ini kenceng banget. AI Mod rekomendasinya gimana buat scalping 5 menit?",
-    timestamp: new Date(Date.now() - 190000).toISOString(),
+    content:
+      "Pagi tim! Volume pump fun meme coin FARTCOIN dan GOAT pagi ini kenceng banget. AI Mod rekomendasinya gimana buat scalping 5 menit?",
+    timestamp: new Date(Date.now() - 180000).toISOString(),
     timeLabel: "10:37 WIB",
     reactions: { "👀": 7, "🚀": 11 },
     userReactions: {},
   },
   {
-    id: "m-4",
+    id: "msg-4",
     channelId: "general-trading",
     author: {
       name: "Mara Lindqvist",
@@ -140,16 +119,16 @@ const INITIAL_MESSAGES: ChatMessage[] = [
       role: "quant",
       roleLabel: "CRYPTO DESK",
       roleColor: "bg-purple-500/20 text-purple-400 border-purple-500/40",
-      isVerified: true,
     },
-    content: "Solana DeFi velocity is absorbing liquidity from Ethereum mainnet. If SOL holds $214 on the 1-hour close, next liquidity target is $228. Invalidation at $206.50.",
+    content:
+      "Solana DeFi velocity is absorbing liquidity from Ethereum mainnet. If SOL holds $214 on the 1-hour close, next liquidity target is $228. Invalidation at $206.50.",
     timestamp: new Date(Date.now() - 120000).toISOString(),
     timeLabel: "10:38 WIB",
     reactions: { "💎": 15, "📈": 9 },
-    userReactions: {},
+    userReactions: { "💎": true },
   },
   {
-    id: "m-5",
+    id: "pred-init-nvda",
     channelId: "general-trading",
     author: {
       name: "Nexus Sentinel AI",
@@ -175,7 +154,7 @@ const INITIAL_MESSAGES: ChatMessage[] = [
       invalidationLevel: 184.2,
       technicalMechanism: "Bullish continuation: Tape trading firmly above 20-day SMA ($187.40) and 50-day average. Institutional order flow expanding into next hyperscaler capex prints.",
       timeHorizon: "1h Momentum",
-      catalystAlert: "Quarterly data-centre revenue print",
+      catalystAlert: "Datacenter revenue guidance prints",
       timestamp: new Date(Date.now() - 60000).toISOString(),
       wibTime: "10:39:00",
       utcTime: "03:39:00",
@@ -186,7 +165,7 @@ const INITIAL_MESSAGES: ChatMessage[] = [
     userReactions: { "🚀": true },
   },
   {
-    id: "m-6",
+    id: "pred-init-fartcoin",
     channelId: "general-trading",
     author: {
       name: "Nexus Sentinel AI",
@@ -231,12 +210,57 @@ export default function DiscordLiveChat() {
   const [isTypingAI, setIsTypingAI] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  // User Profile
+  const [userName, setUserName] = useState("Trader (You)");
+  const [userAvatar, setUserAvatar] = useState("👤");
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileInputName, setProfileInputName] = useState("");
+
+  // Post Signal Modal
+  const [showSignalModal, setShowSignalModal] = useState(false);
+  const [sigSymbol, setSigSymbol] = useState("NVDA");
+  const [sigStance, setSigStance] = useState<MinutePrediction["stance"]>("STRONG BUY / LONG");
+  const [sigPrice, setSigPrice] = useState("187.40");
+  const [sigTarget, setSigTarget] = useState("198.00");
+  const [sigStop, setSigStop] = useState("182.50");
+  const [sigNotes, setSigNotes] = useState("Breaking above 20-EMA on 15m volume expansion.");
+
   // Clocks and countdown
   const [timeData, setTimeData] = useState(() => formatTimeZones());
-  const [countdown, setCountdown] = useState(60); // 60s countdown to next prediction
+  const [countdown, setCountdown] = useState(60);
   const [aiPredictionsCount, setAiPredictionsCount] = useState(1);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  // Restore messages and profile from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedMessages = localStorage.getItem("nws_discord_messages_v3");
+      if (savedMessages) {
+        const parsed = JSON.parse(savedMessages);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+        }
+      }
+      const savedProfile = localStorage.getItem("nws_user_profile");
+      if (savedProfile) {
+        const p = JSON.parse(savedProfile);
+        if (p.name) setUserName(p.name);
+        if (p.avatar) setUserAvatar(p.avatar);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Save messages to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("nws_discord_messages_v3", JSON.stringify(messages.slice(-50)));
+    } catch {
+      // ignore
+    }
+  }, [messages]);
 
   // Clock timer: updates every 1000ms
   useEffect(() => {
@@ -254,7 +278,7 @@ export default function DiscordLiveChat() {
     return () => clearInterval(clockInterval);
   }, [activeChannelId]);
 
-  // Scroll inner message container only
+  // Scroll inner message container to bottom on new message
   useEffect(() => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTo({
@@ -264,15 +288,14 @@ export default function DiscordLiveChat() {
     }
   }, [messages, isTypingAI]);
 
-  // Trigger an automated minute prediction
-  const triggerMinutePrediction = (forcedSymbol?: string) => {
-    const pred = generateMinutePrediction(forcedSymbol);
+  const triggerMinutePrediction = (forceSymbol?: string) => {
+    const prediction = generateMinutePrediction(forceSymbol, aiPredictionsCount);
     const date = new Date();
     const { wibTime } = formatTimeZones(date);
 
-    const newMsg: ChatMessage = {
-      id: `ai-pred-${Date.now()}`,
-      channelId: activeChannelId === "ai-minute-predictions" ? "ai-minute-predictions" : "general-trading",
+    const newAlert: ChatMessage = {
+      id: `ai-minute-${Date.now()}`,
+      channelId: activeChannelId,
       author: {
         name: "Nexus Sentinel AI",
         avatar: "🤖",
@@ -282,41 +305,39 @@ export default function DiscordLiveChat() {
         isBot: true,
         isVerified: true,
       },
-      content: `⚡ **AUTOMATED MINUTE ALPHA ALERT: $${pred.symbol} (${pred.name})**\n` +
-        `Real-time technical prediction generated at ${wibTime} WIB. Confidence: ${pred.confidence}%.`,
-      prediction: pred,
+      content: `⚡ **AUTOMATED MINUTE ALPHA ALERT: $${prediction.symbol} (${prediction.name})**\nReal-time technical prediction generated at ${wibTime} WIB. Confidence: ${prediction.confidence}%.`,
+      prediction,
       timestamp: date.toISOString(),
       timeLabel: `${wibTime} WIB`,
-      reactions: { "🚀": 8, "💎": 5, "📈": 10 },
+      reactions: { "🚀": 1, "💎": 1, "🧠": 1 },
       userReactions: {},
     };
 
-    setMessages((prev) => [...prev, newMsg]);
+    setMessages((prev) => [...prev, newAlert]);
     setAiPredictionsCount((c) => c + 1);
   };
 
-  const handleSendMessage = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!inputText.trim()) return;
+  const handleSendMessageWithText = async (textToSend: string) => {
+    const trimmed = textToSend.trim();
+    if (!trimmed) return;
 
-    const userText = inputText.trim();
     setInputText("");
 
     const date = new Date();
     const { wibTime } = formatTimeZones(date);
 
-    // Add user's message
+    // 1. Add User's Message Immediately
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
       channelId: activeChannelId,
       author: {
-        name: "You (Pro Trader)",
-        avatar: "👤",
+        name: userName,
+        avatar: userAvatar,
         role: "pro-trader",
         roleLabel: "SUBSCRIBER",
         roleColor: "bg-gold/20 text-gold-bright border-gold/40",
       },
-      content: userText,
+      content: trimmed,
       timestamp: date.toISOString(),
       timeLabel: `${wibTime} WIB`,
       reactions: { "👍": 1 },
@@ -326,12 +347,12 @@ export default function DiscordLiveChat() {
     setMessages((prev) => [...prev, userMsg]);
     setIsTypingAI(true);
 
+    // 2. Fetch AI Moderator Response
     try {
-      // Call AI endpoint or process locally
       const res = await fetch("/api/ai-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userText }),
+        body: JSON.stringify({ message: trimmed }),
       });
       const data = await res.json();
 
@@ -349,7 +370,7 @@ export default function DiscordLiveChat() {
           isBot: true,
           isVerified: true,
         },
-        content: data.reply || "Signal recorded. Monitoring tape for confirmation.",
+        content: data.reply || `Sinyal terkonfirmasi untuk "${trimmed}". Memantau likuiditas order book di tape.`,
         prediction: data.prediction,
         timestamp: new Date().toISOString(),
         timeLabel: `${formatTimeZones().wibTime} WIB`,
@@ -360,7 +381,7 @@ export default function DiscordLiveChat() {
       setMessages((prev) => [...prev, aiReplyMsg]);
     } catch {
       setIsTypingAI(false);
-      const fallback = handleAIModeratorQuery(userText);
+      const fallback = handleAIModeratorQuery(trimmed);
       const aiReplyMsg: ChatMessage = {
         id: `ai-reply-${Date.now()}`,
         channelId: activeChannelId,
@@ -384,6 +405,58 @@ export default function DiscordLiveChat() {
     }
   };
 
+  const handleSendMessage = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    await handleSendMessageWithText(inputText);
+  };
+
+  const handlePostSignal = (e: React.FormEvent) => {
+    e.preventDefault();
+    const date = new Date();
+    const { wibTime } = formatTimeZones(date);
+
+    const customPrediction: MinutePrediction = {
+      id: `usr-sig-${Date.now()}`,
+      symbol: sigSymbol.toUpperCase(),
+      name: ASSETS.find((a) => a.symbol === sigSymbol.toUpperCase())?.name || sigSymbol.toUpperCase(),
+      kind: ASSETS.find((a) => a.symbol === sigSymbol.toUpperCase())?.kind || "stock",
+      group: ASSETS.find((a) => a.symbol === sigSymbol.toUpperCase())?.group || "Equities / Crypto",
+      currentPrice: Number(sigPrice) || 100,
+      stance: sigStance,
+      confidence: 88,
+      target1: Number(sigTarget) || Number(sigPrice) * 1.05,
+      target2: Number(sigTarget) * 1.05 || Number(sigPrice) * 1.1,
+      invalidationLevel: Number(sigStop) || Number(sigPrice) * 0.95,
+      technicalMechanism: sigNotes || "User member setup: technical consolidation breakout with defined risk-reward.",
+      timeHorizon: "1h Momentum",
+      catalystAlert: "Technical order flow breakout",
+      timestamp: date.toISOString(),
+      wibTime,
+      utcTime: timeData.utcTime,
+    };
+
+    const userSignalMsg: ChatMessage = {
+      id: `user-sig-${Date.now()}`,
+      channelId: activeChannelId,
+      author: {
+        name: userName,
+        avatar: userAvatar,
+        role: "pro-trader",
+        roleLabel: "COMMUNITY SIGNAL",
+        roleColor: "bg-gold/25 text-gold-bright border-gold/50",
+      },
+      content: `🎯 **COMMUNITY TRADE SIGNAL: $${customPrediction.symbol} (${sigStance})**\nEntry: $${sigPrice} | Target: $${sigTarget} | Stop: $${sigStop}`,
+      prediction: customPrediction,
+      timestamp: date.toISOString(),
+      timeLabel: `${wibTime} WIB`,
+      reactions: { "🚀": 5, "💎": 3, "🔥": 4 },
+      userReactions: { "🚀": true },
+    };
+
+    setMessages((prev) => [...prev, userSignalMsg]);
+    setShowSignalModal(false);
+  };
+
   const toggleReaction = (msgId: string, emoji: string) => {
     setMessages((prev) =>
       prev.map((msg) => {
@@ -405,117 +478,147 @@ export default function DiscordLiveChat() {
     );
   };
 
-  const copyInvalidation = (id: string, text: string) => {
+  const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const handleSaveProfile = () => {
+    if (profileInputName.trim()) {
+      setUserName(profileInputName.trim());
+      try {
+        localStorage.setItem(
+          "nws_user_profile",
+          JSON.stringify({ name: profileInputName.trim(), avatar: userAvatar }),
+        );
+      } catch {}
+    }
+    setIsEditingProfile(false);
+  };
+
+  const handleResetChat = () => {
+    if (confirm("Reset chat to default institutional state?")) {
+      setMessages(INITIAL_MESSAGES);
+      try {
+        localStorage.removeItem("nws_discord_messages_v3");
+      } catch {}
+    }
+  };
+
   const currentChannel = CHANNELS.find((c) => c.id === activeChannelId) || CHANNELS[0];
   const channelMessages = messages.filter(
-    (m) => m.channelId === activeChannelId || m.author.role === "ai-mod" || activeChannelId === "general-trading",
+    (m) =>
+      m.channelId === activeChannelId ||
+      m.author.role === "ai-mod" ||
+      activeChannelId === "general-trading",
   );
 
   return (
-    <div className="flex h-[750px] max-h-[82vh] w-full overflow-hidden rounded-2xl border border-line bg-[#1e1f22] text-[#dbdee1] shadow-2xl">
-      {/* 1. Leftmost Server Rail (Discord Server List) */}
-      <div className="hidden sm:flex w-[72px] flex-col items-center gap-3 bg-[#111214] py-3 z-10 shrink-0">
-        {/* NextWall Street Main Server Icon */}
-        <div className="group relative flex items-center justify-center">
-          <div className="absolute -left-3 h-8 w-1 rounded-r-full bg-white transition-all group-hover:h-10" />
-          <button
-            type="button"
-            className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-gold via-amber-600 to-amber-700 text-ink-950 font-black text-xl shadow-lg transition-all hover:rounded-xl"
-            title="NextWall Street Alpha Hub"
-          >
-            NW
-          </button>
-        </div>
+    <div className="flex h-[780px] max-h-[85vh] w-full overflow-hidden rounded-2xl border border-line bg-[#1e1f22] text-[#dbdee1] shadow-2xl">
+      {/* 1. Leftmost Server Rail */}
+      <div className="flex w-18 flex-col items-center gap-3 border-r border-[#1f2023] bg-[#1e1f22] py-3 shrink-0">
+        <Link
+          href="/"
+          className="group relative flex h-12 w-12 items-center justify-center rounded-2xl bg-[#313338] text-gold transition-all hover:rounded-xl hover:bg-gold hover:text-ink-950"
+          title="Back to NextWallStreet"
+        >
+          <span className="font-display font-bold text-lg">NW</span>
+        </Link>
+        <div className="h-0.5 w-8 rounded bg-[#35363c]" />
 
-        <div className="h-0.5 w-8 rounded-full bg-[#35363c]" />
+        {/* Server Guild Icons */}
+        <button
+          onClick={() => setActiveChannelId("general-trading")}
+          className="group relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-800 text-white shadow-lg transition-all hover:rounded-xl"
+          title="S&P 500 & Nasdaq Desk"
+        >
+          <span className="text-xs font-bold font-mono">SPX</span>
+        </button>
 
-        {/* Other Simulated Hub Servers */}
-        {[
-          { label: "SPX", name: "S&P 500 Pit", color: "bg-blue-600" },
-          { label: "BIN", name: "Binance VIP Room", color: "bg-amber-500 text-black" },
-          { label: "PUMP", name: "Pump.fun Degens", color: "bg-emerald-600" },
-          { label: "AI", name: "Quant Lab", color: "bg-purple-600" },
-        ].map((s) => (
-          <button
-            key={s.label}
-            type="button"
-            className={`flex h-11 w-11 items-center justify-center rounded-3xl ${s.color} font-bold text-xs text-white transition-all hover:rounded-xl hover:opacity-90`}
-            title={s.name}
-          >
-            {s.label}
-          </button>
-        ))}
+        <button
+          onClick={() => setActiveChannelId("crypto-signals")}
+          className="group relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg transition-all hover:rounded-xl"
+          title="Binance Crypto Desk"
+        >
+          <span className="text-xs font-bold font-mono">BIN</span>
+        </button>
+
+        <button
+          onClick={() => setActiveChannelId("meme-pump-fun")}
+          className="group relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-fuchsia-600 to-purple-800 text-white shadow-lg transition-all hover:rounded-xl"
+          title="Pump.fun Meme Meta Desk"
+        >
+          <span className="text-xs font-bold font-mono">PUMP</span>
+        </button>
+
+        <button
+          onClick={() => setActiveChannelId("ai-minute-predictions")}
+          className="group relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-700 text-white shadow-lg transition-all hover:rounded-xl"
+          title="AI Sentinel 60s Predictions"
+        >
+          <span className="text-xs font-bold font-mono">AI</span>
+        </button>
 
         <div className="mt-auto flex flex-col items-center gap-2">
-          <span className="flex h-3 w-3 rounded-full bg-emerald-500 animate-pulse" title="System Online" />
+          <span
+            className="flex h-3 w-3 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20"
+            title="System Online (625+ Assets Monitored)"
+          />
         </div>
       </div>
 
-      {/* 2. Channel Sidebar */}
+      {/* 2. Channels Sidebar */}
       <div className="flex w-60 sm:w-64 flex-col border-r border-[#1f2023] bg-[#2b2d31] shrink-0">
         {/* Server Header */}
-        <div className="flex h-14 items-center justify-between border-b border-[#1f2023] px-4 shadow-sm">
+        <div className="flex h-14 items-center justify-between border-b border-[#1f2023] px-4 font-semibold text-white shadow-sm">
           <div className="flex items-center gap-2">
-            <span className="font-display font-bold text-sm text-bone">NextWall Street Alpha</span>
-            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 text-[10px] text-white">
-              ✓
-            </span>
+            <span className="font-display tracking-tight text-sm text-gold-bright">NextWall Street Alpha</span>
+            <span className="rounded bg-emerald-500/20 px-1 text-[9px] font-mono text-emerald-400">✓</span>
           </div>
-          <span className="flex items-center gap-1 text-[11px] font-mono text-emerald-400">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-            1.8k
-          </span>
+          <button
+            onClick={handleResetChat}
+            className="text-[10px] text-muted hover:text-bone"
+            title="Reset Chat"
+          >
+            <RotateCcw className="h-3 w-3" />
+          </button>
         </div>
 
         {/* AI Moderator Status Pill */}
-        <div className="mx-3 mt-3 rounded-xl border border-emerald-500/30 bg-emerald-950/30 p-2.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
-              <Bot className="h-4 w-4" />
-              Nexus Sentinel AI
+        <div className="m-3 rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-2.5">
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1.5">
+              <Bot className="h-4 w-4 text-emerald-400 animate-pulse" />
+              <span className="font-semibold text-emerald-300 text-[11px]">Nexus Sentinel AI</span>
             </div>
-            <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-mono uppercase text-emerald-300">
-              LIVE MOD
-            </span>
+            <span className="rounded bg-emerald-500/30 px-1.5 py-0.2 text-[9px] font-mono text-emerald-300">LIVE MOD</span>
           </div>
-          <p className="mt-1 text-[11px] text-muted">
-            Analyzing 118 tickers. Next minute prediction: <span className="font-mono text-gold-bright">{countdown}s</span>
+          <p className="mt-1 text-[10px] text-emerald-200/80 leading-tight">
+            Monitoring 625+ assets. Next minute signal in <span className="font-mono font-bold text-gold-bright">{countdown}s</span>.
           </p>
         </div>
 
         {/* Channels List */}
-        <div className="flex-1 overflow-y-auto px-2 py-3 space-y-4">
-          {(["ANNOUNCEMENTS", "TRADING FLOORS", "QUANT ALERTS"] as const).map((category) => (
-            <div key={category}>
-              <div className="px-2 pb-1 text-[10px] font-bold tracking-wider text-[#949ba4] uppercase">
-                {category}
-              </div>
-              <div className="space-y-0.5">
-                {CHANNELS.filter((c) => c.category === category).map((channel) => {
-                  const isActive = channel.id === activeChannelId;
+        <div className="flex-1 overflow-y-auto px-2 space-y-4 py-2">
+          {["ANNOUNCEMENTS", "TRADING FLOORS", "QUANT ALERTS"].map((cat) => (
+            <div key={cat}>
+              <p className="px-2 text-[10px] font-bold tracking-wider text-[#949ba4] uppercase">{cat}</p>
+              <div className="mt-1 space-y-0.5">
+                {CHANNELS.filter((c) => c.category === cat).map((channel) => {
+                  const isActive = activeChannelId === channel.id;
                   return (
                     <button
                       key={channel.id}
-                      type="button"
                       onClick={() => setActiveChannelId(channel.id)}
-                      className={`group flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-xs transition-colors ${
+                      className={`flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all ${
                         isActive
-                          ? "bg-[#35373c] text-white font-medium"
-                          : "text-[#949ba4] hover:bg-[#313338] hover:text-[#dbdee1]"
+                          ? "bg-[#35373c] text-white font-semibold"
+                          : "text-[#949ba4] hover:bg-[#35373c]/50 hover:text-[#dbdee1]"
                       }`}
                     >
-                      <div className="flex items-center gap-2 truncate">
-                        <Hash className="h-4 w-4 shrink-0 text-[#80848e] group-hover:text-white" />
-                        <span className="truncate">{channel.name}</span>
-                      </div>
-                      {channel.id === "ai-minute-predictions" && (
-                        <span className="flex h-2 w-2 rounded-full bg-emerald-400" />
-                      )}
+                      <Hash className={`h-4 w-4 shrink-0 ${isActive ? "text-gold" : "text-[#80848e]"}`} />
+                      <span className="truncate">{channel.name}</span>
                     </button>
                   );
                 })}
@@ -526,25 +629,32 @@ export default function DiscordLiveChat() {
 
         {/* User bar at bottom */}
         <div className="flex h-14 items-center justify-between border-t border-[#1f2023] bg-[#232428] px-3">
-          <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              setProfileInputName(userName);
+              setIsEditingProfile(true);
+            }}
+            className="flex items-center gap-2 text-left hover:opacity-80 transition"
+            title="Click to change your nickname & avatar"
+          >
             <div className="relative">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-gold to-amber-700 text-sm">
-                👤
+                {userAvatar}
               </span>
               <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-[#232428] bg-emerald-500" />
             </div>
             <div className="leading-tight">
-              <p className="text-xs font-semibold text-white">Trader (You)</p>
-              <p className="text-[10px] text-[#949ba4]">#pro-member</p>
+              <p className="text-xs font-semibold text-white max-w-[90px] truncate">{userName}</p>
+              <p className="text-[10px] text-gold">Edit Handle ✏️</p>
             </div>
-          </div>
+          </button>
           <button
-            onClick={() => triggerMinutePrediction()}
-            className="flex items-center gap-1 rounded bg-gold/15 px-2 py-1 text-[10px] font-bold text-gold-bright hover:bg-gold/25"
-            title="Trigger Instant Prediction"
+            onClick={() => setShowSignalModal(true)}
+            className="flex items-center gap-1 rounded bg-gold/20 px-2 py-1 text-[10px] font-bold text-gold-bright hover:bg-gold/30"
+            title="Share Your Trade Setup / Signal"
           >
-            <Zap className="h-3 w-3" />
-            Ping AI
+            <PlusCircle className="h-3 w-3" />
+            Post Setup
           </button>
         </div>
       </div>
@@ -556,14 +666,19 @@ export default function DiscordLiveChat() {
           <div className="flex items-center gap-2 min-w-0">
             <Hash className="h-5 w-5 text-[#80848e]" />
             <div className="min-w-0">
-              <h3 className="font-semibold text-sm text-white truncate">{currentChannel.name}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-sm text-white truncate">{currentChannel.name}</h3>
+                <span className="hidden sm:inline-flex rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.2 text-[10px] text-emerald-400 font-mono">
+                  🟢 Live Active
+                </span>
+              </div>
               <p className="text-[11px] text-[#949ba4] truncate hidden sm:block">{currentChannel.topic}</p>
             </div>
           </div>
 
           {/* Real-time Multi-Timezone Digital Clocks (WIB, UTC, EST) */}
-          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-            {/* WIB Clock (Requested in Indonesian prompt) */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* WIB Clock */}
             <div className="flex flex-col items-end rounded-lg border border-line/60 bg-[#2b2d31] px-2.5 py-1">
               <div className="flex items-center gap-1.5 text-[10px] text-muted">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -660,78 +775,82 @@ export default function DiscordLiveChat() {
                     <div className="mt-2.5 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-[#949ba4]">Signal:</span>
-                        <span className="font-mono text-sm font-black tracking-wide text-gold-bright">
+                        <span
+                          className={`font-mono text-xs font-bold px-2 py-0.5 rounded ${
+                            msg.prediction.stance.includes("BUY")
+                              ? "bg-emerald-500/20 text-emerald-300"
+                              : msg.prediction.stance.includes("ACCUMULATE")
+                              ? "bg-amber-500/20 text-amber-300"
+                              : msg.prediction.stance.includes("TRIM")
+                              ? "bg-orange-500/20 text-orange-300"
+                              : "bg-rose-500/20 text-rose-300"
+                          }`}
+                        >
                           {msg.prediction.stance}
                         </span>
                       </div>
-                      <span className="text-xs font-mono text-bone">
-                        Tape: <span className="text-white font-bold">{fmtPrice(msg.prediction.currentPrice)}</span>
+                      <span className="font-mono text-xs text-[#949ba4]">
+                        Tape: <span className="text-white font-bold">${msg.prediction.currentPrice}</span>
                       </span>
                     </div>
 
-                    {/* Targets & Invalidation Grid */}
+                    {/* Key Technical Targets Grid */}
                     <div className="mt-3 grid grid-cols-3 gap-2 rounded-lg bg-[#1e1f22] p-2.5 text-center font-mono">
-                      <div>
-                        <p className="text-[10px] uppercase text-[#949ba4]">Target 1</p>
-                        <p className="mt-0.5 text-xs font-bold text-emerald-400">
-                          {fmtPrice(msg.prediction.target1)}
-                        </p>
+                      <div className="border-r border-[#35373c]">
+                        <p className="text-[10px] text-[#949ba4]">Target 1</p>
+                        <p className="text-xs font-bold text-emerald-400">${msg.prediction.target1}</p>
+                      </div>
+                      <div className="border-r border-[#35373c]">
+                        <p className="text-[10px] text-[#949ba4]">Target 2</p>
+                        <p className="text-xs font-bold text-emerald-300">${msg.prediction.target2}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] uppercase text-[#949ba4]">Target 2</p>
-                        <p className="mt-0.5 text-xs font-bold text-emerald-300">
-                          {fmtPrice(msg.prediction.target2)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] uppercase text-rose-400 font-semibold">Invalidation Stop</p>
-                        <p className="mt-0.5 text-xs font-bold text-rose-400">
-                          {fmtPrice(msg.prediction.invalidationLevel)}
-                        </p>
+                        <p className="text-[10px] text-[#949ba4]">Invalidation Stop</p>
+                        <p className="text-xs font-bold text-rose-400">${msg.prediction.invalidationLevel}</p>
                       </div>
                     </div>
 
-                    {/* Technical reason */}
+                    {/* Technical Rationale */}
                     <p className="mt-2.5 text-xs text-[#dbdee1] leading-relaxed">
-                      💡 <span className="font-medium text-white">Mechanism:</span> {msg.prediction.technicalMechanism}
+                      💡 <span className="font-semibold text-bone">Mechanism:</span> {msg.prediction.technicalMechanism}
                     </p>
 
+                    {/* Card Footer */}
                     <div className="mt-3 flex items-center justify-between border-t border-[#35373c] pt-2 text-[11px] text-[#949ba4]">
                       <span>Horizon: <strong className="text-bone">{msg.prediction.timeHorizon}</strong></span>
                       <div className="flex items-center gap-2">
                         <button
-                          type="button"
-                          onClick={() => copyInvalidation(msg.prediction!.id, String(msg.prediction!.invalidationLevel))}
-                          className="flex items-center gap-1 rounded bg-[#35373c] px-2 py-1 text-bone hover:text-white"
+                          onClick={() => copyToClipboard(`Stop Loss: $${msg.prediction?.invalidationLevel}`, msg.id)}
+                          className="flex items-center gap-1 rounded bg-[#1e1f22] px-2 py-1 text-[10px] hover:text-white"
                         >
-                          {copiedId === msg.prediction.id ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
-                          {copiedId === msg.prediction.id ? "Copied" : "Copy Stop"}
+                          {copiedId === msg.id ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+                          <span>{copiedId === msg.id ? "Copied" : "Copy Stop"}</span>
                         </button>
                         <Link
                           href={`/ticker/${msg.prediction.symbol}`}
-                          className="flex items-center gap-1 rounded bg-gold/15 px-2 py-1 text-gold-bright hover:bg-gold/25"
+                          className="flex items-center gap-1 rounded bg-gold/15 px-2 py-1 text-[10px] font-semibold text-gold hover:bg-gold/25"
                         >
+                          <span>View Chart</span>
                           <ExternalLink className="h-3 w-3" />
-                          View Chart
                         </Link>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Emoji Reactions Row */}
+                {/* Interactive Reactions */}
                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
                   {Object.entries(msg.reactions).map(([emoji, count]) => {
+                    if (count <= 0) return null;
                     const active = msg.userReactions[emoji];
                     return (
                       <button
                         key={emoji}
-                        type="button"
                         onClick={() => toggleReaction(msg.id, emoji)}
-                        className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs transition-colors ${
+                        className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-xs transition-all ${
                           active
-                            ? "border-gold/50 bg-gold/15 text-gold-bright"
-                            : "border-[#3f4147] bg-[#2b2d31] text-[#949ba4] hover:bg-[#35373c] hover:text-white"
+                            ? "border border-gold/50 bg-gold/15 text-gold-bright"
+                            : "border border-transparent bg-[#2b2d31] text-[#949ba4] hover:bg-[#35373c]"
                         }`}
                       >
                         <span>{emoji}</span>
@@ -739,14 +858,13 @@ export default function DiscordLiveChat() {
                       </button>
                     );
                   })}
-                  {/* Quick Add Reaction Button */}
-                  <div className="hidden group-hover:flex items-center gap-1">
-                    {["🚀", "📈", "💎"].map((e) => (
+                  {/* Quick Add Emoji Reaction */}
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 ml-2">
+                    {["🚀", "🔥", "💎", "👀"].map((e) => (
                       <button
                         key={e}
-                        type="button"
                         onClick={() => toggleReaction(msg.id, e)}
-                        className="rounded p-1 text-xs hover:bg-[#35373c]"
+                        className="rounded hover:bg-[#35373c] p-0.5 text-xs"
                         title={`Add ${e}`}
                       >
                         {e}
@@ -762,31 +880,30 @@ export default function DiscordLiveChat() {
           {isTypingAI && (
             <div className="flex items-center gap-2 text-xs text-emerald-400 animate-pulse px-4 py-2">
               <Bot className="h-4 w-4" />
-              <span>Nexus Sentinel AI is computing 1-minute order book metrics...</span>
+              <span>Nexus Sentinel AI is scanning order book liquidity and computing targets...</span>
             </div>
           )}
         </div>
 
-        {/* Input Bar with Quick Commands */}
-        <div className="p-4 bg-[#313338]">
-          {/* Quick slash command chips */}
+        {/* Input Bar with Instant Command Execution */}
+        <div className="p-4 bg-[#313338] border-t border-[#1f2023]">
+          {/* Quick interactive slash command pills: Clicking immediately executes and sends! */}
           <div className="mb-2 flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-            <span className="text-[11px] font-semibold text-[#949ba4]">Quick Signals:</span>
+            <span className="text-[11px] font-semibold text-[#949ba4] shrink-0">Click to Send:</span>
             {[
               { label: "/predict NVDA", query: "/predict NVDA" },
               { label: "/predict BTC", query: "/predict BTC" },
               { label: "/predict SOL", query: "/predict SOL" },
               { label: "/predict FARTCOIN", query: "/predict FARTCOIN" },
               { label: "/predict GOAT", query: "/predict GOAT" },
-              { label: "🕒 Market Jam", query: "Jam pasar sekarang berapa?" },
+              { label: "🕒 Jam Market", query: "Jam pasar sekarang buka apa tutup?" },
             ].map((chip) => (
               <button
                 key={chip.label}
                 type="button"
-                onClick={() => {
-                  setInputText(chip.query);
-                }}
-                className="shrink-0 rounded-full border border-[#3f4147] bg-[#2b2d31] px-2.5 py-1 text-[11px] text-bone hover:border-gold/50 hover:text-gold-bright"
+                onClick={() => handleSendMessageWithText(chip.query)}
+                className="shrink-0 rounded-full border border-[#3f4147] bg-[#2b2d31] px-2.5 py-1 text-[11px] text-bone transition hover:border-gold hover:bg-gold/15 hover:text-gold-bright"
+                title={`Send "${chip.query}" directly to #${currentChannel.name}`}
               >
                 {chip.label}
               </button>
@@ -795,31 +912,32 @@ export default function DiscordLiveChat() {
 
           <form
             onSubmit={handleSendMessage}
-            className="flex items-center gap-2 rounded-lg bg-[#383a40] px-3.5 py-2.5 shadow-inner"
+            className="flex items-center gap-2 rounded-xl bg-[#383a40] px-3.5 py-2.5 shadow-inner"
           >
             <input
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder={`Message #${currentChannel.name} (type /predict [symbol] or ask in Indonesian/English)...`}
+              placeholder={`Message #${currentChannel.name} (type /predict [symbol] or ask in Indonesian/English, press Enter to send)...`}
               className="flex-1 bg-transparent text-sm text-white placeholder-[#80848e] focus:outline-none"
             />
             <button
               type="button"
               onClick={() => triggerMinutePrediction()}
-              className="hidden sm:inline-flex items-center gap-1 rounded bg-[#2b2d31] px-2.5 py-1 text-xs font-semibold text-gold hover:bg-gold/20"
+              className="hidden sm:inline-flex items-center gap-1 rounded-lg bg-[#2b2d31] px-2.5 py-1.5 text-xs font-semibold text-gold hover:bg-gold/20 transition"
               title="Request instant 1-minute prediction"
             >
               <Zap className="h-3.5 w-3.5" />
-              Instant Signal
+              <span>Instant Signal</span>
             </button>
             <button
               type="submit"
               disabled={!inputText.trim()}
-              className="flex h-8 w-8 items-center justify-center rounded-md bg-gold text-ink-950 transition-all disabled:opacity-30 hover:bg-gold-bright"
+              className="flex items-center gap-1.5 rounded-lg bg-gold px-4 py-1.5 text-xs font-bold text-ink-950 transition-all hover:bg-gold-bright disabled:opacity-40"
               aria-label="Send message"
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-3.5 w-3.5" />
+              <span>Send</span>
             </button>
           </form>
         </div>
@@ -890,6 +1008,7 @@ export default function DiscordLiveChat() {
           </p>
           <div className="mt-2 space-y-2">
             {[
+              { name: userName, role: "You (Active)", avatar: userAvatar },
               { name: "JakartaTrader_88", role: "Pro Member", avatar: "🇮🇩" },
               { name: "AlphaWhale_Sol", role: "Pump.fun Degen", avatar: "🐋" },
               { name: "ScalpMaster_NY", role: "Nasdaq Scalper", avatar: "⚡" },
@@ -908,6 +1027,174 @@ export default function DiscordLiveChat() {
           </div>
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      {isEditingProfile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm rounded-2xl border border-line bg-[#2b2d31] p-5 shadow-2xl text-bone">
+            <div className="flex items-center justify-between border-b border-[#35373c] pb-3">
+              <h4 className="font-semibold text-sm">Customise Your Trader Handle</h4>
+              <button onClick={() => setIsEditingProfile(false)} className="text-muted hover:text-bone">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="mt-4 space-y-4">
+              <div>
+                <label className="text-xs text-[#949ba4] block mb-1">Pick Avatar Emoji</label>
+                <div className="flex flex-wrap gap-2">
+                  {["👤", "⚡", "🚀", "🐋", "🦁", "💎", "👑", "🎯", "🇮🇩", "🇺🇸"].map((av) => (
+                    <button
+                      key={av}
+                      type="button"
+                      onClick={() => setUserAvatar(av)}
+                      className={`h-9 w-9 rounded-lg border text-lg flex items-center justify-center ${
+                        userAvatar === av ? "border-gold bg-gold/20" : "border-[#3f4147] bg-[#1e1f22]"
+                      }`}
+                    >
+                      {av}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-[#949ba4] block mb-1">Your Nickname / Handle</label>
+                <input
+                  type="text"
+                  value={profileInputName}
+                  onChange={(e) => setProfileInputName(e.target.value)}
+                  placeholder="e.g. kakaahanif, SolWhale99..."
+                  className="w-full rounded-lg border border-[#3f4147] bg-[#1e1f22] px-3 py-2 text-sm text-bone focus:border-gold focus:outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsEditingProfile(false)}
+                  className="rounded-lg border border-line px-3 py-1.5 text-xs text-muted hover:text-bone"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveProfile}
+                  className="rounded-lg bg-gold px-4 py-1.5 text-xs font-bold text-ink-950 hover:bg-gold-bright"
+                >
+                  Save Profile
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Post Trade Setup / Signal Modal */}
+      {showSignalModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl border border-line bg-[#2b2d31] p-5 shadow-2xl text-bone">
+            <div className="flex items-center justify-between border-b border-[#35373c] pb-3">
+              <div className="flex items-center gap-2">
+                <Radio className="h-4 w-4 text-gold" />
+                <h4 className="font-semibold text-sm">Broadcast Your Trade Setup</h4>
+              </div>
+              <button onClick={() => setShowSignalModal(false)} className="text-muted hover:text-bone">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handlePostSignal} className="mt-4 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] text-[#949ba4] block mb-1">Symbol Ticker</label>
+                  <input
+                    type="text"
+                    required
+                    value={sigSymbol}
+                    onChange={(e) => setSigSymbol(e.target.value.toUpperCase())}
+                    placeholder="e.g. NVDA, BTC, GOAT"
+                    className="w-full rounded-lg border border-[#3f4147] bg-[#1e1f22] px-3 py-1.5 font-mono text-xs text-bone focus:border-gold focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] text-[#949ba4] block mb-1">Stance / Side</label>
+                  <select
+                    value={sigStance}
+                    onChange={(e) => setSigStance(e.target.value as any)}
+                    className="w-full rounded-lg border border-[#3f4147] bg-[#1e1f22] px-3 py-1.5 text-xs text-bone focus:border-gold focus:outline-none"
+                  >
+                    <option value="STRONG BUY / LONG">STRONG BUY / LONG</option>
+                    <option value="ACCUMULATE / DIP">ACCUMULATE / DIP</option>
+                    <option value="TRIM / PROFIT">TRIM / PROFIT</option>
+                    <option value="AVOID / SHORT">AVOID / SHORT</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 font-mono">
+                <div>
+                  <label className="text-[10px] text-[#949ba4] block mb-1">Entry ($)</label>
+                  <input
+                    type="text"
+                    required
+                    value={sigPrice}
+                    onChange={(e) => setSigPrice(e.target.value)}
+                    className="w-full rounded border border-[#3f4147] bg-[#1e1f22] px-2 py-1 text-xs text-bone"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-[#949ba4] block mb-1">Target ($)</label>
+                  <input
+                    type="text"
+                    required
+                    value={sigTarget}
+                    onChange={(e) => setSigTarget(e.target.value)}
+                    className="w-full rounded border border-[#3f4147] bg-[#1e1f22] px-2 py-1 text-xs text-emerald-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-[#949ba4] block mb-1">Stop ($)</label>
+                  <input
+                    type="text"
+                    required
+                    value={sigStop}
+                    onChange={(e) => setSigStop(e.target.value)}
+                    className="w-full rounded border border-[#3f4147] bg-[#1e1f22] px-2 py-1 text-xs text-rose-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[11px] text-[#949ba4] block mb-1">Setup Thesis / Mechanism</label>
+                <textarea
+                  rows={2}
+                  value={sigNotes}
+                  onChange={(e) => setSigNotes(e.target.value)}
+                  placeholder="e.g. 20-EMA reclaim on 15m candle, RSI divergence..."
+                  className="w-full rounded-lg border border-[#3f4147] bg-[#1e1f22] px-3 py-1.5 text-xs text-bone focus:border-gold focus:outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-[#35373c]">
+                <button
+                  type="button"
+                  onClick={() => setShowSignalModal(false)}
+                  className="rounded-lg border border-line px-3 py-1.5 text-xs text-muted hover:text-bone"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-lg bg-gold px-4 py-1.5 text-xs font-bold text-ink-950 hover:bg-gold-bright"
+                >
+                  Broadcast Signal
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -30,7 +30,7 @@ export default function AcademyPage() {
             <span><span className="font-mono text-bone">{totalLessons}</span> lessons</span>
             <span><span className="font-mono text-bone">{totalMinutes}</span> minutes</span>
             <span><span className="font-mono text-bone">1</span> foundation course free</span>
-            <span className="text-gold-bright font-medium">★ Watchable HD Video Masterclasses Available</span>
+            <span className="text-gold-bright font-medium">★ 20 Watchable HD Video Masterclasses Available</span>
           </div>
 
           <div className="mt-8 rounded-xl border border-gold/40 bg-gold/[0.07] p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -38,9 +38,9 @@ export default function AcademyPage() {
               <span className="rounded-full border border-gold/50 bg-gold/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-gold-bright">
                 Now Streaming
               </span>
-              <h2 className="mt-2 font-display text-xl text-bone">Watchable Video Tutorial Studio</h2>
+              <h2 className="mt-2 font-display text-xl text-bone">Watchable Video Tutorial Studio (20 Masterclasses)</h2>
               <p className="mt-1 max-w-xl text-xs text-muted leading-relaxed">
-                Watch real playable video masterclasses with chapter bookmarks, synchronized takeaways, and comprehension quizzes across market structure, crypto float, and pump.fun meme risk.
+                Watch 20 real playable video masterclasses with chapter bookmarks, synchronized takeaways, and comprehension quizzes across market structure, crypto float, order flow, and pump.fun meme risk.
               </p>
             </div>
             <Link

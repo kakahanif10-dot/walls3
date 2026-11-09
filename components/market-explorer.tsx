@@ -6,6 +6,7 @@ import Sparkline from "@/components/sparkline";
 import WatchlistButton from "@/components/watchlist-button";
 import { LivePrice, LiveChange } from "@/components/live-price";
 import { fmtPct, stanceColor, type Row } from "@/lib/market";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 
 type SortKey = "score" | "change24h" | "change30d" | "name";
 
@@ -15,6 +16,8 @@ export default function MarketExplorer({ rows }: { rows: Row[] }) {
   const [query, setQuery] = useState("");
   const [stance, setStance] = useState<(typeof STANCES)[number]>("All");
   const [sort, setSort] = useState<SortKey>("score");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(30);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -34,6 +37,25 @@ export default function MarketExplorer({ rows }: { rows: Row[] }) {
     });
   }, [rows, query, stance, sort]);
 
+  // Reset to page 1 when query, stance, or sort changes
+  const handleQueryChange = (val: string) => {
+    setQuery(val);
+    setPage(1);
+  };
+
+  const handleStanceChange = (s: (typeof STANCES)[number]) => {
+    setStance(s);
+    setPage(1);
+  };
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginatedRows = useMemo(() => {
+    if (pageSize >= 1000) return filtered;
+    const start = (currentPage - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, currentPage, pageSize]);
+
   return (
     <div>
       <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -42,7 +64,7 @@ export default function MarketExplorer({ rows }: { rows: Row[] }) {
             <button
               key={s}
               type="button"
-              onClick={() => setStance(s)}
+              onClick={() => handleStanceChange(s)}
               className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
                 stance === s
                   ? "border-gold/50 bg-gold/10 text-gold-bright"
@@ -54,16 +76,16 @@ export default function MarketExplorer({ rows }: { rows: Row[] }) {
           ))}
           <span className="ml-1 inline-flex items-center gap-1.5 rounded-full border border-up/30 bg-up/5 px-2.5 py-1 text-[10px] uppercase tracking-[0.12em] text-up">
             <span className="live-dot h-1 w-1 rounded-full bg-up" aria-hidden="true" />
-            Live
+            Live ({filtered.length})
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <input
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search symbol, name or theme"
-            className="w-full rounded-full border border-line bg-ink-900 px-4 py-2 text-sm text-bone placeholder:text-muted/70 focus:border-gold/50 focus:outline-none lg:w-64"
+            onChange={(e) => handleQueryChange(e.target.value)}
+            placeholder="Search 550+ symbols, names or themes..."
+            className="w-full rounded-full border border-line bg-ink-900 px-4 py-2 text-sm text-bone placeholder:text-muted/70 focus:border-gold/50 focus:outline-none lg:w-72"
           />
           <select
             value={sort}
@@ -75,6 +97,20 @@ export default function MarketExplorer({ rows }: { rows: Row[] }) {
             <option value="change24h">Sort: 24h</option>
             <option value="change30d">Sort: 30d</option>
             <option value="name">Sort: symbol</option>
+          </select>
+          <select
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setPage(1);
+            }}
+            className="rounded-full border border-line bg-ink-900 px-3 py-2 text-xs text-bone focus:border-gold/50 focus:outline-none"
+            aria-label="Items per page"
+          >
+            <option value={30}>30 / page</option>
+            <option value={60}>60 / page</option>
+            <option value={120}>120 / page</option>
+            <option value={1000}>Show All</option>
           </select>
         </div>
       </div>
@@ -95,7 +131,7 @@ export default function MarketExplorer({ rows }: { rows: Row[] }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-line/70">
-            {filtered.map((row) => (
+            {paginatedRows.map((row) => (
               <tr key={row.symbol} className="group transition-colors hover:bg-ink-850/60">
                 <td className="px-4 py-3.5">
                   <Link href={`/ticker/${row.symbol}`} className="flex items-center gap-3">
@@ -103,11 +139,11 @@ export default function MarketExplorer({ rows }: { rows: Row[] }) {
                       <span className="font-mono text-sm font-semibold text-bone group-hover:text-gold-bright">
                         {row.symbol}
                       </span>
-                      <span className="text-xs text-muted">{row.name}</span>
+                      <span className="text-xs text-muted max-w-[180px] sm:max-w-none truncate">{row.name}</span>
                     </span>
                   </Link>
                 </td>
-                <td className="hidden px-4 py-3.5 text-xs text-muted sm:table-cell">{row.group}</td>
+                <td className="hidden px-4 py-3.5 text-xs text-muted sm:table-cell max-w-[220px] truncate">{row.group}</td>
                 <td className="px-4 py-3.5 text-right font-mono text-sm text-bone">
                   <LivePrice symbol={row.symbol} base={row.price} />
                 </td>
@@ -150,6 +186,63 @@ export default function MarketExplorer({ rows }: { rows: Row[] }) {
           </p>
         )}
       </div>
+
+      {/* Pagination Bar */}
+      {filtered.length > pageSize && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 px-2 py-2 text-xs text-muted">
+          <div>
+            Showing{" "}
+            <span className="font-mono font-medium text-bone">
+              {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filtered.length)}
+            </span>{" "}
+            of <span className="font-mono font-medium text-bone">{filtered.length}</span> assets
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              disabled={currentPage <= 1}
+              onClick={() => setPage(1)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-ink-900 transition hover:border-gold/40 hover:text-bone disabled:opacity-30"
+              title="First Page"
+            >
+              <ChevronsLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              disabled={currentPage <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-ink-900 transition hover:border-gold/40 hover:text-bone disabled:opacity-30"
+              title="Previous Page"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+
+            <span className="px-3 font-mono text-bone">
+              Page <span className="text-gold-bright font-bold">{currentPage}</span> of {totalPages}
+            </span>
+
+            <button
+              type="button"
+              disabled={currentPage >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-ink-900 transition hover:border-gold/40 hover:text-bone disabled:opacity-30"
+              title="Next Page"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              disabled={currentPage >= totalPages}
+              onClick={() => setPage(totalPages)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-ink-900 transition hover:border-gold/40 hover:text-bone disabled:opacity-30"
+              title="Last Page"
+            >
+              <ChevronsRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       <p className="mt-4 text-xs leading-relaxed text-muted/70">
         Quotes come from public market endpoints and refresh about once a minute; equity prices are
