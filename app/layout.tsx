@@ -3,6 +3,7 @@ import "./globals.css";
 import SiteHeader from "@/components/site-header";
 import SiteFooter from "@/components/site-footer";
 import LivePricesProvider from "@/components/live-prices";
+import { AuthProvider } from "@/lib/auth-context";
 import { liveSeed } from "@/lib/market";
 import { ensureMarketData } from "@/lib/market-data";
 
@@ -41,12 +42,56 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="en">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var _fetch = window.fetch;
+                  try {
+                    Object.defineProperty(window, 'fetch', {
+                      get: function() { return _fetch; },
+                      set: function(v) { _fetch = v; },
+                      configurable: true,
+                      enumerable: true
+                    });
+                  } catch (e1) {
+                    try {
+                      var proto = Object.getPrototypeOf(window);
+                      if (proto) {
+                        Object.defineProperty(proto, 'fetch', {
+                          get: function() { return _fetch; },
+                          set: function(v) { _fetch = v; },
+                          configurable: true,
+                          enumerable: true
+                        });
+                      }
+                    } catch (e2) {}
+                  }
+                } catch (e) {}
+
+                try {
+                  window.addEventListener('error', function(event) {
+                    if (event && event.filename && (event.filename.indexOf('chrome-extension://') !== -1 || (event.message && event.message.indexOf('fetch') !== -1 && event.message.indexOf('getter') !== -1))) {
+                      event.preventDefault();
+                      event.stopPropagation();
+                    }
+                  }, true);
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-screen antialiased">
-        <LivePricesProvider seed={liveSeed()} source={source} delayed={delayed}>
-          <SiteHeader />
-          <main>{children}</main>
-          <SiteFooter />
-        </LivePricesProvider>
+        <AuthProvider>
+          <LivePricesProvider seed={liveSeed()} source={source} delayed={delayed}>
+            <SiteHeader />
+            <main>{children}</main>
+            <SiteFooter />
+          </LivePricesProvider>
+        </AuthProvider>
       </body>
     </html>
   );

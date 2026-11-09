@@ -7,6 +7,7 @@ const COLUMNS = [
       { href: "/markets", label: "S&P 500 & Nasdaq" },
       { href: "/crypto", label: "Binance crypto" },
       { href: "/meme-coins", label: "Pump.fun memes" },
+      { href: "/pipeline", label: "Data Pipeline & 2,000+ Scoring" },
       { href: "/chat", label: "Live Trading Chat" },
       { href: "/ticker/BTC", label: "Bitcoin trend score" },
       { href: "/ticker/NVDA", label: "NVIDIA trend score" },
@@ -32,8 +33,10 @@ const COLUMNS = [
     ],
   },
   {
-    title: "Company",
+    title: "Tools & Company",
     links: [
+      { href: "/calculator", label: "Position Sizing Calculator" },
+      { href: "/pipeline", label: "Pipeline Health & Feeds" },
       { href: "/pricing", label: "Plans & pricing" },
       { href: "/chat", label: "Discord Community" },
       { href: "/watchlist", label: "Your watchlist" },

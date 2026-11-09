@@ -34,6 +34,9 @@ import {
   type VideoLesson,
   type VideoChapter,
 } from "@/lib/academy-videos";
+import { useAuth } from "@/lib/auth-context";
+import { db } from "@/lib/firebase";
+import { doc, setDoc, onSnapshot, collection } from "firebase/firestore";
 
 export type { VideoLesson, VideoChapter };
 export const SAMPLE_VIDEO_LESSONS = VIDEO_LESSONS_20;
@@ -48,6 +51,37 @@ export default function WatchableVideoPlayer({
   const [selectedModule, setSelectedModule] = useState<string>("All Modules");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeLessonIndex, setActiveLessonIndex] = useState(0);
+
+  const { user } = useAuth();
+  const [completedLessons, setCompletedLessons] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (!user) return;
+    const unsub = onSnapshot(collection(db, "users", user.uid, "progress"), (snap) => {
+      const completed: Record<string, boolean> = {};
+      snap.forEach((d) => {
+        if (d.data().completed) completed[d.id] = true;
+      });
+      setCompletedLessons(completed);
+    });
+    return () => unsub();
+  }, [user]);
+
+  const toggleCompleteLesson = async (lessonId: string) => {
+    const isDone = !!completedLessons[lessonId];
+    setCompletedLessons((prev) => ({ ...prev, [lessonId]: !isDone }));
+    if (user) {
+      try {
+        await setDoc(doc(db, "users", user.uid, "progress", lessonId), {
+          lessonId,
+          completed: !isDone,
+          updatedAt: new Date().toISOString(),
+        });
+      } catch (err) {
+        console.warn("Could not save lesson progress to Firestore:", err);
+      }
+    }
+  };
 
   // Viewing mode: "simulation" (interactive live animated trading chart studio) or "video" (HTML5 stream)
   const [playerMode, setPlayerMode] = useState<"simulation" | "video">("simulation");
@@ -516,6 +550,20 @@ export default function WatchableVideoPlayer({
           >
             {copiedLink ? <Check className="h-3.5 w-3.5 text-up" /> : <Share2 className="h-3.5 w-3.5" />}
             <span className="hidden sm:inline">{copiedLink ? "Copied" : "Share"}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => toggleCompleteLesson(lesson.id)}
+            className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+              completedLessons[lesson.id]
+                ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-400"
+                : "border-line bg-ink-900 text-muted hover:text-bone hover:border-gold/40"
+            }`}
+            title="Track completion in your account"
+          >
+            <CheckCircle className={`h-3.5 w-3.5 ${completedLessons[lesson.id] ? "text-emerald-400" : "text-muted"}`} />
+            <span>{completedLessons[lesson.id] ? "Completed" : "Mark Done"}</span>
           </button>
         </div>
       </div>

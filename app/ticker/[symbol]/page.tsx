@@ -7,6 +7,7 @@ import WatchlistButton from "@/components/watchlist-button";
 import LiveClock from "@/components/live-clock";
 import FeedBadge from "@/components/feed-badge";
 import { LivePrice, LiveChange } from "@/components/live-price";
+import PositionSizingCalculator from "@/components/position-sizing-calculator";
 import { ARTICLES } from "@/lib/content";
 import {
   ASSETS,
@@ -194,6 +195,13 @@ export default async function TickerPage({ params }: { params: Promise<{ symbol:
               <p className="max-w-sm text-sm leading-relaxed text-muted">{trigger.note}</p>
             </div>
           </div>
+
+          <PositionSizingCalculator
+            initialSymbol={asset.symbol}
+            initialPrice={m.last}
+            initialVolatility={Math.round(m.vol * 1000) / 10}
+            initialInvalidation={trigger.value}
+          />
 
           <div>
             <h2 className="font-display text-2xl text-bone">Context</h2>

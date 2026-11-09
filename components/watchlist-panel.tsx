@@ -3,11 +3,13 @@
 import Link from "next/link";
 import Sparkline from "@/components/sparkline";
 import { useWatchlist } from "@/lib/use-watchlist";
+import { useAuth } from "@/lib/auth-context";
 import { LivePrice, LiveChange } from "@/components/live-price";
 import { stanceColor, type Row } from "@/lib/market";
 
 export default function WatchlistPanel({ rows }: { rows: Row[] }) {
   const { symbols, ready, toggle } = useWatchlist();
+  const { user, signInWithGoogle } = useAuth();
   const tracked = rows.filter((r) => symbols.includes(r.symbol));
 
   if (!ready) {
@@ -41,8 +43,36 @@ export default function WatchlistPanel({ rows }: { rows: Row[] }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-line">
-      <table className="w-full text-left">
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-ink-900/60 px-4 py-2.5 text-xs">
+        <div className="flex items-center gap-2">
+          {user ? (
+            <>
+              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              <span className="text-muted">
+                Synced to cloud Firestore: <span className="text-bone">{user.email}</span>
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="h-2 w-2 rounded-full bg-amber-400/80" />
+              <span className="text-muted">Stored in local browser. Sign in to sync across your devices.</span>
+            </>
+          )}
+        </div>
+        {!user && (
+          <button
+            type="button"
+            onClick={() => signInWithGoogle()}
+            className="text-xs text-gold hover:text-gold-bright transition-colors font-medium"
+          >
+            Sign in with Google →
+          </button>
+        )}
+      </div>
+
+      <div className="overflow-hidden rounded-xl border border-line">
+        <table className="w-full text-left">
         <thead className="bg-ink-900 text-[10px] uppercase tracking-[0.16em] text-muted">
           <tr>
             <th className="px-4 py-3 font-medium">Asset</th>
@@ -94,6 +124,7 @@ export default function WatchlistPanel({ rows }: { rows: Row[] }) {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

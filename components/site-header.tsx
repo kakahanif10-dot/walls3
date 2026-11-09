@@ -5,12 +5,15 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import LiveClock from "@/components/live-clock";
 import FeedBadge from "@/components/feed-badge";
+import AuthButton from "@/components/auth-button";
 
 const LINKS = [
   { href: "/markets", label: "Markets" },
   { href: "/crypto", label: "Crypto" },
   { href: "/meme-coins", label: "Meme coins" },
+  { href: "/pipeline", label: "Pipeline" },
   { href: "/chat", label: "Live Chat", live: true },
+  { href: "/calculator", label: "Calculator" },
   { href: "/academy", label: "Academy" },
   { href: "/academy/watch", label: "Watch Video" },
   { href: "/research", label: "Research" },
@@ -65,6 +68,7 @@ export default function SiteHeader() {
           >
             Watchlist
           </Link>
+          <AuthButton />
           <Link
             href="/pricing"
             className="rounded-full border border-gold/50 bg-gold/10 px-4 py-2 text-sm font-medium text-gold-bright transition-colors hover:bg-gold/20"
@@ -108,6 +112,10 @@ export default function SiteHeader() {
                 {link.label}
               </Link>
             ))}
+            <div className="pt-2 border-t border-line/60 flex items-center justify-between">
+              <span className="text-xs text-muted">Account</span>
+              <AuthButton />
+            </div>
           </div>
         </nav>
       )}

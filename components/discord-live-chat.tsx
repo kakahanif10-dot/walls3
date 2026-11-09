@@ -26,6 +26,10 @@ import {
   type MinutePrediction,
 } from "@/lib/ai-moderator";
 import { ASSETS } from "@/lib/market-assets";
+import { useAuth } from "@/lib/auth-context";
+import { db } from "@/lib/firebase";
+import { collection, doc, setDoc, onSnapshot, query, limit } from "firebase/firestore";
+import { handleFirestoreError, OperationType } from "@/lib/firestore-error";
 
 export type ChatMessage = {
   id: string;
@@ -267,11 +271,20 @@ export default function DiscordLiveChat() {
   const [isTypingAI, setIsTypingAI] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  const { user, profile, signInWithGoogle } = useAuth();
+
   // User Profile
   const [userName, setUserName] = useState("Trader (You)");
   const [userAvatar, setUserAvatar] = useState("👤");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileInputName, setProfileInputName] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      setUserName(user.displayName || user.email?.split("@")[0] || "Trader");
+      if (user.photoURL) setUserAvatar(user.photoURL);
+    }
+  }, [user]);
 
   // Post Signal Modal
   const [showSignalModal, setShowSignalModal] = useState(false);
@@ -302,12 +315,53 @@ export default function DiscordLiveChat() {
       const savedProfile = localStorage.getItem("nws_user_profile");
       if (savedProfile) {
         const p = JSON.parse(savedProfile);
-        if (p.name) setUserName(p.name);
-        if (p.avatar) setUserAvatar(p.avatar);
+        if (p.name && !user) setUserName(p.name);
+        if (p.avatar && !user) setUserAvatar(p.avatar);
       }
     } catch {
       // ignore
     }
+  }, [user]);
+
+  // Listen for real-time trade ideas stored in Firestore
+  useEffect(() => {
+    const q = query(collection(db, "trade_ideas"), limit(20));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === "added") {
+            const data = change.doc.data();
+            const firestoreId = `firestore-${change.doc.id}`;
+            setMessages((prev) => {
+              if (prev.some((m) => m.id === firestoreId)) return prev;
+              const ideaMsg: ChatMessage = {
+                id: firestoreId,
+                channelId: "general-trading",
+                author: {
+                  name: data.userName || "Verified Desk Trader",
+                  avatar: data.userAvatar || "👤",
+                  role: "community",
+                  roleLabel: "FIRESTORE VERIFIED",
+                  roleColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40",
+                  isVerified: true,
+                },
+                content: `🎯 **COMMUNITY SETUP: $${data.symbol} (${data.stance})**\n${data.content}\nTarget: ${data.target} | Stop: ${data.invalidation}`,
+                timestamp: data.createdAt || new Date().toISOString(),
+                timeLabel: `${formatTimeZones(new Date(data.createdAt || Date.now())).wibTime} WIB`,
+                reactions: { "🚀": 3, "🔥": 2 },
+                userReactions: {},
+              };
+              return [...prev, ideaMsg];
+            });
+          }
+        });
+      },
+      (error) => {
+        console.warn("Firestore trade ideas live subscription fallback:", error);
+      }
+    );
+    return () => unsubscribe();
   }, []);
 
   // Save messages to localStorage
@@ -539,6 +593,27 @@ export default function DiscordLiveChat() {
 
     setMessages((prev) => [...prev, userSignalMsg]);
     setShowSignalModal(false);
+
+    if (user) {
+      try {
+        const ideaId = `idea-${Date.now()}`;
+        setDoc(doc(db, "trade_ideas", ideaId), {
+          userId: user.uid,
+          userName: user.displayName || user.email?.split("@")[0] || "Desk Trader",
+          userAvatar: user.photoURL || "",
+          symbol: customPrediction.symbol,
+          stance: sigStance,
+          target: `$${sigTarget}`,
+          invalidation: `$${sigStop}`,
+          content: `Entry: $${sigPrice} | Target: $${sigTarget} | Stop: $${sigStop}. ${sigNotes || "Community breakout setup with technical momentum."}`,
+          createdAt: date.toISOString(),
+        }).catch((err) => {
+          console.warn("Could not save trade idea to Firestore:", err);
+        });
+      } catch (err) {
+        console.warn("Firestore trade setup persistence error:", err);
+      }
+    }
   };
 
   const toggleReaction = (msgId: string, emoji: string) => {
