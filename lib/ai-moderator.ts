@@ -198,7 +198,7 @@ export function generateMinutePrediction(forceSymbol?: string, seedIndex?: numbe
 
 /**
  * Generates an institutional-grade Hourly Market Synthesis & Liquidity Regime Report
- * by the automated AI Moderator.
+ * by the automated Quantitative Strategy Desk.
  */
 export function generateHourlyMarketSynthesis(hoursAgo = 0): ChatMessage {
   const date = new Date(Date.now() - hoursAgo * 3600 * 1000);
@@ -240,29 +240,29 @@ export function generateHourlyMarketSynthesis(hoursAgo = 0): ChatMessage {
   const theme = hourlyThemes[hoursAgo % hourlyThemes.length];
 
   const content =
-    `🏛️ **HOURLY MARKET SYNTHESIS & LIQUIDITY REGIME — [${wibTime} WIB / ${utcTime} UTC / ${estTime} EST]**\n` +
+    `🏛️ **HOURLY MARKET SYNTHESIS & LIQUIDITY REGIME — [${utcTime} UTC / ${estTime} EST / ${wibTime} SGT]**\n` +
     `*Session Status:* \`${sessionStatus}\`\n\n` +
     `📊 **${theme.title}**\n` +
     `${theme.summary}\n\n` +
     `⚡ **Active Momentum Leaders:** ${theme.leaders}\n` +
     `🛡️ **Risk Architecture:** ${theme.invalidationNote}\n\n` +
-    `_Automated AI Moderator synthesizes market data 24/7. Continuous real-time predictions regenerate every 60 seconds._`;
+    `_Quantitative Desk terminal stream updates continuously. Model predictions regenerate every 60 seconds._`;
 
   return {
     id: `hourly-synthesis-${date.getTime()}`,
     channelId: "general-trading",
     author: {
-      name: "Nexus Sentinel AI",
-      avatar: "🤖",
+      name: "Quant Strategy Desk",
+      avatar: "🏛️",
       role: "ai-mod",
-      roleLabel: "BOT MOD",
+      roleLabel: "QUANT DESK",
       roleColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40",
       isBot: true,
       isVerified: true,
     },
     content,
     timestamp: date.toISOString(),
-    timeLabel: `${wibTime} WIB`,
+    timeLabel: `${estTime} EST`,
     reactions: { "🧠": 28, "🚀": 19, "💎": 22 },
     userReactions: {},
   };
@@ -320,16 +320,16 @@ export function generateContinuousFloorHistory(): ChatMessage[] {
       ],
     },
     {
-      name: "JakartaTrader_88",
-      avatar: "🇮🇩",
+      name: "Vance_Capital",
+      avatar: "🏛️",
       role: "pro-trader" as const,
       roleLabel: "PRO TRADER",
       roleColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40",
       isVerified: false,
       messages: [
-        "Mantap analisa AI Mod! Gua baru entry scalping di $SOL pas retest $214. Level invalidasi udah dipasang persis di bawah swing low.",
-        "Pagi rekan-rekan trading floor! Sektor meme coin pump.fun volume hari ini cukup aktif. Selalu jaga batas risiko 2% ya.",
-        "Order book tape di Nasdaq pre-market keliatan tebel di bid side. Mengikuti sinyal Buy dari Nexus Sentinel AI.",
+        "Quant desk signal on $SOL retest was textbook execution. Anchored stop placed directly beneath the prior swing low.",
+        "Morning session order flow: speculative pump.fun liquidity rotational volume is spiking. Maintaining strict 2% portfolio exposure cap.",
+        "Level 2 depth at Nasdaq pre-market exhibits massive bid support. Following the Quant Strategy Desk Buy signal.",
       ],
     },
     {
@@ -349,34 +349,34 @@ export function generateContinuousFloorHistory(): ChatMessage[] {
 
   for (const hoursAgo of hoursToCheckpoint) {
     const hourDate = new Date(now - hoursAgo * 3600 * 1000);
-    const { wibTime } = formatTimeZones(hourDate);
+    const { estTime } = formatTimeZones(hourDate);
 
-    // 1. Add Hourly AI Synthesis Report
+    // 1. Add Hourly Quant Synthesis Report
     messages.push(generateHourlyMarketSynthesis(hoursAgo));
 
-    // 2. Add 1-2 Automated Minute Predictions from AI Moderator
+    // 2. Add 1-2 Automated Minute Predictions from Quant Strategy Desk
     const symbols = hoursAgo % 2 === 0 ? ["NVDA", "BTC"] : ["SOL", "AAPL"];
     for (let sIdx = 0; sIdx < symbols.length; sIdx++) {
       const predDate = new Date(hourDate.getTime() + (sIdx * 12 + 8) * 60 * 1000);
-      const { wibTime: predWib } = formatTimeZones(predDate);
+      const { estTime: predEst } = formatTimeZones(predDate);
       const prediction = generateMinutePrediction(symbols[sIdx], hoursAgo * 10 + sIdx);
 
       messages.push({
         id: `auto-pred-${hoursAgo}-${sIdx}-${predDate.getTime()}`,
         channelId: sIdx === 0 ? "general-trading" : "crypto-signals",
         author: {
-          name: "Nexus Sentinel AI",
-          avatar: "🤖",
+          name: "Quant Strategy Desk",
+          avatar: "🏛️",
           role: "ai-mod",
-          roleLabel: "BOT MOD",
+          roleLabel: "QUANT DESK",
           roleColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40",
           isBot: true,
           isVerified: true,
         },
-        content: `⚡ **AUTOMATED MINUTE ALPHA ALERT: $${prediction.symbol} (${prediction.name})**\nReal-time technical prediction generated at ${predWib} WIB. Confidence: ${prediction.confidence}%.`,
+        content: `⚡ **QUANTITATIVE MINUTE SIGNAL: $${prediction.symbol} (${prediction.name})**\nReal-time model prediction generated at ${predEst} EST. Confidence: ${prediction.confidence}%.`,
         prediction,
         timestamp: predDate.toISOString(),
-        timeLabel: `${predWib} WIB`,
+        timeLabel: `${predEst} EST`,
         reactions: { "🚀": 14 + sIdx * 5, "💎": 11, "🔥": 8 },
         userReactions: {},
       });
@@ -398,7 +398,7 @@ export function generateContinuousFloorHistory(): ChatMessage[] {
       },
       content: trader1.messages[hoursAgo % trader1.messages.length],
       timestamp: traderMsg1Date.toISOString(),
-      timeLabel: `${formatTimeZones(traderMsg1Date).wibTime} WIB`,
+      timeLabel: `${formatTimeZones(traderMsg1Date).estTime} EST`,
       reactions: { "📈": 9, "👍": 12 },
       userReactions: {},
     });
@@ -410,7 +410,7 @@ export function generateContinuousFloorHistory(): ChatMessage[] {
 }
 
 /**
- * Handles user natural language messages or slash commands to generate an AI Moderator response.
+ * Handles user natural language messages or slash commands to generate a Quant Desk response.
  */
 export function handleAIModeratorQuery(input: string): { reply: string; prediction?: MinutePrediction } {
   const clean = input.trim();
@@ -421,7 +421,7 @@ export function handleAIModeratorQuery(input: string): { reply: string; predicti
   if (ASSET_BY_SYMBOL[strippedClean]) {
     const pred = generateMinutePrediction(strippedClean);
     const asset = ASSET_BY_SYMBOL[strippedClean];
-    const reply = `🤖 **Nexus Sentinel AI Analysis: $${asset.symbol} (${asset.name})**\n` +
+    const reply = `🏛️ **Quant Strategy Desk Analysis: $${asset.symbol} (${asset.name})**\n` +
       `• **Stance:** **${pred.stance}** (${pred.confidence}% Model Conviction)\n` +
       `• **Current Price:** ${fmtPrice(pred.currentPrice)} | **Trend Score:** ${pred.score}/100\n` +
       `• **Targets:** Target 1: ${fmtPrice(pred.target1)} | Target 2: ${fmtPrice(pred.target2)}\n` +
@@ -429,12 +429,12 @@ export function handleAIModeratorQuery(input: string): { reply: string; predicti
       `• **Risk/Reward:** ${pred.riskRewardRatio} | **60d Realized Vol:** ${pred.realizedVol}%\n` +
       `• **Technical Mechanism:** ${pred.technicalMechanism}\n` +
       `• **Horizon:** ${pred.timeHorizon} | **Catalyst Watch:** ${pred.catalystAlert}\n` +
-      `_Signal registered at ${pred.wibTime} WIB / ${pred.utcTime} UTC / ${pred.estTime} EST._`;
+      `_Signal registered at ${pred.utcTime} UTC / ${pred.estTime} EST._`;
     return { reply, prediction: pred };
   }
 
-  // 2. Check for /predict or /stance or keywords (e.g. "/predict nvda", "analisa btc", "how is sol")
-  const matchSymbol = lower.match(/(?:\/predict|\/stance|\$|predict|prediksi|cek|bagaimana|analisa|target|entry|review)\s+([a-z0-9]+)/i);
+  // 2. Check for /predict or /stance or keywords (e.g. "/predict nvda", "analyze btc", "how is sol")
+  const matchSymbol = lower.match(/(?:\/predict|\/stance|\$|predict|analyze|audit|forecast|target|entry|review)\s+([a-z0-9]+)/i);
   let potentialTicker = matchSymbol ? matchSymbol[1].toUpperCase() : null;
 
   if (!potentialTicker) {
@@ -451,7 +451,7 @@ export function handleAIModeratorQuery(input: string): { reply: string; predicti
   if (potentialTicker && ASSET_BY_SYMBOL[potentialTicker]) {
     const pred = generateMinutePrediction(potentialTicker);
     const asset = ASSET_BY_SYMBOL[potentialTicker];
-    const reply = `🤖 **Nexus Sentinel AI Analysis: $${asset.symbol} (${asset.name})**\n` +
+    const reply = `🏛️ **Quant Strategy Desk Analysis: $${asset.symbol} (${asset.name})**\n` +
       `• **Stance:** **${pred.stance}** (${pred.confidence}% Model Conviction)\n` +
       `• **Current Price:** ${fmtPrice(pred.currentPrice)} | **Trend Score:** ${pred.score}/100\n` +
       `• **Targets:** Target 1: ${fmtPrice(pred.target1)} | Target 2: ${fmtPrice(pred.target2)}\n` +
@@ -459,28 +459,28 @@ export function handleAIModeratorQuery(input: string): { reply: string; predicti
       `• **Risk/Reward:** ${pred.riskRewardRatio} | **60d Realized Vol:** ${pred.realizedVol}%\n` +
       `• **Technical Mechanism:** ${pred.technicalMechanism}\n` +
       `• **Horizon:** ${pred.timeHorizon} | **Catalyst Watch:** ${pred.catalystAlert}\n` +
-      `_Signal registered at ${pred.wibTime} WIB / ${pred.utcTime} UTC / ${pred.estTime} EST._`;
+      `_Signal registered at ${pred.utcTime} UTC / ${pred.estTime} EST._`;
 
     return { reply, prediction: pred };
   }
 
   // Global Clock / Time query
-  if (lower.includes("jam") || lower.includes("waktu") || lower.includes("clock") || lower.includes("time") || lower.includes("hour")) {
+  if (lower.includes("clock") || lower.includes("time") || lower.includes("hour") || lower.includes("session")) {
     const { wibTime, utcTime, estTime, sessionStatus } = formatTimeZones();
     return {
-      reply: `🕒 **NextWall Street Global Trading Clocks:**\n` +
-        `• 🇮🇩 **WIB (Waktu Indonesia Barat):** \`${wibTime} WIB\`\n` +
-        `• 🌐 **UTC (Market Benchmark):** \`${utcTime} UTC\`\n` +
+      reply: `🕒 **NextWall Street Institutional Trading Clocks:**\n` +
         `• 🇺🇸 **EST (Wall Street New York):** \`${estTime} EST\`\n` +
+        `• 🌐 **UTC (Market Benchmark):** \`${utcTime} UTC\`\n` +
+        `• 🇸🇬 **SGT (Asia Pacific Session):** \`${wibTime} SGT\`\n` +
         `• 📊 **Current Market Session:** \`${sessionStatus}\`\n` +
-        `_Continuous AI predictions execute every 60 seconds. Hourly macro updates generate 24/7._`,
+        `_Quantitative desk feeds execute every 60 seconds. Hourly macro updates generate 24/7._`,
     };
   }
 
   if (lower.includes("pump") || lower.includes("meme") || lower.includes("fartcoin") || lower.includes("goat")) {
     const pred = generateMinutePrediction("FARTCOIN");
     return {
-      reply: `🚀 **Pump.fun & Viral Meme Sector Forensics:**\n` +
+      reply: `🚀 **Pump.fun & Viral Speculative Sector Forensics:**\n` +
         `Tracking 407+ pump.fun and meme assets across Solana and Base. High retail order flow momentum observed.\n` +
         `Active Radar Focus: **$FARTCOIN** at ${fmtPrice(pred.currentPrice)} (${pred.stance}, ${pred.confidence}% Conviction).\n` +
         `⚠️ **Institutional Risk Protocol:** Cap total meme exposure under 2% portfolio equity and never average down into broken price structure.`,
@@ -488,7 +488,7 @@ export function handleAIModeratorQuery(input: string): { reply: string; predicti
     };
   }
 
-  if (lower.includes("rekomendasi") || lower.includes("best") || lower.includes("terbaik") || lower.includes("alpha") || lower.includes("top")) {
+  if (lower.includes("recommendation") || lower.includes("best") || lower.includes("alpha") || lower.includes("top")) {
     const topStock = generateMinutePrediction("NVDA");
     const topCrypto = generateMinutePrediction("SOL");
     return {
@@ -502,11 +502,11 @@ export function handleAIModeratorQuery(input: string): { reply: string; predicti
   // General welcome response
   const generalPred = generateMinutePrediction();
   return {
-    reply: `👋 **Nexus Sentinel AI Online & Monitoring 2,038 Assets.**\n\n` +
-      `• **Real-Time Minute Predictions:** Generating automated technical alpha predictions every 60 seconds.\n` +
-      `• **Continuous Hourly Macro Synthesis:** Synthesizing liquidity and sector flows every hour.\n` +
+    reply: `👋 **NextWall Street Quant Desk Online & Monitoring 2,038 Assets.**\n\n` +
+      `• **Real-Time Minute Predictions:** Continuous mathematical alpha predictions generated every 60 seconds.\n` +
+      `• **Hourly Macro Synthesis:** Liquidity and sector flows compiled every 60 minutes.\n` +
       `• **Audit Any Symbol:** Type \`/predict [ticker]\` (e.g. \`/predict NVDA\`, \`/predict BTC\`, \`/predict SOL\`, \`/predict FARTCOIN\`).\n` +
-      `• **Market Clocks:** Ask about time or market sessions anytime!`,
+      `• **Trading Floor Clocks:** Inquire about market sessions or current global desk hours anytime.`,
     prediction: generalPred,
   };
 }

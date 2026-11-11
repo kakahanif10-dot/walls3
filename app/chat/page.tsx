@@ -3,9 +3,9 @@ import DiscordLiveChat from "@/components/discord-live-chat";
 import WhopBadge from "@/components/whop-badge";
 
 export const metadata: Metadata = {
-  title: "Live Trading Chat & AI Moderator — NextWall Street",
+  title: "Live Trading Floor & Quantitative Strategy Terminal — NextWall Street",
   description:
-    "Discord-style live trading floor with minute-by-minute AI predictions, technical invalidation levels, multi-timezone clocks (WIB, UTC, EST), and community discussion.",
+    "Institutional live trading floor with minute-by-minute quantitative predictions, technical invalidation levels, multi-timezone market clocks (UTC, EST, SGT), and trading floor discussion.",
 };
 
 export default function ChatPage() {
@@ -17,11 +17,11 @@ export default function ChatPage() {
           <span className="live-dot h-2 w-2 rounded-full bg-emerald-400 shrink-0" />
           <div>
             <span className="font-semibold text-emerald-300 text-sm inline-flex items-center">
-              <span>NextWall Street Live Trading Floor &amp; AI Moderator</span>
+              <span>NextWall Street Live Trading Floor &amp; Quantitative Desk</span>
               <WhopBadge className="ml-1.5 align-middle" />
             </span>
             <p className="text-emerald-200/80 text-[11px] mt-0.5">
-              Live messaging enabled. Send questions, audit any of 625+ assets with <code className="bg-emerald-900/50 px-1 py-0.2 rounded text-gold font-mono">/predict [symbol]</code>, or post custom community trade setups.
+              Live desk feed connected. Audit any of 2,000+ assets with <code className="bg-emerald-900/50 px-1 py-0.2 rounded text-gold font-mono">/predict [symbol]</code>, or participate in institutional trade setups.
             </p>
           </div>
         </div>

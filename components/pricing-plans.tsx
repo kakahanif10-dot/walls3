@@ -133,7 +133,7 @@ export default function PricingPlans({ faqList }: PricingPlansProps) {
           className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-4 py-1.5 text-xs text-gold-bright hover:bg-gold/20 transition shadow-sm"
         >
           <Key className="h-3.5 w-3.5 text-gold" />
-          <span>Punya API Key / Lisensi Whop? Buka Kunci Platform Langsung</span>
+          <span>Have an existing Whop Key? Unlock Terminal Access Instantly</span>
           <WhopBadge />
         </button>
 

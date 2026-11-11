@@ -319,21 +319,21 @@ export default function DiscordLiveChat() {
     const { wibTime, utcTime } = formatTimeZones(date);
 
     const newAlert: ChatMessage = {
-      id: `ai-minute-${Date.now()}`,
+      id: `quant-minute-${Date.now()}`,
       channelId: activeChannelId === "ai-minute-predictions" ? "ai-minute-predictions" : activeChannelId,
       author: {
-        name: "Nexus Sentinel AI",
-        avatar: "🤖",
+        name: "Quant Strategy Desk",
+        avatar: "🏛️",
         role: "ai-mod",
-        roleLabel: "BOT MOD",
+        roleLabel: "QUANT DESK",
         roleColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40",
         isBot: true,
         isVerified: true,
       },
-      content: `⚡ **AUTOMATED MINUTE ALPHA ALERT: $${prediction.symbol} (${prediction.name})**\nReal-time technical prediction generated at ${wibTime} WIB (${utcTime} UTC). Confidence: ${prediction.confidence}%.`,
+      content: `⚡ **QUANTITATIVE MINUTE SIGNAL: $${prediction.symbol} (${prediction.name})**\nReal-time model prediction generated at ${utcTime} UTC (${timeData.estTime} EST). Confidence: ${prediction.confidence}%.`,
       prediction,
       timestamp: date.toISOString(),
-      timeLabel: `${wibTime} WIB`,
+      timeLabel: `${timeData.estTime} EST`,
       reactions: { "🚀": 2, "💎": 2, "🧠": 3 },
       userReactions: {},
     };
@@ -376,21 +376,21 @@ export default function DiscordLiveChat() {
         role: "pro-trader" as const,
         roleLabel: "SCALPER",
         roleColor: "bg-amber-500/20 text-amber-300 border-amber-500/40",
-        text: "Executed long scalp on $BTC basis expansion at $96,420. Setting invalidation stop strictly as calculated by the AI Moderator.",
+        text: "Executed long scalp on $BTC basis expansion at $96,420. Setting invalidation stop strictly as calculated by the Quant Desk model.",
       },
       {
-        name: "JakartaTrader_88",
-        avatar: "🇮🇩",
+        name: "Vance_Capital",
+        avatar: "🏛️",
         role: "pro-trader" as const,
         roleLabel: "PRO TRADER",
         roleColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40",
-        text: "Sinyal AI Mod $NVDA akurat banget! Bid depth di Level 2 keliatan solid nahan penurunan. Selalu disiplin pasang level invalidasi stop.",
+        text: "Quant Desk model signal on $NVDA was textbook execution! Bid depth on Level 2 absorbed the pullback cleanly. Strictly maintaining invalidation stop discipline.",
       },
     ];
 
     const random = floorReplies[Math.floor(Math.random() * floorReplies.length)];
     const date = new Date();
-    const { wibTime } = formatTimeZones(date);
+    const { estTime } = formatTimeZones(date);
 
     const deskMsg: ChatMessage = {
       id: `desk-auto-${Date.now()}`,
@@ -405,7 +405,7 @@ export default function DiscordLiveChat() {
       },
       content: random.text,
       timestamp: date.toISOString(),
-      timeLabel: `${wibTime} WIB`,
+      timeLabel: `${estTime} EST`,
       reactions: { "👍": 3, "🔥": 2 },
       userReactions: {},
     };
@@ -445,7 +445,7 @@ export default function DiscordLiveChat() {
     setMessages((prev) => [...prev, userMsg]);
     setIsTypingAI(true);
 
-    // 2. Fetch AI Moderator Response from /api/ai-chat
+    // 2. Fetch Quant Strategy Desk Response from /api/ai-chat
     try {
       const res = await fetch("/api/ai-chat", {
         method: "POST",
@@ -461,10 +461,10 @@ export default function DiscordLiveChat() {
         id: `ai-reply-${Date.now()}`,
         channelId: activeChannelId,
         author: {
-          name: "Nexus Sentinel AI",
-          avatar: "🤖",
+          name: "Quant Strategy Desk",
+          avatar: "🏛️",
           role: "ai-mod",
-          roleLabel: "BOT MOD",
+          roleLabel: "QUANT DESK",
           roleColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40",
           isBot: true,
           isVerified: true,
@@ -472,7 +472,7 @@ export default function DiscordLiveChat() {
         content: data.reply || `Confirmed technical scan for "${trimmed}". Order flow monitored on the live tape.`,
         prediction: data.prediction,
         timestamp: new Date().toISOString(),
-        timeLabel: `${formatTimeZones().wibTime} WIB`,
+        timeLabel: `${formatTimeZones().estTime} EST`,
         reactions: { "🧠": 6, "🚀": 4 },
         userReactions: {},
       };
@@ -486,10 +486,10 @@ export default function DiscordLiveChat() {
         id: `ai-reply-${Date.now()}`,
         channelId: activeChannelId,
         author: {
-          name: "Nexus Sentinel AI",
-          avatar: "🤖",
+          name: "Quant Strategy Desk",
+          avatar: "🏛️",
           role: "ai-mod",
-          roleLabel: "BOT MOD",
+          roleLabel: "QUANT DESK",
           roleColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40",
           isBot: true,
           isVerified: true,
@@ -497,7 +497,7 @@ export default function DiscordLiveChat() {
         content: fallback.reply,
         prediction: fallback.prediction,
         timestamp: new Date().toISOString(),
-        timeLabel: `${formatTimeZones().wibTime} WIB`,
+        timeLabel: `${formatTimeZones().estTime} EST`,
         reactions: { "🧠": 4, "🚀": 3 },
         userReactions: {},
       };
@@ -1149,7 +1149,7 @@ export default function DiscordLiveChat() {
           {isTypingAI && (
             <div className="flex items-center gap-2 text-xs text-emerald-400 font-mono py-2">
               <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-              <span>Nexus Sentinel AI is generating institutional analysis...</span>
+              <span>Quant Strategy Desk is compiling technical analysis...</span>
             </div>
           )}
         </div>
@@ -1163,7 +1163,7 @@ export default function DiscordLiveChat() {
               <button
                 key={cmd}
                 type="button"
-                onClick={() => handleSendMessageWithText(cmd.includes("Clocks") ? "Berapa jam pasar sekarang?" : cmd)}
+                onClick={() => handleSendMessageWithText(cmd.includes("Clocks") ? "Market Clocks" : cmd)}
                 className="whitespace-nowrap rounded-full bg-ink-950 border border-line px-2.5 py-0.5 font-mono text-muted hover:text-gold-bright hover:border-gold/40 transition shrink-0"
               >
                 {cmd}
@@ -1187,7 +1187,7 @@ export default function DiscordLiveChat() {
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder={`Message #${activeChannel.name} (Ask market questions in EN/ID or type /predict [symbol])...`}
+              placeholder={`Message #${activeChannel.name} (Inquire on symbols or type /predict [symbol])...`}
               className="flex-1 rounded-xl border border-line bg-ink-950 px-4 py-2.5 text-xs sm:text-sm text-bone placeholder:text-muted/60 focus:border-gold focus:outline-none"
             />
 
@@ -1206,20 +1206,20 @@ export default function DiscordLiveChat() {
       {showMemberList && (
         <div className="hidden lg:flex w-56 flex-col border-l border-line/60 bg-ink-900/80 p-3 shrink-0 overflow-y-auto scrollbar-thin">
           <div className="space-y-4 text-xs">
-            {/* Core Quant & AI Desk */}
+            {/* Core Quant Desk */}
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
-                Core Quant &amp; AI Desk — 2
+                Core Quant Desk — 2
               </span>
               <div className="mt-2 space-y-1.5">
                 <button
                   type="button"
                   onClick={() =>
                     setSelectedMember({
-                      name: "Nexus Sentinel AI",
-                      avatar: "🤖",
+                      name: "Quant Strategy Desk",
+                      avatar: "🏛️",
                       role: "Core Quant Engine",
-                      roleLabel: "AI DESK",
+                      roleLabel: "QUANT DESK",
                       bio: "Continuously monitoring order-flow imbalances and calculating 5-factor mathematical trend scores across 2,038 assets every 60 seconds.",
                       accuracy: "79.2% historical trend persistence",
                       recentCalls: "$NVDA Long ($187.40), $BTC Accumulate ($88.4k), $SOL Long ($214)",
@@ -1228,10 +1228,10 @@ export default function DiscordLiveChat() {
                   className="flex w-full items-center gap-2 rounded-lg p-1.5 hover:bg-ink-850 transition text-left group"
                   title="Click to view analyst profile or @mention"
                 >
-                  <span className="text-lg">🤖</span>
+                  <span className="text-lg">🏛️</span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold text-emerald-300 group-hover:text-emerald-200">
-                      Nexus Sentinel AI
+                      Quant Strategy Desk
                     </p>
                     <p className="text-[10px] text-muted truncate">Analyzing 2,038 assets</p>
                   </div>
@@ -1334,10 +1334,10 @@ export default function DiscordLiveChat() {
               <div className="mt-2 space-y-1">
                 {[
                   {
-                    name: "JakartaTrader_88",
-                    icon: "🇮🇩",
-                    role: "Pro Trader",
-                    bio: "Asian session momentum scalper focusing on tech mega-caps and crypto perps.",
+                    name: "Vance_Capital",
+                    icon: "🏛️",
+                    role: "Macro Trader",
+                    bio: "Cross-asset quantitative execution focusing on tech mega-caps and index momentum.",
                   },
                   {
                     name: "ScalpMaster_NY",

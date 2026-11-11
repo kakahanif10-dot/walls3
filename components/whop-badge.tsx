@@ -2,63 +2,44 @@
 
 import { useWhop } from "@/lib/whop-context";
 
-export type BadgeVariant = "wsj" | "pill" | "member" | "plus" | "pro";
+export type BadgeVariant = "pro" | "wsj" | "pill" | "member" | "plus";
 
 export default function WhopBadge({
   exclusive = true,
-  variant = "wsj",
-  label,
   className = "ml-1.5",
+  size = "sm",
 }: {
   exclusive?: boolean;
   variant?: BadgeVariant;
   label?: string;
   className?: string;
+  size?: "xs" | "sm" | "md";
 }) {
   const { isUnlocked, openWhopModal } = useWhop();
   if (!exclusive) return null;
 
-  const defaultLabel = isUnlocked
-    ? variant === "plus"
-      ? "WSJ+ 🔑"
-      : "MEMBER 🔑"
-    : variant === "plus"
-    ? "WSJ+ 🔒"
-    : variant === "pro"
-    ? "PRO 🔒"
-    : "MEMBER ONLY 🔒";
-
-  const displayLabel = label || defaultLabel;
+  const sizeClasses = {
+    xs: "px-1 py-[1px] text-[8px] tracking-wider",
+    sm: "px-1.5 py-0.5 text-[9px] tracking-widest",
+    md: "px-2 py-0.5 text-[10px] tracking-widest",
+  }[size];
 
   return (
-    <span
-      role="button"
-      tabIndex={0}
+    <button
+      type="button"
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        openWhopModal();
+        openWhopModal("NextWall Street PRO Desk");
       }}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          e.stopPropagation();
-          openWhopModal();
-        }
-      }}
-      title={
+      title={isUnlocked ? "NextWall Street PRO Access Active" : "NextWall Street PRO — Click to access"}
+      className={`inline-flex items-center justify-center font-mono font-bold select-none cursor-pointer rounded transition-all duration-200 uppercase ${sizeClasses} ${
         isUnlocked
-          ? "NextWall Street: Whop Member Access Unlocked 🔑 (Fitur Terbuka)"
-          : "NextWall Street: Member Only 🔒 (Klik untuk Membuka Kunci via Whop)"
-      }
-      className={`inline-flex items-center gap-1 select-none cursor-pointer font-mono text-[9px] uppercase tracking-wider font-semibold transition-all hover:scale-105 active:scale-95 ${
-        isUnlocked
-          ? "rounded border border-emerald-500/50 bg-emerald-500/10 px-1.5 py-0.5 text-emerald-400 hover:bg-emerald-500/20 shadow-sm"
-          : "rounded border border-gold/45 bg-gold/[0.12] px-1.5 py-0.5 text-gold-bright hover:bg-gold/25 hover:border-gold shadow-sm"
+          ? "border border-amber-400/40 bg-gradient-to-r from-amber-500/20 via-gold/30 to-amber-500/20 text-gold-bright shadow-[0_0_8px_rgba(216,171,90,0.25)] hover:border-gold hover:scale-105"
+          : "border border-gold/40 bg-ink-900/90 text-gold hover:border-gold hover:bg-gold/15 hover:text-gold-bright hover:shadow-[0_0_10px_rgba(216,171,90,0.2)]"
       } ${className}`}
     >
-      <span className="text-[8px] opacity-80">{isUnlocked ? "✦" : "✦"}</span>
-      <span>{displayLabel}</span>
-    </span>
+      PRO
+    </button>
   );
 }

@@ -1,14 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { VIDEO_LESSONS_20, ACADEMY_MODULES } from "./academy-videos";
+import { VIDEO_LESSONS_60, VIDEO_LESSONS_20, ACADEMY_MODULES } from "./academy-videos";
 
-test("Academy has exactly 20 comprehensive video lessons", () => {
-  assert.equal(VIDEO_LESSONS_20.length, 20, "Must contain exactly 20 video lessons");
+test("Academy has 60 comprehensive video lessons", () => {
+  assert.ok(VIDEO_LESSONS_60.length >= 60, `Must contain at least 60 video lessons, got ${VIDEO_LESSONS_60.length}`);
 });
 
 test("All lessons have unique IDs and valid URLs", () => {
   const ids = new Set<string>();
-  for (const lesson of VIDEO_LESSONS_20) {
+  for (const lesson of VIDEO_LESSONS_60) {
     assert.ok(!ids.has(lesson.id), `Duplicate lesson ID: ${lesson.id}`);
     ids.add(lesson.id);
     assert.ok(lesson.title.length > 5, `Title too short for ${lesson.id}`);
@@ -24,8 +24,8 @@ test("All lessons have unique IDs and valid URLs", () => {
   }
 });
 
-test("All modules are covered across the 20 lessons", () => {
-  const covered = new Set(VIDEO_LESSONS_20.map((l) => l.module));
+test("Modules are covered across the 60 lessons", () => {
+  const covered = new Set(VIDEO_LESSONS_60.map((l) => l.module));
   for (const mod of ACADEMY_MODULES) {
     if (mod === "All Modules") continue;
     assert.ok(covered.has(mod), `Module ${mod} is missing from lessons`);

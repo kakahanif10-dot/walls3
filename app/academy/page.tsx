@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { COURSES } from "@/lib/content";
+import AcademyFAQ from "@/components/academy-faq";
 
 export const metadata: Metadata = {
   title: "Academy",
@@ -30,17 +31,17 @@ export default function AcademyPage() {
             <span><span className="font-mono text-bone">{totalLessons}</span> lessons</span>
             <span><span className="font-mono text-bone">{totalMinutes}</span> minutes</span>
             <span><span className="font-mono text-bone">1</span> foundation course free</span>
-            <span className="text-gold-bright font-medium">★ 20 Watchable HD Video Masterclasses Available</span>
+            <span className="text-gold-bright font-medium">★ 60 Watchable HD Video Masterclasses Available</span>
           </div>
 
           <div className="mt-8 rounded-xl border border-gold/40 bg-gold/[0.07] p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <span className="rounded-full border border-gold/50 bg-gold/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-gold-bright">
-                Now Streaming
+                Now Streaming (3 Dedicated Desks)
               </span>
-              <h2 className="mt-2 font-display text-xl text-bone">Watchable Video Tutorial Studio (20 Masterclasses)</h2>
+              <h2 className="mt-2 font-display text-xl text-bone">Watchable Video Tutorial Studio (60 Masterclasses)</h2>
               <p className="mt-1 max-w-xl text-xs text-muted leading-relaxed">
-                Watch 20 real playable video masterclasses with chapter bookmarks, synchronized takeaways, and comprehension quizzes across market structure, crypto float, order flow, and pump.fun meme risk.
+                Stream 60 high-definition interactive masterclasses divided into three specialized desks: Wall Street &amp; Equities (22 videos), Crypto Microstructure (20 videos), and pump.fun Bonding Curve Mechanics (18 videos).
               </p>
             </div>
             <Link
@@ -121,6 +122,10 @@ export default function AcademyPage() {
             ))}
           </div>
         </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-5 pb-16">
+        <AcademyFAQ />
       </section>
     </div>
   );

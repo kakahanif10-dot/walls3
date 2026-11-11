@@ -64,7 +64,7 @@ test("Live timezones format WIB, UTC, and EST properly", () => {
   assert.ok(times.sessionStatus && times.sessionStatus.length > 0, "Market session must be defined");
 });
 
-test("AI Moderator generates valid structured predictions", () => {
+test("Quant Desk generates valid structured predictions", () => {
   const pred = generateMinutePrediction("SOL");
   assert.equal(pred.symbol, "SOL");
   assert.ok(pred.currentPrice > 0, "Price must be positive");
@@ -72,16 +72,16 @@ test("AI Moderator generates valid structured predictions", () => {
   assert.ok(pred.invalidationLevel > 0, "Invalidation level must be positive");
   assert.ok(pred.confidence >= 50 && pred.confidence <= 100, "Confidence in range");
   assert.ok(pred.technicalMechanism.length > 10, "Technical mechanism explanation provided");
-  assert.ok(pred.wibTime.length > 0, "WIB time timestamp provided");
+  assert.ok(pred.estTime && pred.estTime.length > 0, "EST time timestamp provided");
 });
 
-test("AI Moderator Query handler answers /predict and Indonesian 'jam' commands", () => {
+test("Quant Desk Query handler answers /predict and clock commands", () => {
   const queryPred = handleAIModeratorQuery("/predict FARTCOIN");
   assert.ok(queryPred.prediction, "Prediction must be generated for FARTCOIN");
   assert.equal(queryPred.prediction?.symbol, "FARTCOIN");
-  assert.ok(queryPred.reply.includes("Nexus Sentinel AI Analysis"), "Includes analysis header");
+  assert.ok(queryPred.reply.includes("Quant Strategy Desk Analysis"), "Includes analysis header");
 
-  const queryClock = handleAIModeratorQuery("Berapa jam pasar sekarang?");
-  assert.ok(queryClock.reply.includes("WIB"), "Clock query must include WIB time");
+  const queryClock = handleAIModeratorQuery("What are the current market session clocks?");
   assert.ok(queryClock.reply.includes("EST"), "Clock query must include EST time");
+  assert.ok(queryClock.reply.includes("UTC"), "Clock query must include UTC time");
 });

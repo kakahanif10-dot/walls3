@@ -8,6 +8,7 @@ import LiveClock from "@/components/live-clock";
 import FeedBadge from "@/components/feed-badge";
 import { LivePrice, LiveChange } from "@/components/live-price";
 import PositionSizingCalculator from "@/components/position-sizing-calculator";
+import AnalystFaceBreakdown from "@/components/analyst-face-breakdown";
 import { ARTICLES } from "@/lib/content";
 import {
   ASSETS,
@@ -152,6 +153,24 @@ export default async function TickerPage({ params }: { params: Promise<{ symbol:
 
       <section className="mx-auto grid max-w-7xl gap-8 px-5 py-10 lg:grid-cols-[1.65fr_0.85fr]">
         <div className="space-y-8">
+          <AnalystFaceBreakdown
+            symbol={asset.symbol}
+            name={asset.name}
+            lastPrice={m.last}
+            score={m.score}
+            stance={m.stance}
+            invalidationLevel={trigger.value}
+            supportLevel={m.sma50}
+            resistanceLevel={m.high52}
+            sma20={m.sma20}
+            sma50={m.sma50}
+            sma200={m.sma200}
+            rsi={m.rsi}
+            volatility60d={m.vol}
+            validReason={`Struktur ${asset.symbol} dinilai berdasarkan 5 bobot teknikal kuantitatif: harga ${fmtPrice(m.last)} berada di ${m.last > m.sma20 ? "atas" : "bawah"} 20-day SMA ($${m.sma20.toFixed(2)}) dengan RSI ${m.rsi.toFixed(0)}. Sektor ${asset.group} menunjukkan persistensi momentum dengan skor komposit ${m.score}/100.`}
+            invalidationReason={`Tesis ini gugur dan dibatalkan jika harga penutupan harian tembus di bawah ${fmtPrice(trigger.value)}. Level invalidasi ini adalah batas objektif cut loss untuk melindungi modal sebelum drawdown berlarut.`}
+          />
+
           <div className="rounded-xl border border-line bg-ink-900/50 p-5">
             <TrendChart values={pts.map((p) => p.close)} label={`${asset.symbol} · daily close`} />
           </div>

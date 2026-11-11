@@ -479,7 +479,7 @@ export default function MarketExplorer({ rows }: { rows: Row[] }) {
                   className="inline-flex items-center gap-2 rounded-full bg-gold px-6 py-3 text-xs font-bold text-ink-950 hover:bg-gold-bright transition shadow-xl"
                 >
                   <Key className="h-4 w-4" />
-                  <span>Buka Akses Penuh via Whop 🔑</span>
+                  <span>Unlock Full Terminal Access via Whop</span>
                   <WhopBadge variant="plus" className="ml-0 text-[10px]" />
                 </button>
 
@@ -487,12 +487,12 @@ export default function MarketExplorer({ rows }: { rows: Row[] }) {
                   href="/pricing"
                   className="rounded-full border border-line bg-ink-900 px-5 py-3 text-xs font-semibold text-bone hover:border-gold/50 transition"
                 >
-                  Lihat Paket &amp; FAQ Billing
+                  View Plans &amp; Billing
                 </Link>
               </div>
 
               <p className="text-[10px] text-muted/70 pt-1">
-                Aktivasi instan menggunakan API Key Whop. Batal kapan saja dalam 1 klik tanpa komitmen.
+                Instant activation with Whop checkout or license key. Cancel anytime with one click.
               </p>
             </div>
           </div>

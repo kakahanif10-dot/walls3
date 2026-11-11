@@ -22,8 +22,8 @@ export default function PremiumGate({
             <span className="h-1.5 w-1.5 rounded-full bg-gold" />
             <span>
               {isUnlocked
-                ? "Akses Premium Terbuka via Lisensi Whop 🔑. Seluruh stance report dan model reasoning aktif."
-                : "Preview unlocked for this session. In production this issue is served to Premium subscribers only."}
+                ? "PRO Membership active via Whop verification. Institutional models and raw invalidation stops unlocked."
+                : "Preview unlocked for this session. In production this dossier is reserved for PRO subscribers."}
             </span>
           </div>
           <WhopBadge />
@@ -41,13 +41,12 @@ export default function PremiumGate({
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-ink-950 via-ink-950/90 to-transparent" />
       <div className="relative -mt-16 rounded-xl border border-line bg-ink-900/95 p-7 text-center">
         <p className="flex items-center justify-center text-[11px] font-semibold uppercase tracking-[0.2em] text-gold">
-          <span>Premium research</span>
+          <span>Institutional Research</span>
           <WhopBadge className="ml-1.5" />
         </p>
         <h3 className="mt-2 font-display text-2xl text-bone">Continue reading “{issue}”</h3>
         <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
-          Full-position reasoning, invalidation levels and the model breakdown are available on the
-          Premium plan or with an active Whop membership.
+          Full-position mathematical reasoning, invalidation anchors, and quantitative model weights require a verified PRO membership.
         </p>
         <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
           <button
@@ -55,7 +54,7 @@ export default function PremiumGate({
             onClick={() => openWhopModal(issue)}
             className="inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/20 px-5 py-2.5 text-sm font-semibold text-gold-bright transition hover:bg-gold/30 shadow-md"
           >
-            <span>Buka via Whop</span>
+            <span>Unlock via Whop</span>
             <span>{badge}</span>
           </button>
           <a
@@ -73,7 +72,7 @@ export default function PremiumGate({
           </button>
         </div>
         <p className="mt-4 text-[11px] text-muted/60">
-          Gunakan API Key Whop Anda untuk membuka kunci otomatis seluruh platform NextWall Street.
+          Authorize your active Whop license key to unlock institutional coverage across all NextWall Street desks.
         </p>
       </div>
     </div>
