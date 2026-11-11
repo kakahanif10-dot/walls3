@@ -6,16 +6,26 @@ import { useState } from "react";
 import LiveClock from "@/components/live-clock";
 import FeedBadge from "@/components/feed-badge";
 import AuthButton from "@/components/auth-button";
+import WhopBadge from "@/components/whop-badge";
+import { useWhop } from "@/lib/whop-context";
 
-const LINKS = [
-  { href: "/markets", label: "Markets" },
-  { href: "/crypto", label: "Crypto" },
-  { href: "/meme-coins", label: "Meme coins" },
-  { href: "/pipeline", label: "Pipeline" },
-  { href: "/chat", label: "Live Chat", live: true },
-  { href: "/calculator", label: "Calculator" },
+interface NavLink {
+  href: string;
+  label: string;
+  live?: boolean;
+  exclusive?: boolean;
+  variant?: "wsj" | "member" | "pro" | "plus";
+}
+
+const LINKS: NavLink[] = [
+  { href: "/markets", label: "Markets", exclusive: true, variant: "wsj" },
+  { href: "/crypto", label: "Crypto", exclusive: true, variant: "wsj" },
+  { href: "/meme-coins", label: "Meme coins", exclusive: true, variant: "member" },
+  { href: "/pipeline", label: "Pipeline", exclusive: true, variant: "pro" },
+  { href: "/chat", label: "Live Chat", live: true, exclusive: true, variant: "pro" },
+  { href: "/calculator", label: "Calculator", exclusive: true, variant: "pro" },
   { href: "/academy", label: "Academy" },
-  { href: "/academy/watch", label: "Watch Video" },
+  { href: "/academy/watch", label: "Watch Video", exclusive: true, variant: "pro" },
   { href: "/research", label: "Research" },
   { href: "/pricing", label: "Pricing" },
 ];
@@ -23,6 +33,7 @@ const LINKS = [
 export default function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const { badge, isUnlocked, openWhopModal } = useWhop();
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
@@ -49,8 +60,11 @@ export default function SiteHeader() {
                   : "text-muted hover:bg-ink-850 hover:text-bone"
               }`}
             >
-              {link.label}
-              {"live" in link && link.live && (
+              <span>{link.label}</span>
+              {link.exclusive && (
+                <WhopBadge variant={link.variant || "pro"} className="ml-0.5" />
+              )}
+              {link.live && (
                 <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
               )}
             </Link>
@@ -64,10 +78,19 @@ export default function SiteHeader() {
           <span className="h-4 w-px bg-line" />
           <Link
             href="/watchlist"
-            className="text-sm text-muted transition-colors hover:text-bone"
+            className="text-sm text-muted transition-colors hover:text-bone flex items-center gap-1.5"
           >
-            Watchlist
+            <span>Watchlist</span>
+            <WhopBadge variant="pro" className="ml-0" />
           </Link>
+          <button
+            type="button"
+            onClick={() => openWhopModal()}
+            className="flex items-center transition"
+            title="NextWall Street Member Pass (Whop)"
+          >
+            <WhopBadge variant="plus" className="ml-0 text-[10px] px-2 py-1 shadow" />
+          </button>
           <AuthButton />
           <Link
             href="/pricing"
@@ -100,20 +123,31 @@ export default function SiteHeader() {
             <FeedBadge className="text-[10px] uppercase tracking-[0.14em] text-muted" />
           </div>
           <div className="grid gap-1">
-            {[...LINKS, { href: "/watchlist", label: "Watchlist" }].map((link) => (
+            {[...LINKS, { href: "/watchlist", label: "Watchlist", exclusive: true, variant: "pro" as const }].map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className={`rounded-md px-3 py-2.5 text-sm ${
+                className={`flex items-center justify-between rounded-md px-3 py-2.5 text-sm ${
                   isActive(link.href) ? "bg-ink-800 text-bone" : "text-muted"
                 }`}
               >
-                {link.label}
+                <span>{link.label}</span>
+                {link.exclusive && <WhopBadge variant={link.variant || "pro"} className="ml-0" />}
               </Link>
             ))}
             <div className="pt-2 border-t border-line/60 flex items-center justify-between">
-              <span className="text-xs text-muted">Account</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  openWhopModal();
+                }}
+                className="flex items-center gap-1.5 text-xs text-gold font-semibold"
+              >
+                <WhopBadge variant="plus" className="ml-0" />
+                <span>{isUnlocked ? "Status: Member Pass Active 🔑" : "Buka Member Pass 🔒"}</span>
+              </button>
               <AuthButton />
             </div>
           </div>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import DiscordLiveChat from "@/components/discord-live-chat";
+import WhopBadge from "@/components/whop-badge";
 
 export const metadata: Metadata = {
   title: "Live Trading Chat & AI Moderator — NextWall Street",
@@ -15,8 +16,9 @@ export default function ChatPage() {
         <div className="flex items-center gap-2.5">
           <span className="live-dot h-2 w-2 rounded-full bg-emerald-400 shrink-0" />
           <div>
-            <span className="font-semibold text-emerald-300 text-sm">
-              NextWall Street Live Trading Floor & AI Moderator
+            <span className="font-semibold text-emerald-300 text-sm inline-flex items-center">
+              <span>NextWall Street Live Trading Floor &amp; AI Moderator</span>
+              <WhopBadge className="ml-1.5 align-middle" />
             </span>
             <p className="text-emerald-200/80 text-[11px] mt-0.5">
               Live messaging enabled. Send questions, audit any of 625+ assets with <code className="bg-emerald-900/50 px-1 py-0.2 rounded text-gold font-mono">/predict [symbol]</code>, or post custom community trade setups.

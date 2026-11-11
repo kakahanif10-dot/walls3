@@ -1,9 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { Check, ShieldCheck, Zap, Sparkles, CreditCard, ChevronDown, ChevronUp, CheckCircle, ArrowRight } from "lucide-react";
+import { Check, ShieldCheck, Zap, Sparkles, CreditCard, ChevronDown, ChevronUp, CheckCircle, ArrowRight, Key } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { useWhop } from "@/lib/whop-context";
+import WhopBadge from "@/components/whop-badge";
 import { PLANS } from "@/lib/content";
+
+const ACCOUNT_BILLING_FAQ = [
+  {
+    q: "How does the Whop subscription and licensing work?",
+    a: "NextWall Street partners natively with Whop to provide frictionless institutional subscription management. Once you subscribe or enter your Whop API license key (e.g. apik_...), the entire platform unlocks instantly across your active session and cloud profile without manual provisioning or waiting for support.",
+  },
+  {
+    q: "What payment methods are supported through Whop?",
+    a: "Whop supports all major credit and debit cards (Visa, Mastercard, American Express, Discover), digital wallets (Apple Pay, Google Pay), European SEPA Direct Debit, and cryptocurrency payments (USDC, USDT, Ethereum, Solana, Bitcoin) with instant automated order fulfillment.",
+  },
+  {
+    q: "What is the cancellation policy?",
+    a: "You can cancel your subscription at any time with a single click in your Whop customer portal or from your NextWall Street account settings. There are zero hidden fees, cancellation penalties, or multi-month lock-in contracts. Upon cancellation, your institutional access remains fully active until the final day of your current paid billing period.",
+  },
+  {
+    q: "How do I activate or restore my subscription on multiple devices?",
+    a: "Click the ✦ MEMBER ONLY badge or the Whop key icon in the navigation bar on any device. Enter your Whop license key or the email address used during checkout to restore full access instantly. If you are signed in with Google, your access automatically synchronizes with your cloud Firestore profile.",
+  },
+  {
+    q: "How does the 14-day free trial work?",
+    a: "The Premium plan includes a 14-day trial with unhindered access to all 2,000+ scored assets, real-time Discord signals, Day Trade targets, and all 20 video masterclasses. If you cancel before day 14 expires, your card will never be charged.",
+  },
+  {
+    q: "Can I switch between monthly and annual billing?",
+    a: "Yes. You can switch between monthly and annual plans at any time directly through Whop. Upgrading to annual billing applies an immediate 20% discount and prorates any unused time from your current monthly cycle.",
+  },
+  {
+    q: "Do you issue official VAT / sales tax invoices and receipts?",
+    a: "Yes. Formal tax-compliant PDF invoices with line-item VAT/sales tax breakdowns and company billing details are generated automatically by Whop and emailed to you immediately after every billing event for corporate expense reporting.",
+  },
+];
 
 interface PricingPlansProps {
   faqList: { q: string; a: string }[];
@@ -11,7 +44,9 @@ interface PricingPlansProps {
 
 export default function PricingPlans({ faqList }: PricingPlansProps) {
   const { user, profile, updateUserPlan, signInWithGoogle } = useAuth();
+  const { openWhopModal, badge } = useWhop();
   const [cadence, setCadence] = useState<"monthly" | "annual">("monthly");
+  const [faqCategory, setFaqCategory] = useState<"billing" | "general">("billing");
   const [expandedFaq, setExpandedFaq] = useState<number | null>(0);
   const [activeModalPlan, setActiveModalPlan] = useState<typeof PLANS[0] | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"card" | "gpay" | "crypto">("card");
@@ -62,8 +97,8 @@ export default function PricingPlans({ faqList }: PricingPlansProps) {
         </div>
       )}
 
-      {/* Cadence Switcher Buttons */}
-      <div className="flex flex-col items-center justify-center gap-3">
+      {/* Cadence Switcher Buttons & Whop Direct Button */}
+      <div className="flex flex-col items-center justify-center gap-3.5">
         <div className="flex items-center rounded-full border border-line bg-ink-900 p-1 shadow-lg">
           <button
             type="button"
@@ -91,6 +126,16 @@ export default function PricingPlans({ faqList }: PricingPlansProps) {
             </span>
           </button>
         </div>
+
+        <button
+          type="button"
+          onClick={() => openWhopModal()}
+          className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-4 py-1.5 text-xs text-gold-bright hover:bg-gold/20 transition shadow-sm"
+        >
+          <Key className="h-3.5 w-3.5 text-gold" />
+          <span>Punya API Key / Lisensi Whop? Buka Kunci Platform Langsung</span>
+          <WhopBadge />
+        </button>
 
         {user && (
           <p className="text-xs text-muted">
@@ -136,7 +181,10 @@ export default function PricingPlans({ faqList }: PricingPlansProps) {
                 </span>
               )}
 
-              <h2 className="font-display text-2xl text-bone">{plan.name}</h2>
+              <h2 className="font-display text-2xl text-bone flex items-center">
+                <span>{plan.name}</span>
+                {plan.id !== "reader" && <WhopBadge className="ml-2 text-base" />}
+              </h2>
               <p className="mt-1 text-xs text-muted">{plan.tagline}</p>
 
               <div className="mt-6 flex items-baseline gap-2">
@@ -236,11 +284,54 @@ export default function PricingPlans({ faqList }: PricingPlansProps) {
         </div>
       )}
 
-      {/* Interactive FAQ Accordion */}
-      <div className="space-y-4 pt-6">
-        <h2 className="font-display text-2xl text-bone text-center">Frequently asked questions</h2>
+      {/* Interactive FAQ Accordion with Dedicated Account & Billing Section */}
+      <div className="space-y-6 pt-6">
+        <div className="text-center space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gold">
+            Support &amp; Clarity
+          </p>
+          <h2 className="font-display text-2xl sm:text-3xl text-bone">Frequently asked questions</h2>
+          <p className="text-xs text-muted max-w-lg mx-auto">
+            Everything you need to know about the Whop subscription, cancellation policies, supported payment rails, and institutional scoring methodology.
+          </p>
+        </div>
+
+        {/* FAQ Category Switcher */}
+        <div className="flex items-center justify-center gap-2 pt-2">
+          <button
+            type="button"
+            onClick={() => {
+              setFaqCategory("billing");
+              setExpandedFaq(0);
+            }}
+            className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition shadow-sm ${
+              faqCategory === "billing"
+                ? "bg-gold text-ink-950 ring-1 ring-gold"
+                : "border border-line bg-ink-900 text-muted hover:text-bone hover:border-gold/40"
+            }`}
+          >
+            <span>Account &amp; Billing (Whop)</span>
+            <WhopBadge variant="plus" className="ml-0.5 text-[9px]" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setFaqCategory("general");
+              setExpandedFaq(0);
+            }}
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+              faqCategory === "general"
+                ? "bg-gold text-ink-950 ring-1 ring-gold"
+                : "border border-line bg-ink-900 text-muted hover:text-bone hover:border-gold/40"
+            }`}
+          >
+            General &amp; Methodology
+          </button>
+        </div>
+
         <div className="mx-auto max-w-3xl space-y-3 pt-2">
-          {faqList.map((item, idx) => {
+          {(faqCategory === "billing" ? ACCOUNT_BILLING_FAQ : faqList).map((item, idx) => {
             const isOpen = expandedFaq === idx;
             return (
               <div
@@ -252,7 +343,10 @@ export default function PricingPlans({ faqList }: PricingPlansProps) {
                   onClick={() => setExpandedFaq(isOpen ? null : idx)}
                   className="flex w-full items-center justify-between p-4 sm:p-5 text-left text-sm font-semibold text-bone hover:text-gold-bright transition"
                 >
-                  <span>{item.q}</span>
+                  <span className="flex items-center gap-2">
+                    {faqCategory === "billing" && <Key className="h-3.5 w-3.5 text-gold shrink-0" />}
+                    <span>{item.q}</span>
+                  </span>
                   {isOpen ? (
                     <ChevronUp className="h-4 w-4 text-gold shrink-0 ml-2" />
                   ) : (

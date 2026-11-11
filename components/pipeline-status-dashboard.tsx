@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { type PipelineMetrics, type ScoredAssetItem } from "@/lib/market-pipeline";
 import { stanceColor } from "@/lib/market";
+import WhopBadge from "@/components/whop-badge";
 import ScoreDistributionHistogram from "@/components/score-distribution-histogram";
 
 export default function PipelineStatusDashboard() {
@@ -160,8 +161,9 @@ export default function PipelineStatusDashboard() {
               2,038 Total Assets Scored
             </span>
           </div>
-          <h2 className="mt-1 font-display text-2xl text-bone">
-            Multi-Source Market Data &amp; Scoring Engine
+          <h2 className="mt-1 font-display text-2xl text-bone flex items-center">
+            <span>Multi-Source Market Data &amp; Scoring Engine</span>
+            <WhopBadge className="ml-2 text-lg align-middle" />
           </h2>
           <p className="mt-1 text-xs text-muted max-w-2xl leading-relaxed">
             Ingests real quotes from <strong className="text-bone">Nasdaq</strong>, <strong className="text-bone">Coinbase</strong>, <strong className="text-bone">Binance</strong>, and <strong className="text-bone">OKX</strong>. Computes 5-factor mathematical trend scores, technical invalidation levels, and Gaussian universe distribution.
@@ -270,7 +272,10 @@ export default function PipelineStatusDashboard() {
                 : "text-muted hover:text-bone"
             }`}
           >
-            <span>2,000+ Asset Scored Universe</span>
+            <span className="flex items-center gap-1.5">
+              <span>2,000+ Asset Scored Universe</span>
+              <WhopBadge className="ml-1" />
+            </span>
             {selectedScoreRange && (
               <span className="rounded-full bg-gold/20 px-1.5 py-0.2 text-[9px] text-gold-bright font-mono font-bold">
                 Filtered

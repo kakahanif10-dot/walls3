@@ -42,6 +42,7 @@ import {
   type VideoVisualType,
 } from "@/lib/academy-videos";
 import { useAuth } from "@/lib/auth-context";
+import WhopBadge from "@/components/whop-badge";
 import { db } from "@/lib/firebase";
 import { doc, setDoc, onSnapshot, collection } from "firebase/firestore";
 
@@ -635,7 +636,8 @@ export default function WatchableVideoPlayer({
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/50 bg-gold/15 px-3 py-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-gold-bright">
               <Sparkles className="h-3 w-3 text-gold" />
-              Watchable Video Academy (20 Masterclasses)
+              <span>Watchable Video Academy (20 Masterclasses)</span>
+              <WhopBadge className="ml-1" />
             </span>
             <span className="rounded bg-line/60 px-2 py-0.5 text-[10px] font-mono text-muted">
               {lesson.module}
@@ -756,7 +758,10 @@ export default function WatchableVideoPlayer({
                 {isDone ? "✓" : globalIdx + 1 < 10 ? `0${globalIdx + 1}` : globalIdx + 1}
               </div>
               <div className="min-w-0">
-                <p className="truncate text-xs font-medium text-bone">{l.title.replace(/^Lesson \d+:\s*/, "")}</p>
+                <p className="truncate text-xs font-medium text-bone flex items-center">
+                  <span className="truncate">{l.title.replace(/^Lesson \d+:\s*/, "")}</span>
+                  {globalIdx > 0 && <WhopBadge className="ml-1 text-[10px]" />}
+                </p>
                 <div className="flex items-center gap-2 text-[10px] text-muted">
                   <span className="font-mono text-gold">{l.durationLabel}</span>
                   <span>·</span>

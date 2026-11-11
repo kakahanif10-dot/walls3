@@ -255,6 +255,23 @@ export function byKind(kind: Kind): Asset[] {
   return ASSETS.filter((a) => a.kind === kind);
 }
 
+export type DayTradePlan = {
+  bias: "LONG SCALP" | "SHORT SCALP" | "RANGE BREAK" | "MEAN REVERT";
+  vwapBias: "Above VWAP" | "Below VWAP" | "At Mean";
+  intradayTarget: number;
+  intradayStop: number;
+  momentum15m: "Strong Bull" | "Bullish Flow" | "Chop / Neutral" | "Bearish Flow" | "Heavy Sell";
+  invalidationDistancePct: number;
+};
+
+export type SwingLongPlan = {
+  bias: "CORE ACCUMULATE" | "STAGE 2 EXPANSION" | "CYCLE LONG" | "HOLD / REBALANCE" | "DEFENSIVE HEDGE" | "CAPITAL PRESERVE";
+  structure: "Golden Cross Base" | "Stage 2 Mark-up" | "Range Consolidation" | "Stage 4 Distribution" | "Macro Breakdown";
+  timeHorizon: "2–6 Weeks" | "1–3 Months" | "Quarterly Core" | "Multi-Month Cycle" | "Multi-Week Trim" | "Cash / Neutral";
+  macroInvalidation: number;
+  riskReward: string;
+};
+
 export type Row = {
   symbol: string;
   name: string;
@@ -267,7 +284,97 @@ export type Row = {
   stance: Metrics["stance"];
   risk: Metrics["riskGrade"];
   spark: number[];
+  dayTrade: DayTradePlan;
+  swingLong: SwingLongPlan;
 };
+
+export function computeDayTrade(m: Metrics): DayTradePlan {
+  const isBull = m.score >= 55 && m.change24h >= -0.5;
+  const isBear = m.score <= 42 || m.change24h <= -2.5;
+  const volBuffer = Math.max(0.012, Math.min(0.065, m.vol * 0.1));
+
+  if (isBull) {
+    const target = m.last * (1 + volBuffer * 1.5);
+    const stop = m.last * (1 - volBuffer);
+    const dist = ((m.last - stop) / m.last) * 100;
+    return {
+      bias: m.score >= 75 ? "LONG SCALP" : "RANGE BREAK",
+      vwapBias: "Above VWAP",
+      intradayTarget: target,
+      intradayStop: stop,
+      momentum15m: m.score >= 75 ? "Strong Bull" : "Bullish Flow",
+      invalidationDistancePct: dist,
+    };
+  } else if (isBear) {
+    const target = m.last * (1 - volBuffer * 1.5);
+    const stop = m.last * (1 + volBuffer);
+    const dist = ((stop - m.last) / m.last) * 100;
+    return {
+      bias: "SHORT SCALP",
+      vwapBias: "Below VWAP",
+      intradayTarget: target,
+      intradayStop: stop,
+      momentum15m: m.score <= 30 ? "Heavy Sell" : "Bearish Flow",
+      invalidationDistancePct: dist,
+    };
+  } else {
+    const target = m.last * (1 + volBuffer);
+    const stop = m.last * (1 - volBuffer);
+    const dist = ((m.last - stop) / m.last) * 100;
+    return {
+      bias: "MEAN REVERT",
+      vwapBias: "At Mean",
+      intradayTarget: target,
+      intradayStop: stop,
+      momentum15m: "Chop / Neutral",
+      invalidationDistancePct: dist,
+    };
+  }
+}
+
+export function computeSwingLong(m: Metrics): SwingLongPlan {
+  if (m.score >= 72 && m.last > m.sma200) {
+    return {
+      bias: "STAGE 2 EXPANSION",
+      structure: "Stage 2 Mark-up",
+      timeHorizon: "1–3 Months",
+      macroInvalidation: Math.round(m.sma50 * 0.97 * 100) / 100,
+      riskReward: "3.6 : 1",
+    };
+  } else if (m.score >= 58) {
+    return {
+      bias: "CORE ACCUMULATE",
+      structure: "Golden Cross Base",
+      timeHorizon: "2–6 Weeks",
+      macroInvalidation: Math.round(Math.min(m.sma50, m.sma20) * 0.96 * 100) / 100,
+      riskReward: "2.8 : 1",
+    };
+  } else if (m.score >= 46) {
+    return {
+      bias: "HOLD / REBALANCE",
+      structure: "Range Consolidation",
+      timeHorizon: "Quarterly Core",
+      macroInvalidation: Math.round(m.sma200 * 0.98 * 100) / 100,
+      riskReward: "1.9 : 1",
+    };
+  } else if (m.score >= 34) {
+    return {
+      bias: "DEFENSIVE HEDGE",
+      structure: "Stage 4 Distribution",
+      timeHorizon: "Multi-Week Trim",
+      macroInvalidation: Math.round(m.last * 1.025 * 100) / 100,
+      riskReward: "0.8 : 1",
+    };
+  } else {
+    return {
+      bias: "CAPITAL PRESERVE",
+      structure: "Macro Breakdown",
+      timeHorizon: "Cash / Neutral",
+      macroInvalidation: Math.round(m.sma50 * 100) / 100,
+      riskReward: "Negative",
+    };
+  }
+}
 
 export function rowsFor(kind?: Kind): Row[] {
   const list = kind ? byKind(kind) : ASSETS;
@@ -287,6 +394,8 @@ export function rowsFor(kind?: Kind): Row[] {
         stance: m.stance,
         risk: m.riskGrade,
         spark,
+        dayTrade: computeDayTrade(m),
+        swingLong: computeSwingLong(m),
       };
     })
     .sort((a, b) => b.score - a.score);

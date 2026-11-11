@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import PipelineStatusDashboard from "@/components/pipeline-status-dashboard";
+import WhopBadge from "@/components/whop-badge";
 
 export const metadata: Metadata = {
   title: "Backend Data Pipeline & 2,000+ Asset Scoring Engine — NextWall Street",
@@ -19,8 +20,9 @@ export default function PipelinePage() {
             <span className="text-gold-bright">Data Pipeline</span>
           </nav>
           <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">Architecture &amp; Engine</p>
-          <h1 className="mt-2 max-w-3xl font-display text-4xl leading-tight text-bone sm:text-5xl">
-            Data Pipeline &amp; Algorithmic Scoring
+          <h1 className="mt-2 max-w-3xl font-display text-4xl leading-tight text-bone sm:text-5xl flex items-center">
+            <span>Data Pipeline &amp; Algorithmic Scoring</span>
+            <WhopBadge className="ml-2 align-middle text-2xl" />
           </h1>
           <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted">
             High-throughput backend pipeline connecting Nasdaq, Coinbase, Binance, and OKX APIs. Runs continuous 5-factor quantitative scoring across 2,000+ equities, digital assets, and meme tokens.

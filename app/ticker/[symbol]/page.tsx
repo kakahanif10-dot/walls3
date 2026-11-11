@@ -19,8 +19,11 @@ import {
   scoreBreakdown,
   series,
   stanceColor,
+  computeDayTrade,
+  computeSwingLong,
   type Kind,
 } from "@/lib/market";
+import WhopBadge from "@/components/whop-badge";
 import { ensureMarketData } from "@/lib/market-data";
 
 const KIND_PATH: Record<Kind, string> = {
@@ -64,6 +67,8 @@ export default async function TickerPage({ params }: { params: Promise<{ symbol:
   const pts = series(asset);
   const narrative = narrativeFor(asset, m);
   const breakdown = scoreBreakdown(m);
+  const dayTrade = computeDayTrade(m);
+  const swingLong = computeSwingLong(m);
   const related = ARTICLES.filter((a) => a.tickers.includes(asset.symbol)).slice(0, 3);
   const peers = ASSETS.filter((a) => a.kind === asset.kind && a.symbol !== asset.symbol).slice(0, 4);
 
@@ -193,6 +198,101 @@ export default async function TickerPage({ params }: { params: Promise<{ symbol:
                 <p className="font-mono text-2xl text-bone">{fmtPrice(trigger.value)}</p>
               </div>
               <p className="max-w-sm text-sm leading-relaxed text-muted">{trigger.note}</p>
+            </div>
+          </div>
+
+          {/* DUAL-HORIZON STRATEGY DESK: DAY TRADER VS LONG-TERM ALLOCATION */}
+          <div className="rounded-xl border border-line bg-ink-900/90 p-6 backdrop-blur space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line/60 pb-3">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gold">
+                  Dual-Horizon Tactical Framework
+                </p>
+                <h3 className="mt-1 font-display text-xl text-bone">
+                  Day Trading vs. Long-Term / Swing Allocation
+                </h3>
+              </div>
+              <WhopBadge variant="wsj" />
+            </div>
+
+            <div className="grid gap-5 md:grid-cols-2">
+              {/* Day Trader Desk */}
+              <div className="rounded-lg border border-line/80 bg-ink-950 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted">
+                    Day Trader (Intraday Tape)
+                  </span>
+                  <span className="font-mono text-[10px] font-bold rounded px-2 py-0.5 border border-emerald-500/40 bg-emerald-500/10 text-emerald-400">
+                    {dayTrade.bias}
+                  </span>
+                </div>
+
+                <div className="space-y-1.5 text-xs font-mono">
+                  <div className="flex justify-between text-muted">
+                    <span>Intraday VWAP:</span>
+                    <span className="text-bone">{dayTrade.vwapBias}</span>
+                  </div>
+                  <div className="flex justify-between text-muted">
+                    <span>15m Momentum Flow:</span>
+                    <span className="text-gold-bright">{dayTrade.momentum15m}</span>
+                  </div>
+                  <div className="flex justify-between text-muted">
+                    <span>Scalp Take-Profit:</span>
+                    <span className="text-emerald-400 font-bold">{fmtPrice(dayTrade.intradayTarget)}</span>
+                  </div>
+                  <div className="flex justify-between text-muted">
+                    <span>Tight Session Stop:</span>
+                    <span className="text-rose-400 font-bold">{fmtPrice(dayTrade.intradayStop)}</span>
+                  </div>
+                  <div className="flex justify-between text-muted">
+                    <span>Stop Distance:</span>
+                    <span className="text-bone">{dayTrade.invalidationDistancePct.toFixed(2)}%</span>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-muted leading-relaxed border-t border-line/50 pt-2">
+                  Designed for active execution. Cut positions immediately if price breaks the session stop level.
+                </p>
+              </div>
+
+              {/* Long-Term / Swing Desk */}
+              <div className="rounded-lg border border-line/80 bg-ink-950 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted">
+                    Long-Term &amp; Swing (Macro)
+                  </span>
+                  <span className="font-mono text-[10px] font-bold rounded px-2 py-0.5 border border-gold/40 bg-gold/15 text-gold-bright">
+                    {swingLong.bias}
+                  </span>
+                </div>
+
+                <div className="space-y-1.5 text-xs font-mono">
+                  <div className="flex justify-between text-muted">
+                    <span>Structural Stage:</span>
+                    <span className="text-bone">{swingLong.structure}</span>
+                  </div>
+                  <div className="flex justify-between text-muted">
+                    <span>Time Horizon:</span>
+                    <span className="text-gold-bright">{swingLong.timeHorizon}</span>
+                  </div>
+                  <div className="flex justify-between text-muted">
+                    <span>Macro Invalidation:</span>
+                    <span className="text-bone font-bold">{fmtPrice(swingLong.macroInvalidation)}</span>
+                  </div>
+                  <div className="flex justify-between text-muted">
+                    <span>Model Risk-Reward:</span>
+                    <span className="text-emerald-400 font-bold">{swingLong.riskReward}</span>
+                  </div>
+                  <div className="flex justify-between text-muted">
+                    <span>200-Day Anchor:</span>
+                    <span className="text-bone">{fmtPrice(m.sma200)}</span>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-muted leading-relaxed border-t border-line/50 pt-2">
+                  Designed for portfolio allocation. Stance holds until weekly closes violate the macro invalidation level.
+                </p>
+              </div>
             </div>
           </div>
 

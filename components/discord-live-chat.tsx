@@ -52,6 +52,8 @@ import {
 } from "@/lib/ai-moderator";
 import { ASSETS } from "@/lib/market-assets";
 import { useAuth } from "@/lib/auth-context";
+import { useWhop } from "@/lib/whop-context";
+import WhopBadge from "@/components/whop-badge";
 import { db } from "@/lib/firebase";
 import { collection, doc, setDoc, onSnapshot, query, limit } from "firebase/firestore";
 
@@ -823,9 +825,10 @@ export default function DiscordLiveChat() {
                           : "text-muted hover:bg-ink-850 hover:text-bone"
                       }`}
                     >
-                      <div className="flex items-center gap-2 truncate">
+                      <div className="flex items-center gap-1.5 truncate">
                         <Hash className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-gold" : "text-muted"}`} />
                         <span className="truncate">{ch.name}</span>
+                        {ch.id !== "general-trading" && <WhopBadge className="ml-1 text-[11px]" />}
                       </div>
                       {ch.id === "ai-minute-predictions" && (
                         <span className="rounded bg-emerald-500/20 px-1.5 py-0.2 text-[9px] font-mono text-emerald-300 font-bold">
@@ -868,8 +871,9 @@ export default function DiscordLiveChat() {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
               <Hash className="h-4 w-4 text-gold shrink-0" />
-              <h3 className="font-display text-sm sm:text-base font-bold text-bone truncate">
-                {activeChannel.name}
+              <h3 className="font-display text-sm sm:text-base font-bold text-bone truncate flex items-center">
+                <span>{activeChannel.name}</span>
+                <WhopBadge className="ml-1.5 text-xs" />
               </h3>
               <span className="hidden md:inline h-3.5 w-px bg-line/80 mx-1" />
               <p className="hidden md:inline text-xs text-muted truncate max-w-md">

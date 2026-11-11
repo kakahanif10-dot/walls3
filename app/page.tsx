@@ -1,6 +1,7 @@
 import Link from "next/link";
 import TickerTape from "@/components/ticker-tape";
 import Sparkline from "@/components/sparkline";
+import WhopBadge from "@/components/whop-badge";
 import { LivePrice, LiveChange } from "@/components/live-price";
 import { ARTICLES, COURSES } from "@/lib/content";
 import { marketPulse, rowsFor, stanceColor, type Row } from "@/lib/market";
@@ -197,9 +198,12 @@ export default async function HomePage() {
 
           <div className="rounded-xl border border-line bg-ink-900/60 p-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-bone">Today&apos;s board — equities</h3>
-              <Link href="/markets" className="text-xs text-muted transition hover:text-gold-bright">
-                View all →
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-medium text-bone">Today&apos;s board — equities</h3>
+                <WhopBadge variant="wsj" />
+              </div>
+              <Link href="/markets" className="flex items-center gap-1 text-xs text-gold-bright transition hover:text-gold font-semibold">
+                <span>View all →</span>
               </Link>
             </div>
             <div className="mt-3">
@@ -248,8 +252,9 @@ export default async function HomePage() {
                 className="group flex flex-col justify-between rounded-xl border border-line bg-ink-900 p-6 transition hover:border-gold/40"
               >
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gold">
-                    {card.eyebrow}
+                  <p className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em] text-gold">
+                    <span>{card.eyebrow}</span>
+                    <WhopBadge variant={card.href === "/meme-coins" ? "member" : "wsj"} />
                   </p>
                   <h3 className="mt-3 font-display text-xl text-bone group-hover:text-gold-bright">
                     {card.title}
@@ -286,8 +291,9 @@ export default async function HomePage() {
                 <span className="text-line">·</span>
                 <span>{article.readMinutes} min</span>
                 {article.premium && (
-                  <span className="ml-auto rounded border border-gold/40 px-1.5 py-0.5 text-[9px] text-gold">
-                    Premium
+                  <span className="ml-auto flex items-center gap-1 rounded border border-gold/40 px-1.5 py-0.5 text-[9px] text-gold">
+                    <span>Premium</span>
+                    <WhopBadge className="ml-0.5" />
                   </span>
                 )}
               </div>
@@ -306,7 +312,10 @@ export default async function HomePage() {
       <section className="border-y border-line/60 bg-ink-900/40">
         <div className="mx-auto grid max-w-7xl gap-12 px-5 py-16 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gold">The Academy</p>
+            <p className="flex items-center text-[11px] font-semibold uppercase tracking-[0.2em] text-gold">
+              <span>The Academy</span>
+              <WhopBadge className="ml-1.5" />
+            </p>
             <h2 className="mt-3 font-display text-3xl leading-tight text-bone sm:text-4xl">
               A subscription is a view. Education is a skill.
             </h2>
@@ -331,7 +340,10 @@ export default async function HomePage() {
                 className="group flex items-center justify-between gap-4 rounded-xl border border-line bg-ink-900 px-5 py-4 transition hover:border-gold/40"
               >
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.14em] text-gold">{course.level}</p>
+                  <p className="flex items-center text-[10px] uppercase tracking-[0.14em] text-gold">
+                    <span>{course.level}</span>
+                    <WhopBadge className="ml-1" />
+                  </p>
                   <p className="mt-1 text-sm font-medium text-bone group-hover:text-gold-bright">
                     {course.title}
                   </p>

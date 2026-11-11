@@ -1,14 +1,23 @@
-import Link from "next/link";
+"use client";
 
-const COLUMNS = [
+import Link from "next/link";
+import { useWhop } from "@/lib/whop-context";
+
+interface FooterLink {
+  href: string;
+  label: string;
+  exclusive?: boolean;
+}
+
+const COLUMNS: { title: string; links: FooterLink[] }[] = [
   {
     title: "Coverage",
     links: [
       { href: "/markets", label: "S&P 500 & Nasdaq" },
-      { href: "/crypto", label: "Binance crypto" },
-      { href: "/meme-coins", label: "Pump.fun memes" },
-      { href: "/pipeline", label: "Data Pipeline & 2,000+ Scoring" },
-      { href: "/chat", label: "Live Trading Chat" },
+      { href: "/crypto", label: "Binance crypto", exclusive: true },
+      { href: "/meme-coins", label: "Pump.fun memes", exclusive: true },
+      { href: "/pipeline", label: "Data Pipeline & 2,000+ Scoring", exclusive: true },
+      { href: "/chat", label: "Live Trading Chat", exclusive: true },
       { href: "/ticker/BTC", label: "Bitcoin trend score" },
       { href: "/ticker/NVDA", label: "NVIDIA trend score" },
     ],
@@ -26,7 +35,7 @@ const COLUMNS = [
     title: "Academy",
     links: [
       { href: "/academy", label: "All courses" },
-      { href: "/academy/watch", label: "Watch Video Studio" },
+      { href: "/academy/watch", label: "Watch Video Studio", exclusive: true },
       { href: "/academy/reading-trends", label: "Reading a Trend" },
       { href: "/academy/crypto-without-hype", label: "Crypto Without Hype" },
       { href: "/academy/portfolio-construction", label: "Portfolio Construction" },
@@ -35,17 +44,19 @@ const COLUMNS = [
   {
     title: "Tools & Company",
     links: [
-      { href: "/calculator", label: "Position Sizing Calculator" },
-      { href: "/pipeline", label: "Pipeline Health & Feeds" },
+      { href: "/calculator", label: "Position Sizing Calculator", exclusive: true },
+      { href: "/pipeline", label: "Pipeline Health & Feeds", exclusive: true },
       { href: "/pricing", label: "Plans & pricing" },
-      { href: "/chat", label: "Discord Community" },
-      { href: "/watchlist", label: "Your watchlist" },
+      { href: "/chat", label: "Discord Community", exclusive: true },
+      { href: "/watchlist", label: "Your watchlist", exclusive: true },
       { href: "/disclaimer", label: "Disclaimer & methodology" },
     ],
   },
 ];
 
 export default function SiteFooter() {
+  const { badge } = useWhop();
+
   return (
     <footer className="mt-24 border-t border-line/70 bg-ink-900">
       <div className="mx-auto max-w-7xl px-5 py-14">
@@ -73,9 +84,14 @@ export default function SiteFooter() {
                   <li key={link.href + link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-bone/75 transition-colors hover:text-gold-bright"
+                      className="text-sm text-bone/75 transition-colors hover:text-gold-bright flex items-center gap-1.5"
                     >
-                      {link.label}
+                      <span>{link.label}</span>
+                      {link.exclusive && (
+                        <span className="font-mono text-[9px] uppercase tracking-wider text-gold/85 border border-gold/30 bg-gold/5 px-1 rounded">
+                          PRO
+                        </span>
+                      )}
                     </Link>
                   </li>
                 ))}

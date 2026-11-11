@@ -4,6 +4,7 @@ import SiteHeader from "@/components/site-header";
 import SiteFooter from "@/components/site-footer";
 import LivePricesProvider from "@/components/live-prices";
 import { AuthProvider } from "@/lib/auth-context";
+import { WhopProvider } from "@/lib/whop-context";
 import { liveSeed } from "@/lib/market";
 import { ensureMarketData } from "@/lib/market-data";
 
@@ -86,11 +87,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className="min-h-screen antialiased">
         <AuthProvider>
-          <LivePricesProvider seed={liveSeed()} source={source} delayed={delayed}>
-            <SiteHeader />
-            <main>{children}</main>
-            <SiteFooter />
-          </LivePricesProvider>
+          <WhopProvider>
+            <LivePricesProvider seed={liveSeed()} source={source} delayed={delayed}>
+              <SiteHeader />
+              <main>{children}</main>
+              <SiteFooter />
+            </LivePricesProvider>
+          </WhopProvider>
         </AuthProvider>
       </body>
     </html>

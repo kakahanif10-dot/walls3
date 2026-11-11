@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import WatchlistPanel from "@/components/watchlist-panel";
+import WhopBadge from "@/components/whop-badge";
 import { rowsFor } from "@/lib/market";
 import { ensureMarketData } from "@/lib/market-data";
 
@@ -19,7 +20,10 @@ export default async function WatchlistPage() {
       <section className="grain border-b border-line/60">
         <div className="mx-auto max-w-7xl px-5 py-12">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">Personal</p>
-          <h1 className="mt-3 font-display text-4xl text-bone">Your watchlist</h1>
+          <h1 className="mt-3 font-display text-4xl text-bone flex items-center">
+            <span>Your watchlist</span>
+            <WhopBadge className="ml-2 align-middle text-2xl" />
+          </h1>
           <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted">
             Everything you have starred, with its current score and stance. Stored in this browser
             only — no account needed for the free tier.

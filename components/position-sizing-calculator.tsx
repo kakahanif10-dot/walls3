@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { ASSETS, ASSET_BY_SYMBOL, fmtPrice, fmtPct, metricsFor, type Asset } from "@/lib/market";
 import { useAuth } from "@/lib/auth-context";
+import WhopBadge from "@/components/whop-badge";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
@@ -264,8 +265,9 @@ ${calculations.isCapped ? `Note: Capped by ${calculations.capReason}` : ""}`;
               Quantitative Risk Desk
             </span>
           </div>
-          <h3 className="mt-1 font-display text-xl sm:text-2xl text-bone">
-            Position Sizing & Invalidation Calculator
+          <h3 className="mt-1 font-display text-xl sm:text-2xl text-bone flex flex-wrap items-center gap-2">
+            <span>Position Sizing &amp; Invalidation Calculator</span>
+            <WhopBadge variant="pro" />
           </h3>
           <p className="mt-0.5 text-xs text-muted">
             Sizes capital strictly against the model&apos;s technical invalidation level and 60-day realized volatility.

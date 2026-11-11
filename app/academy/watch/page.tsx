@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import WatchableVideoPlayer from "@/components/watchable-video-player";
+import WhopBadge from "@/components/whop-badge";
 import { VIDEO_LESSONS_20 } from "@/lib/academy-videos";
 
 export const metadata: Metadata = {
@@ -31,7 +32,10 @@ export default function WatchStudioPage() {
                 20 Video Lessons
               </span>
             </div>
-            <h3 className="mt-1 font-display text-2xl text-bone">All 20 Watchable Video Masterclasses</h3>
+            <h3 className="mt-1 font-display text-2xl text-bone flex items-center">
+              <span>All 20 Watchable Video Masterclasses</span>
+              <WhopBadge className="ml-2 text-lg align-middle" />
+            </h3>
             <p className="mt-1 text-xs text-muted">
               Structured across 5 key pillars: Price Action, Microstructure & Order Flow, Meme Coins, Risk Management, and Macro Regimes.
             </p>
@@ -76,7 +80,9 @@ export default function WatchStudioPage() {
                   {lesson.instructor}
                 </p>
                 <span className="shrink-0 flex items-center gap-1 text-[11px] font-semibold text-gold group-hover:translate-x-0.5 transition-transform">
-                  Watch ▶
+                  <span>Watch</span>
+                  {idx > 0 && <WhopBadge className="ml-0.5 text-[10px]" />}
+                  <span>▶</span>
                 </span>
               </div>
             </Link>

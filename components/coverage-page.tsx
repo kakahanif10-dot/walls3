@@ -1,5 +1,6 @@
 import Link from "next/link";
 import MarketExplorer from "@/components/market-explorer";
+import WhopBadge from "@/components/whop-badge";
 import { byKind, metricsFor, rowsFor, type Kind } from "@/lib/market";
 import { ensureMarketData } from "@/lib/market-data";
 
@@ -59,9 +60,13 @@ export default async function CoveragePage({ kind }: { kind: Kind }) {
     <div>
       <section className="grain border-b border-line/60">
         <div className="mx-auto max-w-7xl px-5 py-14 lg:py-16">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">{copy.eyebrow}</p>
-          <h1 className="mt-4 max-w-3xl font-display text-4xl leading-tight text-bone sm:text-5xl">
-            {copy.title}
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold flex items-center">
+            <span>{copy.eyebrow}</span>
+            <WhopBadge variant={kind === "meme" ? "member" : "wsj"} className="ml-2" />
+          </p>
+          <h1 className="mt-4 max-w-3xl font-display text-4xl leading-tight text-bone sm:text-5xl flex flex-wrap items-center gap-2">
+            <span>{copy.title}</span>
+            <WhopBadge variant={kind === "meme" ? "member" : "wsj"} className="text-xs align-middle" />
           </h1>
           <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-muted">{copy.sub}</p>
 
@@ -94,9 +99,10 @@ export default async function CoveragePage({ kind }: { kind: Kind }) {
             </Link>
             <Link
               href="/pricing"
-              className="rounded-full border border-gold/50 bg-gold/10 px-4 py-2 text-xs font-medium text-gold-bright transition hover:bg-gold/20"
+              className="inline-flex items-center gap-1.5 rounded-full border border-gold/50 bg-gold/10 px-4 py-2 text-xs font-medium text-gold-bright transition hover:bg-gold/20"
             >
-              Unlock full stance reports
+              <span>Unlock full stance reports</span>
+              <WhopBadge className="ml-0.5" />
             </Link>
           </div>
         </div>
