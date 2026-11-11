@@ -10,7 +10,7 @@ import { LivePrice, LiveChange } from "@/components/live-price";
 import { ARTICLES, COURSES } from "@/lib/content";
 import { marketPulse, rowsFor, stanceColor, ASSET_BY_SYMBOL, metricsFor, type Row } from "@/lib/market";
 import { ensureMarketData } from "@/lib/market-data";
-import { TrendingUp, BarChart3, Coins, Flame, ArrowRight, Terminal, Zap, FileText, Database } from "lucide-react";
+import { TrendingUp, BarChart3, Coins, Flame, ArrowRight, Terminal, Zap, FileText, Database, Cpu, Bot, Globe, Compass, Radio } from "lucide-react";
 
 function BoardRow({ row }: { row: Row }) {
   return (
@@ -180,8 +180,138 @@ export default async function HomePage() {
 
       {/* INSTITUTIONAL TERMINALS & ACTION FEEDS */}
       <section className="mx-auto max-w-7xl px-5 pt-12 pb-4">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {/* 1. Professional Terminal */}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {/* Real-Time Financial News API */}
+          <Link
+            href="/realtime-news"
+            className="group relative overflow-hidden rounded-2xl border-2 border-emerald-500/50 bg-gradient-to-br from-[#021309] via-[#010b05] to-[#010502] p-5 transition-all duration-300 hover:border-emerald-400 hover:shadow-[0_0_35px_rgba(16,185,129,0.25)] flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 rounded bg-emerald-500/15 border border-emerald-500/40 px-2 py-0.5 text-[10px] font-mono font-bold text-emerald-300 uppercase tracking-wider">
+                  <Radio className="h-3 w-3 text-emerald-400 animate-pulse" />
+                  REALTIME NEWS API
+                </span>
+                <span className="text-xs font-mono font-bold text-emerald-400">10,000+ SOURCES</span>
+              </div>
+              <h3 className="mt-4 font-mono text-lg font-bold text-white group-hover:text-emerald-400 transition">
+                Real-Time News Wire
+              </h3>
+              <p className="mt-2 text-xs text-stone-400 font-sans leading-relaxed">
+                Ported from janlukasschroeder/realtime-newsapi. Live sub-second WebSocket news stream from Bloomberg, Reuters, WSJ, Seeking Alpha &amp; SEC EDGAR mapped to ticker symbols with Lucene query API.
+              </p>
+            </div>
+            <div className="mt-6 flex items-center justify-between border-t border-emerald-900/40 pt-3 text-xs font-mono text-emerald-400">
+              <span>Open News Stream →</span>
+              <span className="text-emerald-300 font-bold">Live Socket</span>
+            </div>
+          </Link>
+
+          {/* 0. Oracle-X Financial Intelligence Platform */}
+          <Link
+            href="/oraclex"
+            className="group relative overflow-hidden rounded-2xl border-2 border-cyan-500/40 bg-gradient-to-br from-[#05111c] via-[#030910] to-[#01050a] p-5 transition-all duration-300 hover:border-cyan-400 hover:shadow-[0_0_35px_rgba(6,182,212,0.25)] flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 rounded bg-cyan-500/15 border border-cyan-500/40 px-2 py-0.5 text-[10px] font-mono font-bold text-cyan-300 uppercase tracking-wider">
+                  <Compass className="h-3 w-3 text-cyan-400" />
+                  ORACLE-X v2.4
+                </span>
+                <span className="text-xs font-mono font-bold text-cyan-400">VECTOR RAG</span>
+              </div>
+              <h3 className="mt-4 font-mono text-lg font-bold text-white group-hover:text-cyan-400 transition">
+                Oracle-X Terminal
+              </h3>
+              <p className="mt-2 text-xs text-stone-400 font-sans leading-relaxed">
+                Ported from Yigtwxx/OracleX. FastAPI + ChromaDB Vector RAG for SEC/FOMC transcripts, Advance/Decline market internals, standing leverage liquidity ladder &amp; Borsa İstanbul board.
+              </p>
+            </div>
+            <div className="mt-6 flex items-center justify-between border-t border-cyan-900/40 pt-3 text-xs font-mono text-cyan-400">
+              <span>Launch Oracle-X →</span>
+              <span className="text-cyan-300 font-bold">ChromaDB Sync</span>
+            </div>
+          </Link>
+
+          {/* 1. Neuberg Terminal Platform */}
+          <Link
+            href="/neuberg"
+            className="group relative overflow-hidden rounded-2xl border-2 border-[#ff9900]/50 bg-gradient-to-br from-[#120a02] via-[#0c0702] to-[#060401] p-5 transition-all duration-300 hover:border-[#ff9900] hover:shadow-[0_0_35px_rgba(255,153,0,0.25)] flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 rounded bg-[#ff9900]/15 border border-[#ff9900]/40 px-2 py-0.5 text-[10px] font-mono font-bold text-[#ffcc00] uppercase tracking-wider">
+                  <Terminal className="h-3 w-3 text-[#ff9900]" />
+                  NEUBERG v2.4
+                </span>
+                <span className="text-xs font-mono font-bold text-[#00d4aa]">516 PANELS</span>
+              </div>
+              <h3 className="mt-4 font-mono text-lg font-bold text-white group-hover:text-[#ff9900] transition">
+                Neuberg Terminal
+              </h3>
+              <p className="mt-2 text-xs text-stone-400 font-mono leading-relaxed">
+                Open-source Bloomberg alternative ($24,000/yr). 516 panels, Fear &amp; Greed index dial, Macro Regime Quadrants, 24/7 Hyperliquid stock/crypto perps, and native Polymarket books.
+              </p>
+            </div>
+            <div className="mt-6 flex items-center justify-between border-t border-[#ff9900]/30 pt-3 text-xs font-mono text-[#ff9900]">
+              <span>Launch Neuberg →</span>
+              <span className="text-[#00d4aa] font-bold">Trade All</span>
+            </div>
+          </Link>
+
+          {/* 2. OpenStock Global Platform */}
+          <Link
+            href="/openstock"
+            className="group relative overflow-hidden rounded-2xl border-2 border-emerald-500/40 bg-gradient-to-br from-[#041a10] via-[#020d08] to-[#010805] p-5 transition-all duration-300 hover:border-emerald-400 hover:shadow-[0_0_35px_rgba(16,185,129,0.25)] flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 rounded bg-emerald-500/15 border border-emerald-500/40 px-2 py-0.5 text-[10px] font-mono font-bold text-emerald-300 uppercase tracking-wider">
+                  <Globe className="h-3 w-3 text-emerald-400" />
+                  OPENSTOCK ODS
+                </span>
+                <span className="text-xs font-mono font-bold text-emerald-400">9 HUBS</span>
+              </div>
+              <h3 className="mt-4 font-display text-lg font-bold text-white group-hover:text-emerald-400 transition">
+                OpenStock Hub
+              </h3>
+              <p className="mt-2 text-xs text-stone-400 font-sans leading-relaxed">
+                Ported from Open-Dev-Society. Markets minus the paywall: 9 global exchange hubs, multi-tab ticker exploration, social sentiment radar (Reddit, X, Polymarket), and personalized price alerts.
+              </p>
+            </div>
+            <div className="mt-6 flex items-center justify-between border-t border-emerald-900/40 pt-3 text-xs font-mono text-emerald-400">
+              <span>OpenStock Platform →</span>
+              <span className="text-emerald-300 font-bold">Free Forever</span>
+            </div>
+          </Link>
+
+          {/* 2. Fincept Terminal Platform */}
+          <Link
+            href="/fincept"
+            className="group relative overflow-hidden rounded-2xl border-2 border-amber-500/50 bg-gradient-to-br from-[#120d04] via-[#080603] to-[#040301] p-5 transition-all duration-300 hover:border-amber-400 hover:shadow-[0_0_35px_rgba(245,158,11,0.25)] flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 rounded bg-amber-500/15 border border-amber-500/40 px-2 py-0.5 text-[10px] font-mono font-bold text-amber-300 uppercase tracking-wider">
+                  <Cpu className="h-3 w-3 text-amber-400" />
+                  FINCEPT v4.5.2
+                </span>
+                <span className="text-xs font-mono font-bold text-amber-400">&lt;C++20&gt;</span>
+              </div>
+              <h3 className="mt-4 font-mono text-lg font-bold text-white group-hover:text-amber-400 transition">
+                Fincept Terminal
+              </h3>
+              <p className="mt-2 text-xs text-stone-400 font-mono leading-relaxed">
+                Ported from Fincept-Corporation. 37 investor AI agents (Buffett, Simons, Soros), interactive DCF &amp; Black-Scholes Greeks, 100+ connectors (FRED, IMF, EDGAR), paper trading &amp; node editor.
+              </p>
+            </div>
+            <div className="mt-6 flex items-center justify-between border-t border-amber-900/40 pt-3 text-xs font-mono text-amber-400">
+              <span>Launch Fincept →</span>
+              <span className="text-amber-300 font-bold">37 Agents</span>
+            </div>
+          </Link>
+
+          {/* 2. Professional Terminal */}
           <Link
             href="/terminal"
             className="group relative overflow-hidden rounded-2xl border-2 border-[#ff8800]/50 bg-[#0a0a0a] p-5 transition-all duration-300 hover:border-[#ff8800] hover:shadow-[0_0_35px_rgba(255,136,0,0.25)] flex flex-col justify-between"

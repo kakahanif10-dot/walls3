@@ -42,6 +42,17 @@ or Polygon agreement). Add the licence terms to `/disclaimer` before charging fo
 
 ## Layout
 
+- `app/realtime-news/page.tsx` & `components/realtime-news-terminal.tsx` — Real-Time Financial News Stream & Query API (ported from https://github.com/janlukasschroeder/realtime-newsapi) with 10,000+ sources (Bloomberg, Reuters, WSJ, Seeking Alpha, SEC EDGAR Form 8-K, FDA Approvals), WebSocket streaming, ticker mapping, and Lucene query API
+- `lib/realtime-news-api.ts` & `app/api/newsfilter/route.ts` — Newsfilter.io public actions query API endpoint and filtering engine
+- `app/oraclex/page.tsx` & `components/oraclex-terminal.tsx` — Oracle-X Financial Intelligence Platform (ported from https://github.com/Yigtwxx/OracleX) with FastAPI + ChromaDB Vector RAG, 24h Advance/Decline market internals histogram, standing leverage liquidity ladder, and Borsa İstanbul (BIST 100 & KAP) realm
+- `lib/oraclex-platform.ts` — Oracle-X market internals engine, liquidity ladder calculator, divergence detection radar, and ChromaDB vector memory query store
+- `app/neuberg/page.tsx` & `components/neuberg-terminal.tsx` — Neuberg Terminal Platform (ported from https://github.com/KoNananachan/Neuberg) with 516 panels, Fear & Greed Index, Macro Regime Quadrant, 24/7 Hyperliquid stock/crypto perps, and Polymarket order books
+- `lib/neuberg-platform.ts` — Neuberg 516-panel catalog, Fear & Greed engine, macro quadrants, perpetual contracts, and Polymarket feeds
+- `app/openstock/page.tsx` & `components/openstock-hub.tsx` — OpenStock Global Platform (ported from https://github.com/Open-Dev-Society/OpenStock) across 9 markets, browser-style multi-tab ticker analysis, social sentiment radar (Reddit, X, Polymarket), and price alerts
+- `lib/openstock-platform.ts` — OpenStock 9 market definitions, market hours clock, and social sentiment engine
+- `app/fincept/page.tsx` & `components/fincept-terminal.tsx` — Fincept Terminal Platform (ported from https://github.com/Fincept-Corporation/FinceptTerminal) with 37 AI agents, DCF valuation, Black-Scholes options Greeks, 100+ connectors, and paper trading
+- `lib/fincept-platform.ts` — Fincept quantitative engine, agent evaluation logic, DCF models, and CLI command parser
+- `app/openbb/page.tsx` & `components/openbb-terminal.tsx` — OpenBB Quantitative Workspace & ODP platform
 - `lib/market.ts` — asset universe, scoring model, formatters, market model store
 - `lib/market-data.ts` — real data sources, caching, snapshot assembly
 - `lib/content.ts` — research articles, academy courses, pricing plans

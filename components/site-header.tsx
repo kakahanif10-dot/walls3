@@ -8,7 +8,7 @@ import FeedBadge from "@/components/feed-badge";
 import AuthButton from "@/components/auth-button";
 import WhopBadge from "@/components/whop-badge";
 import { useWhop } from "@/lib/whop-context";
-import { TrendingUp, BarChart3, Coins, Flame, Bell, Cpu, Terminal, FileText, Zap, Database } from "lucide-react";
+import { TrendingUp, BarChart3, Coins, Flame, Bell, Cpu, Terminal, FileText, Zap, Database, Globe, Compass, Radio } from "lucide-react";
 
 interface NavLink {
   href: string;
@@ -18,6 +18,11 @@ interface NavLink {
 }
 
 const DESK_TABS = [
+  { href: "/realtime-news", label: "Realtime News", icon: Radio, desc: "10,000+ Sources Real-Time News Stream & Query API", pro: true },
+  { href: "/oraclex", label: "Oracle-X", icon: Compass, desc: "Oracle-X ChromaDB Vector RAG, Internals & Liquidity Ladder", pro: true },
+  { href: "/neuberg", label: "Neuberg", icon: Terminal, desc: "Neuberg 516-Panel Open-Source Bloomberg Terminal", pro: true },
+  { href: "/openstock", label: "OpenStock", icon: Globe, desc: "OpenStock 9 Global Markets Hub & Sentiment", pro: true },
+  { href: "/fincept", label: "Fincept", icon: Cpu, desc: "Fincept Terminal C++20 / Qt6 / Python 3.11 Platform", pro: true },
   { href: "/terminal", label: "Terminal", icon: Terminal, desc: "Professional Multi-Screen Financial Workstation", pro: true },
   { href: "/openbb", label: "OpenBB", icon: Database, desc: "OpenBB Quant Platform & CLI", pro: true },
   { href: "/gold-news", label: "News", icon: Zap, desc: "100 Live Breaking Action Catalysts", pro: true },
@@ -30,6 +35,11 @@ const DESK_TABS = [
 ];
 
 const MAIN_LINKS: NavLink[] = [
+  { href: "/realtime-news", label: "Realtime News", live: true, pro: true },
+  { href: "/oraclex", label: "Oracle-X", pro: true },
+  { href: "/neuberg", label: "Neuberg", pro: true },
+  { href: "/openstock", label: "OpenStock", pro: true },
+  { href: "/fincept", label: "Fincept", pro: true },
   { href: "/terminal", label: "Terminal", pro: true },
   { href: "/openbb", label: "OpenBB", pro: true },
   { href: "/gold-news", label: "News", live: true, pro: true },

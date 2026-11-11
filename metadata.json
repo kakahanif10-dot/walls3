@@ -1,5 +1,5 @@
 {
   "name": "NextWall Street",
-  "description": "Rules-based trend analysis across equities, crypto, and meme coins with 2,000+ real-time assets, OpenBB Quantitative Platform & CLI, professional multi-display Terminal, News Action (100 live dossiers), and Market Center & Analysis.",
+  "description": "Rules-based trend analysis across equities, crypto, and meme coins with 2,000+ real-time assets, Real-Time News API Platform (10,000+ sources & WebSocket stream), Oracle-X Platform (ChromaDB RAG & Liquidity Ladder), Neuberg Bloomberg Terminal (516 panels & 24/7 perps), OpenStock Global Hub, Fincept Terminal, OpenBB ODP, Bloomberg Terminal, News Action, and Market Center.",
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
