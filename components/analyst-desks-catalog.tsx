@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Search, BarChart3, Globe, Coins, Flame, Cpu, ArrowUpRight, CheckCircle2 } from "lucide-react";
 import WhopBadge from "./whop-badge";
@@ -9,6 +9,12 @@ import { ANALYST_DESKS_44, type AnalystDesk, CATEGORY_LABELS } from "@/lib/analy
 export default function AnalystDesksCatalog() {
   const [activeCategory, setActiveCategory] = useState<"all" | "equities" | "macro" | "crypto" | "meme" | "quant">("all");
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get("q");
+    if (q) setSearch(q);
+  }, []);
 
   const filteredDesks = ANALYST_DESKS_44.filter((desk) => {
     const matchesCat = activeCategory === "all" || desk.category === activeCategory;

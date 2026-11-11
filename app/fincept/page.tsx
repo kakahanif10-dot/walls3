@@ -2,69 +2,60 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import FinceptTerminal from "@/components/fincept-terminal";
 import WhopBadge from "@/components/whop-badge";
-import { ExternalLink, Terminal, Bot, BarChart2, Globe, Cpu } from "lucide-react";
+import { Terminal, Bot, BarChart2, Globe, Cpu } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Fincept Terminal Platform — NextWall Street",
+  title: "AI Allocator Agents, DCF & Options Greeks — NextWall Street",
   description:
-    "Integrated from https://github.com/Fincept-Corporation/FinceptTerminal. Native C++20, Qt6, and Python 3.11 terminal featuring 37 investor AI agents, DCF valuation, Black-Scholes options Greeks, 100+ macroeconomic data connectors, paper trading execution, and visual node workflow automation.",
+    "Institutional quantitative valuation suite featuring 37 AI allocator agents, Gordon Growth DCF modeling, Black-Scholes options pricing and Greeks, 100+ macro data connectors, paper trading execution, and visual strategy node automation.",
 };
 
 export default function FinceptPage() {
   return (
-    <div className="bg-[#050402] min-h-screen text-stone-100">
-      <section className="border-b border-amber-900/40 bg-gradient-to-b from-[#120d04] to-[#050402]">
-        <div className="mx-auto max-w-7xl px-5 py-12">
+    <div className="min-h-screen bg-[#050609] text-[#f2efe8]">
+      <section className="relative overflow-hidden border-b border-[#d8ab5a]/20 bg-gradient-to-b from-[#120f09] via-[#080a0f] to-[#050609]">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(216,171,90,0.12),transparent_55%)]" />
+        <div className="relative mx-auto max-w-7xl px-5 py-12">
           <nav className="flex items-center gap-2 text-xs font-mono text-stone-400">
-            <Link href="/" className="hover:text-amber-300">Home</Link>
+            <Link href="/" className="hover:text-[#f0c979] transition-colors">Home</Link>
             <span className="text-stone-600">/</span>
-            <span className="text-amber-400">Fincept Terminal</span>
+            <span className="text-[#f0c979]">AI Allocator Agents, DCF &amp; Options Greeks</span>
           </nav>
-          <div className="mt-3 flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 rounded bg-amber-500/15 border border-amber-500/40 px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider text-amber-300">
-              <Terminal className="h-3 w-3 text-amber-400" />
-              NATIVE FINANCIAL INTELLIGENCE PLATFORM
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-[#d8ab5a]/35 bg-[#d8ab5a]/10 px-2.5 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-[0.14em] text-[#f0c979]">
+              <Terminal className="h-3 w-3 text-[#d8ab5a]" />
+              QUANTITATIVE VALUATION &amp; AGENT SUITE
             </span>
-            <span className="rounded bg-stone-800/80 px-2 py-0.5 text-[10px] font-mono text-stone-300">
-              v4.5.2 AGPL-3.0
+            <span className="rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-[10px] font-mono text-stone-300">
+              37 ALLOCATOR FRAMEWORKS · C++20 / PYTHON ENGINE
             </span>
             <WhopBadge size="xs" />
           </div>
-          <h1 className="mt-2 font-mono text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight flex items-center gap-3">
-            <span>Fincept Terminal Platform</span>
+
+          <h1 className="mt-3 font-display text-3xl sm:text-4xl lg:text-5xl font-medium text-[#f2efe8] tracking-tight">
+            AI Allocator Agents, DCF &amp; Options Greeks
           </h1>
-          <p className="mt-4 max-w-3xl text-xs sm:text-sm leading-relaxed text-stone-300 font-mono">
-            Directly ported from the official open-source GitHub repository{" "}
-            <a
-              href="https://github.com/Fincept-Corporation/FinceptTerminal"
-              target="_blank"
-              rel="noreferrer"
-              className="text-amber-400 underline inline-flex items-center gap-1 font-bold"
-            >
-              Fincept-Corporation/FinceptTerminal <ExternalLink className="h-3 w-3 inline" />
-            </a>
-            . Features 37 investor and macroeconomic AI agents (Buffett, Graham, Munger, Soros, Dalio, Simons, Lynch), Gordon Growth DCF valuation model, Black-Scholes options pricing and Greeks, 100+ live macroeconomic connectors (FRED, IMF, DBnomics, SEC EDGAR), real-time paper trading execution, and visual node workflow automation.
+          <p className="mt-4 max-w-3xl text-xs sm:text-sm leading-relaxed text-stone-300/90 font-sans">
+            Full-spectrum fundamental and quantitative modeling desk featuring 37 capital allocator AI agents (Buffett, Munger, Graham, Soros, Dalio, Simons, Lynch, Ackman), interactive Gordon Growth DCF valuation, Black-Scholes options pricing and Greeks, 100+ live macro connectors, paper execution, and visual strategy node automation.
           </p>
 
-          <div className="mt-6 flex flex-wrap gap-4 text-xs font-mono text-stone-400">
-            <span className="flex items-center gap-1.5 text-amber-300">
-              <Bot className="h-3.5 w-3.5 text-amber-400" />
+          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-mono text-stone-400">
+            <span className="flex items-center gap-1.5 text-[#f0c979]">
+              <Bot className="h-3.5 w-3.5 text-[#d8ab5a]" />
               37 Allocator AI Agents
             </span>
-            <span>•</span>
-            <span className="flex items-center gap-1.5 text-amber-300">
-              <BarChart2 className="h-3.5 w-3.5 text-amber-400" />
+            <span className="flex items-center gap-1.5 text-stone-200">
+              <BarChart2 className="h-3.5 w-3.5 text-[#d8ab5a]" />
               Interactive DCF &amp; Black-Scholes
             </span>
-            <span>•</span>
-            <span className="flex items-center gap-1.5 text-amber-300">
-              <Globe className="h-3.5 w-3.5 text-amber-400" />
-              100+ Live Connectors &amp; Chokepoints
+            <span className="flex items-center gap-1.5 text-emerald-400">
+              <Globe className="h-3.5 w-3.5" />
+              100+ Macro Feeds &amp; Chokepoints
             </span>
-            <span>•</span>
-            <span className="flex items-center gap-1.5 text-amber-300">
-              <Cpu className="h-3.5 w-3.5 text-amber-400" />
-              C++20 / Qt6 / Embedded Python 3.11
+            <span className="flex items-center gap-1.5 text-stone-200">
+              <Cpu className="h-3.5 w-3.5 text-[#d8ab5a]" />
+              Strategy Node Graph &amp; Paper Execution
             </span>
           </div>
         </div>

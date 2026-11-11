@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   return NextResponse.json(
     {
-      service: "Real-Time Newsfilter Query API",
+      service: "Real-Time Financial News Stream & Query API",
       status: "online",
       sourcesCount: "10,000+",
       supportedTypes: ["filterArticles"],
@@ -41,7 +41,6 @@ export async function GET() {
         "symbols:NVDA OR symbols:AAPL",
         "category:Crypto",
       ],
-      documentation: "https://github.com/janlukasschroeder/realtime-newsapi",
     },
     { status: 200 }
   );

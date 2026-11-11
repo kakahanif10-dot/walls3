@@ -13,8 +13,8 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
   {
     title: "Coverage & Platforms",
     links: [
-      { href: "/terminal", label: "Terminal (Workstation)", exclusive: true },
-      { href: "/openbb", label: "OpenBB Quantitative Platform", exclusive: true },
+      { href: "/terminal", label: "Dual-Screen Pro Terminal", exclusive: true },
+      { href: "/openbb", label: "Quantitative Risk & VaR CLI", exclusive: true },
       { href: "/gold-news", label: "News (100 Live Dossiers)", exclusive: true },
       { href: "/wsj", label: "Market Center & Analysis", exclusive: true },
       { href: "/markets", label: "S&P 500 & Nasdaq" },

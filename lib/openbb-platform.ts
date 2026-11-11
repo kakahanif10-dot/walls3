@@ -1,7 +1,6 @@
 /**
- * OpenBB Open Data Platform Quantitative Engine
- * Ported from https://github.com/openbq-org/OpenBB
- * Integrates OpenBB Equity, Economy, Quantitative Risk (VaR), and Portfolio Optimization.
+ * Quantitative Risk, VaR & Portfolio CLI Engine
+ * Integrates Equity Pricing, Macroeconomic Curves, Quantitative Risk (VaR), and Portfolio Optimization.
  */
 
 import { ASSET_BY_SYMBOL, ASSETS, byKind } from "./market";
@@ -217,7 +216,7 @@ export const OPENBB_DARKPOOL_ITEMS: OpenBBDarkpoolItem[] = [
 
 /**
  * Calculates Quantitative Risk & Value at Risk (VaR)
- * Inspired by OpenBB quantitative analysis extension
+ * Quantitative fat-tailed risk and drawdown analysis engine
  */
 export function calculateOpenBBVaR(symbol: string, confidence = 0.95, horizonDays = 1): OpenBBVaRResult {
   const asset = ASSET_BY_SYMBOL[symbol.toUpperCase()] || ASSETS[0];
@@ -424,8 +423,8 @@ export interface OpenBBCommandResult {
 }
 
 /**
- * OpenBB Terminal Command Line Interpreter
- * Emulates `openbb-platform` CLI syntax and python obb SDK
+ * Quantitative Risk & Portfolio Command Line Interpreter
+ * Executes terminal route syntax and Python quant SDK expressions
  */
 export function executeOpenBBCommand(rawInput: string): OpenBBCommandResult {
   const input = rawInput.trim();
@@ -435,9 +434,9 @@ export function executeOpenBBCommand(rawInput: string): OpenBBCommandResult {
     return {
       command: input,
       type: "text",
-      title: "OpenBB Platform CLI Navigation Guide",
+      title: "Quantitative Risk & Portfolio CLI Navigation Guide",
       content: `
-AVAILABLE OPENBB MODULES:
+AVAILABLE QUANT CLI MODULES:
   /equity      Equity pricing, fundamentals, ownership, dark pool analysis
   /economy     Macro indicators, US Treasury yield curves, CPI, GDP, Fed rates
   /quant       Value at Risk (VaR), Sharpe, Sortino, Monte Carlo simulations
@@ -453,9 +452,9 @@ QUICK EXECUTABLE COMMANDS:
   /quant/var TSLA             Compute Parametric, Historical & Monte Carlo VaR
   /quant/montecarlo BTC       Run 30-day geometric Brownian motion simulation
   /portfolio/optimize         Run Markowitz Mean-Variance Frontier on top basket
-  obb.equity.price("NVDA")    Python SDK syntax equivalent
+  cli.equity.price("NVDA")    Python SDK syntax equivalent
       `.trim(),
-      pythonCodeSnippet: `from openbb import obb\n# Load historical quotes\ndf = obb.equity.price.historical("NVDA").to_dataframe()`,
+      pythonCodeSnippet: `from nextwall.quant import cli\n# Load historical quotes\ndf = cli.equity.price.historical("NVDA").to_dataframe()`,
     };
   }
 
@@ -467,7 +466,7 @@ QUICK EXECUTABLE COMMANDS:
     };
   }
 
-  // /equity/price or obb.equity.price.historical
+  // /equity/price or cli.equity.price.historical
   if (lower.includes("price") || lower.startsWith("/equity/price") || lower.startsWith("/crypto/price")) {
     const parts = input.split(/\s+/);
     let symbol = parts[1] || "NVDA";
@@ -483,7 +482,7 @@ QUICK EXECUTABLE COMMANDS:
     return {
       command: input,
       type: "table",
-      title: `OpenBB Equity Price Feed: ${asset.symbol} (${asset.name})`,
+      title: `Equity Price Feed: ${asset.symbol} (${asset.name})`,
       content: `Live quote received via NextWall real-time feed for ${asset.symbol}.`,
       tableData: [
         { Metric: "Symbol", Value: asset.symbol },
@@ -492,7 +491,7 @@ QUICK EXECUTABLE COMMANDS:
         { Metric: "Asset Group", Value: asset.group },
         { Metric: "Asset Class", Value: asset.kind.toUpperCase() },
       ],
-      pythonCodeSnippet: `from openbb import obb\nquote = obb.equity.price.quote("${asset.symbol}")\nprint(quote.to_dataframe())`,
+      pythonCodeSnippet: `from nextwall.quant import cli\nquote = cli.equity.price.quote("${asset.symbol}")\nprint(quote.to_dataframe())`,
     };
   }
 
@@ -505,7 +504,7 @@ QUICK EXECUTABLE COMMANDS:
     return {
       command: input,
       type: "table",
-      title: `OpenBB Equity Dark Pool Analysis: ${item.symbol}`,
+      title: `Equity Dark Pool Analysis: ${item.symbol}`,
       content: `Off-exchange dark pool volume, FINRA short ratio, and net block order delta.`,
       tableData: [
         { Metric: "Symbol", Value: item.symbol },
@@ -515,7 +514,7 @@ QUICK EXECUTABLE COMMANDS:
         { Metric: "Net Block Delta", Value: `$${(item.netBlockDeltaDollar / 1e6).toFixed(1)}M` },
         { Metric: "Institutional Sentiment", Value: item.sentiment },
       ],
-      pythonCodeSnippet: `from openbb import obb\n# Darkpool and short volume data\ndf = obb.equity.darkpool.otc("${item.symbol}").to_dataframe()`,
+      pythonCodeSnippet: `from nextwall.quant import cli\n# Darkpool and short volume data\ndf = cli.equity.darkpool.otc("${item.symbol}").to_dataframe()`,
     };
   }
 
@@ -524,7 +523,7 @@ QUICK EXECUTABLE COMMANDS:
     return {
       command: input,
       type: "table",
-      title: "OpenBB Economy: US Treasury Benchmark Yield Curve",
+      title: "Macro Economy: US Treasury Benchmark Yield Curve",
       content: "Real-time rates across all standard constant maturity tenors (1M through 30Y).",
       tableData: OPENBB_YIELD_CURVE.map((pt) => ({
         Tenor: pt.tenor,
@@ -533,7 +532,7 @@ QUICK EXECUTABLE COMMANDS:
         "Previous (%)": `${pt.previousRate.toFixed(2)}%`,
         "Delta (bps)": `${((pt.rate - pt.previousRate) * 100).toFixed(0)} bps`,
       })),
-      pythonCodeSnippet: `from openbb import obb\nyield_curve = obb.economy.treasury_rates(curve="yield_curve")\nprint(yield_curve.to_dataframe())`,
+      pythonCodeSnippet: `from nextwall.quant import cli\nyield_curve = cli.economy.treasury_rates(curve="yield_curve")\nprint(yield_curve.to_dataframe())`,
     };
   }
 
@@ -542,7 +541,7 @@ QUICK EXECUTABLE COMMANDS:
     return {
       command: input,
       type: "table",
-      title: "OpenBB Economy: Core Macroeconomic Indicators",
+      title: "Macro Economy: Core Macroeconomic Indicators",
       content: "Federal Reserve rates, CPI inflation, Real GDP, and global liquidity tracking.",
       tableData: OPENBB_MACRO_INDICATORS.map((m) => ({
         Indicator: m.metric,
@@ -551,7 +550,7 @@ QUICK EXECUTABLE COMMANDS:
         Change: m.change,
         MacroBias: m.impact,
       })),
-      pythonCodeSnippet: `from openbb import obb\ncpi = obb.economy.cpi(country="united_states")\ngdp = obb.economy.gdp(nominal=False)`,
+      pythonCodeSnippet: `from nextwall.quant import cli\ncpi = cli.economy.cpi(country="united_states")\ngdp = cli.economy.gdp(nominal=False)`,
     };
   }
 
@@ -564,7 +563,7 @@ QUICK EXECUTABLE COMMANDS:
     return {
       command: input,
       type: "table",
-      title: `OpenBB Quantitative Risk & VaR: ${varRes.symbol} (95% 1-Day Horizon)`,
+      title: `Quantitative Risk & VaR: ${varRes.symbol} (95% 1-Day Horizon)`,
       content: `Parametric, Historical fat-tailed, and Monte Carlo Value at Risk with Expected Shortfall (CVaR).`,
       tableData: [
         { Metric: "Parametric VaR (95%)", Value: `-${varRes.parametricVaRPercent}% (-$${varRes.parametricVaRDollar})` },
@@ -577,7 +576,7 @@ QUICK EXECUTABLE COMMANDS:
         { Metric: "Max Historical Drawdown", Value: `${varRes.maxDrawdown}%` },
         { Metric: "Beta to S&P 500", Value: varRes.betaToSPY },
       ],
-      pythonCodeSnippet: `from openbb import obb\n# Quantitative risk analysis\nrisk = obb.quantitative.risk(symbol="${varRes.symbol}", confidence=0.95)`,
+      pythonCodeSnippet: `from nextwall.quant import cli\n# Quantitative risk analysis\nrisk = cli.quantitative.risk(symbol="${varRes.symbol}", confidence=0.95)`,
     };
   }
 
@@ -587,7 +586,7 @@ QUICK EXECUTABLE COMMANDS:
     return {
       command: input,
       type: "table",
-      title: "OpenBB Portfolio: Markowitz Mean-Variance Optimal Allocation",
+      title: "Portfolio Optimization: Markowitz Mean-Variance Optimal Allocation",
       content: `Optimal basket weighting for Maximum Sharpe Ratio (Sharpe: ${opt.maxSharpePoint.sharpe}) and Minimum Variance (Vol: ${opt.minVariancePoint.volatility}%).`,
       tableData: opt.allocations.map((a) => ({
         Asset: `${a.symbol} (${a.name})`,
@@ -595,7 +594,7 @@ QUICK EXECUTABLE COMMANDS:
         "Min Variance Allocation": `${a.minVarianceWeight}%`,
         "Equal Weight": `${a.equalWeight}%`,
       })),
-      pythonCodeSnippet: `from openbb import obb\nopt = obb.portfolio.optimize(symbols=["NVDA", "AAPL", "BTC", "SOL"], method="max_sharpe")\nprint(opt.weights)`,
+      pythonCodeSnippet: `from nextwall.quant import cli\nopt = cli.portfolio.optimize(symbols=["NVDA", "AAPL", "BTC", "SOL"], method="max_sharpe")\nprint(opt.weights)`,
     };
   }
 
@@ -603,6 +602,6 @@ QUICK EXECUTABLE COMMANDS:
   return {
     command: input,
     type: "error",
-    content: `Command not recognized: "${input}". Type "help" or "/help" for available OpenBB modules and commands.`,
+    content: `Command not recognized: "${input}". Type "help" or "/help" for available Quant CLI modules and commands.`,
   };
 }

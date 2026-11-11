@@ -1,8 +1,7 @@
 /**
- * Fincept Terminal Quantitative Platform
- * Ported from https://github.com/Fincept-Corporation/FinceptTerminal
- * Native financial research platform with 37 AI agents, DCF valuation, Black-Scholes options pricing,
- * QuantLab factor models, 100+ data connectors, paper trading execution, and visual node workflow editor.
+ * Allocator AI, DCF & Options Quantitative Suite
+ * Native financial research engine with 37 AI allocator agents, DCF valuation, Black-Scholes options pricing,
+ * factor models, 100+ data connectors, paper trading execution, and visual node workflow automation.
  */
 
 import { ASSET_BY_SYMBOL, ASSETS, fmtPrice, metricsFor } from "./market";
@@ -481,7 +480,7 @@ export function executeFinceptCommand(input: string): FinceptCLIResponse {
     case "?":
       return {
         command: input,
-        title: "Fincept Terminal Command Architecture",
+        title: "Quantitative Valuation & Agent Command Architecture",
         output: `Available Commands:
 - agent [buffett|munger|graham|soros|dalio|simons|lynch|ackman|geopolitical] [TICKER]  (Execute AI Agent research)
 - dcf [TICKER]                                                                       (Run interactive DCF Valuation Model)
@@ -505,7 +504,7 @@ export function executeFinceptCommand(input: string): FinceptCLIResponse {
 
       return {
         command: input,
-        title: `Fincept Agent Analysis: ${agent.name} (${agent.title}) on $${asset.symbol}`,
+        title: `Allocator Agent Analysis: ${agent.name} (${agent.title}) on $${asset.symbol}`,
         output: `AGENT ARCHETYPE: ${agent.archetype} | AVATAR: ${agent.avatar}
 STANCE: ${evalResult.stance} (Conviction: ${evalResult.conviction}/100)
 PRICE: ${fmtPrice(m.last)} | 24H CHANGE: ${(m.change24h * 100).toFixed(2)}%
@@ -593,7 +592,7 @@ THE GREEKS:
     case "macro":
       return {
         command: input,
-        title: "Fincept Macro Telemetry & Central Bank Policy Matrix",
+        title: "Macro Telemetry & Central Bank Policy Matrix",
         output: `G10 CENTRAL BANK POLICY BENCHMARKS:
 • Federal Reserve (Fed):     5.25% - 5.50% (Upper Bound) | Bias: Data-dependent hold
 • European Central Bank:     3.25% (Deposit Rate)        | Bias: Easing trajectory
@@ -623,7 +622,7 @@ FRED SOVEREIGN SPREADS:
     case "connectors":
       return {
         command: input,
-        title: "Fincept 100+ Data Connector Live Health Status",
+        title: "100+ Data Connector Live Health Status",
         output: FINCEPT_DATA_CONNECTORS.map(
           (c) => `• ${c.name} [${c.category}]
   Status: ${c.status} | Latency: ${c.latencyMs}ms | Endpoints: ${c.endpointCount}`
@@ -648,7 +647,7 @@ FRED SOVEREIGN SPREADS:
 • Quantity: ${shares} units
 • Fill Price: ${fmtPrice(m.last)}
 • Total Notional: ${fmtPrice(notional)}
-• Venue: Fincept Virtual Matcher (Zero Commission)
+• Venue: NextWall Virtual Matcher (Zero Commission)
 • Execution Timestamp: ${new Date().toLocaleTimeString()} EST`,
         type: "success",
       };
@@ -658,7 +657,7 @@ FRED SOVEREIGN SPREADS:
       return {
         command: input,
         title: `Command '${root}' not recognized`,
-        output: `Type 'help' to inspect supported Fincept Terminal commands or click the preset command buttons below.`,
+        output: `Type 'help' to inspect supported Quant Terminal commands or click the preset command buttons below.`,
         type: "warning",
       };
   }

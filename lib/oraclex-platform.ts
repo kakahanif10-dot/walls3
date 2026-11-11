@@ -1,8 +1,7 @@
 /**
- * Oracle-X Financial Intelligence Platform Engine
- * Ported from https://github.com/Yigtwxx/OracleX
+ * Cross-Asset Vector RAG & Liquidity Intelligence Engine
  * Unified cross-asset terminal for US Equities, Digital Assets, and Borsa İstanbul.
- * Integrates ChromaDB Vector Memory RAG, Market Internals & Advance/Decline Histogram,
+ * Integrates Vector Memory RAG, Market Internals & Advance/Decline Histogram,
  * Liquidity Ladder (Standing Leverage Clusters), and Divergence Detection Radar.
  */
 

@@ -10,7 +10,7 @@ import {
   OPENBB_DARKPOOL_ITEMS,
 } from "./openbb-platform";
 
-test("OpenBB Yield Curve and Macro Indicators have valid institutional data", () => {
+test("Quant CLI Yield Curve and Macro Indicators have valid institutional data", () => {
   assert.ok(OPENBB_YIELD_CURVE.length >= 10, "Yield curve must have standard tenors");
   const tenYear = OPENBB_YIELD_CURVE.find((p) => p.tenor === "10Y");
   const twoYear = OPENBB_YIELD_CURVE.find((p) => p.tenor === "2Y");
@@ -26,7 +26,7 @@ test("OpenBB Yield Curve and Macro Indicators have valid institutional data", ()
   assert.ok(cpi, "CPI indicator must exist");
 });
 
-test("OpenBB Quantitative Risk calculates accurate VaR, Expected Shortfall, and Sharpe ratios", () => {
+test("Quant CLI Risk calculates accurate VaR, Expected Shortfall, and Sharpe ratios", () => {
   const nvdaVaR = calculateOpenBBVaR("NVDA", 0.95);
   assert.equal(nvdaVaR.symbol, "NVDA");
   assert.ok(nvdaVaR.parametricVaRPercent > 0, "Parametric VaR must be positive");
@@ -41,7 +41,7 @@ test("OpenBB Quantitative Risk calculates accurate VaR, Expected Shortfall, and 
   assert.ok(btcVaR.parametricVaRPercent > nvdaVaR.parametricVaRPercent);
 });
 
-test("OpenBB Monte Carlo simulation generates consistent non-divergent 30-day price envelopes", () => {
+test("Quant CLI Monte Carlo simulation generates consistent non-divergent 30-day price envelopes", () => {
   const paths = generateMonteCarloPaths("NVDA", 180, 30);
   assert.equal(paths.length, 31, "Should have 31 days (day 0 to 30)");
 
@@ -57,7 +57,7 @@ test("OpenBB Monte Carlo simulation generates consistent non-divergent 30-day pr
   assert.ok(day30.p75 < day30.p95, "p75 must be less than p95");
 });
 
-test("OpenBB Markowitz Efficient Frontier normalizes weights to 100% and calculates optimal tangency", () => {
+test("Quant CLI Markowitz Efficient Frontier normalizes weights to 100% and calculates optimal tangency", () => {
   const res = computeOpenBBEfficientFrontier(["NVDA", "AAPL", "BTC", "SOL"]);
   assert.ok(res.frontier.length > 10, "Frontier points must be computed");
   assert.ok(res.allocations.length === 4, "Must have 4 asset allocations");
@@ -71,11 +71,11 @@ test("OpenBB Markowitz Efficient Frontier normalizes weights to 100% and calcula
   assert.ok(res.maxSharpePoint.sharpe > 0, "Max Sharpe point must have positive Sharpe ratio");
 });
 
-test("OpenBB Command Line interpreter handles commands, help, and python SDK syntax", () => {
+test("Quant CLI interpreter handles commands, help, and Python SDK syntax", () => {
   // Help command
   const helpRes = executeOpenBBCommand("help");
   assert.equal(helpRes.type, "text");
-  assert.ok(helpRes.content.includes("AVAILABLE OPENBB MODULES"));
+  assert.ok(helpRes.content.includes("AVAILABLE QUANT CLI MODULES"));
 
   // Yield curve command
   const yieldRes = executeOpenBBCommand("/economy/yieldcurve");
@@ -88,7 +88,7 @@ test("OpenBB Command Line interpreter handles commands, help, and python SDK syn
   assert.ok(varRes.title?.includes("NVDA"));
 
   // Python syntax
-  const pyRes = executeOpenBBCommand('obb.equity.price.historical("AAPL")');
+  const pyRes = executeOpenBBCommand('cli.equity.price.historical("AAPL")');
   assert.equal(pyRes.type, "table");
   assert.ok(pyRes.tableData);
 

@@ -1,9 +1,7 @@
 /**
- * OpenStock Platform Engine
- * Ported from https://github.com/Open-Dev-Society/OpenStock
- * Open-source alternative to proprietary financial terminals:
+ * Global Markets & Sentiment Hub Engine
  * Multi-market coverage across 9 regions (US, India, Germany, Canada, Australia, Saudi Arabia, Poland, Crypto, Forex),
- * Market Hours Clock, Social Sentiment Radar (Reddit, X, Polymarket), Technical Indicators, and Price Alert Manager.
+ * Market Hours Clock, Social Sentiment Radar, Technical Indicators, and Price Alert Manager.
  */
 
 import { ASSET_BY_SYMBOL, ASSETS, fmtPrice, fmtPct, metricsFor } from "./market";

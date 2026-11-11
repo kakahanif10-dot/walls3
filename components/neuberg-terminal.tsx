@@ -1,33 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import {
   Terminal,
   Activity,
-  TrendingUp,
-  TrendingDown,
-  Globe,
-  Sliders,
   DollarSign,
-  ShieldAlert,
-  ArrowUpRight,
-  ArrowDownRight,
   Flame,
-  CheckCircle2,
-  ExternalLink,
-  Layers,
-  ChevronRight,
-  Database,
-  BarChart2,
   Zap,
   Vote,
   Compass,
-  Filter,
-  Check,
-  X,
-  Play,
-  RotateCcw,
 } from "lucide-react";
 import {
   NEUBERG_PANEL_CATALOG,
@@ -41,7 +22,7 @@ import {
   type PerpetualContract,
   type PolymarketContract,
 } from "@/lib/neuberg-platform";
-import { fmtPrice, fmtPct } from "@/lib/market";
+import { fmtPrice } from "@/lib/market";
 import WhopBadge from "@/components/whop-badge";
 
 export default function NeubergTerminal() {
@@ -69,7 +50,6 @@ export default function NeubergTerminal() {
   const [polyStakeAmount, setPolyStakeAmount] = useState<number>(100);
   const [polyOrderFeedback, setPolyOrderFeedback] = useState<string | null>(null);
 
-  // Compute live data
   const fearGreed = computeFearAndGreed();
   const macroRegime = getMacroRegime();
 
@@ -81,7 +61,6 @@ export default function NeubergTerminal() {
 
   const isPanelOpen = (panelId: string) => openPanelIds.includes(panelId);
 
-  // Perps calculations
   const perpNotional = perpMarginUsd * leverage;
   const perpQuantity = perpNotional / selectedPerp.markPrice;
   const perpLiquidationPrice =
@@ -113,68 +92,50 @@ export default function NeubergTerminal() {
 
   return (
     <div className="space-y-8">
-      {/* Top Neuberg Terminal Branding & Status Banner */}
-      <div className="rounded-2xl border border-[#ff9900]/40 bg-gradient-to-r from-[#120a02] via-[#1a0f03] to-[#0c0702] p-6 shadow-2xl backdrop-blur">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-[#ff9900]/30 pb-6">
+      {/* Top Workstation Header & Telemetry Banner */}
+      <div className="rounded-2xl border border-[#d8ab5a]/30 bg-gradient-to-br from-[#11100c] via-[#0a0c12] to-[#06080d] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.65)] backdrop-blur-xl">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-white/[0.08] pb-6">
           <div>
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="inline-flex items-center gap-1.5 rounded bg-[#ff9900]/20 border border-[#ff9900]/40 px-2.5 py-1 text-xs font-mono font-bold uppercase tracking-wider text-[#ffcc00]">
-                <Terminal className="h-3.5 w-3.5 text-[#ff9900]" />
-                NEUBERG TERMINAL · THE OPEN-SOURCE BLOOMBERG
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-[#d8ab5a]/10 border border-[#d8ab5a]/35 px-2.5 py-1 text-[10px] font-mono font-semibold uppercase tracking-[0.14em] text-[#f0c979]">
+                <Terminal className="h-3.5 w-3.5 text-[#d8ab5a]" />
+                MACRO &amp; PERPETUALS WORKSTATION
               </span>
-              <span className="rounded bg-stone-800/80 px-2 py-0.5 text-[10px] font-mono text-stone-300">
-                516 Live Panels · $24,000/yr Alternative
+              <span className="rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-[10px] font-mono text-stone-300">
+                516 Live Panels · 24/7 Execution
               </span>
               <WhopBadge size="xs" />
             </div>
-            <h2 className="mt-2 text-2xl sm:text-3xl font-mono text-white font-extrabold tracking-tight flex items-center gap-2">
-              <span>Neuberg Quantitative Workstation</span>
+            <h2 className="mt-2.5 text-2xl sm:text-3xl font-display font-medium text-[#f2efe8] tracking-tight">
+              516-Panel Macro &amp; Perpetuals Workstation
             </h2>
-            <p className="mt-1 text-xs sm:text-sm text-stone-300 max-w-3xl leading-relaxed font-mono">
-              Ported from the open-source repository{" "}
-              <a
-                href="https://github.com/KoNananachan/Neuberg"
-                target="_blank"
-                rel="noreferrer"
-                className="text-[#ff9900] hover:underline inline-flex items-center gap-1 font-bold"
-              >
-                KoNananachan/Neuberg <ExternalLink className="h-3 w-3" />
-              </a>
-              {" "}· Live demo at{" "}
-              <a
-                href="https://neuberg.ai"
-                target="_blank"
-                rel="noreferrer"
-                className="text-[#00d4aa] hover:underline inline-flex items-center gap-1 font-bold"
-              >
-                neuberg.ai <ExternalLink className="h-3 w-3" />
-              </a>
-              . Built with 516 drag-and-drop panels across Equities, Fixed Income, Commodities, Macro Regime Quadrants, Fear &amp; Greed index, 24/7 Hyperliquid stock &amp; crypto perpetuals, and native Polymarket prediction order books.
+            <p className="mt-1.5 text-xs sm:text-sm text-stone-400 max-w-3xl leading-relaxed font-sans">
+              Modular analytical panels across Equities, Fixed Income, Commodities, Macro Regime Quadrants, Fear &amp; Greed composite scoring, 24/7 equity &amp; crypto perpetuals, and live event prediction order books.
             </p>
           </div>
 
           {/* Quick Platform Telemetry */}
-          <div className="rounded-xl border border-[#ff9900]/30 bg-[#1e1003]/80 p-4 max-w-md w-full shrink-0 font-mono text-xs">
-            <div className="flex items-center justify-between border-b border-[#ff9900]/20 pb-2">
-              <span className="text-stone-400">Terminal Core:</span>
-              <span className="text-[#00d4aa] font-bold flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-[#00d4aa] animate-pulse" />
-                Live Feed (Yahoo Finance + Hyperliquid)
+          <div className="rounded-xl border border-[#d8ab5a]/25 bg-[#080a0f]/90 p-4 max-w-md w-full shrink-0 font-mono text-xs">
+            <div className="flex items-center justify-between border-b border-white/[0.07] pb-2">
+              <span className="text-stone-400">Workstation Core:</span>
+              <span className="text-emerald-400 font-semibold flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                Live Multi-Venue Stream
               </span>
             </div>
             <div className="mt-2 flex items-center justify-between">
               <span className="text-stone-400">Active Panels:</span>
-              <span className="text-[#ffcc00] font-bold">{openPanelIds.length} / 516 Available</span>
+              <span className="text-[#f0c979] font-semibold tabular-nums">{openPanelIds.length} / 516 Available</span>
             </div>
             <div className="mt-2 flex items-center justify-between">
-              <span className="text-stone-400">Macro Market Sentiment:</span>
-              <span className="text-emerald-400 font-bold">
+              <span className="text-stone-400">Macro Sentiment:</span>
+              <span className="text-emerald-400 font-semibold tabular-nums">
                 {fearGreed.rating} ({fearGreed.score}/100)
               </span>
             </div>
             <div className="mt-2 flex items-center justify-between">
               <span className="text-stone-400">Economic Regime:</span>
-              <span className="text-[#ff3366] font-bold">{macroRegime.currentRegime} Quadrant</span>
+              <span className="text-rose-400 font-semibold">{macroRegime.currentRegime} Quadrant</span>
             </div>
           </div>
         </div>
@@ -197,8 +158,8 @@ export default function NeubergTerminal() {
                   onClick={() => setActiveCategory(cat as PanelCategory)}
                   className={`rounded-xl px-3 py-1.5 text-xs font-mono transition-all ${
                     active
-                      ? "bg-[#ff9900] text-stone-950 font-bold shadow-lg shadow-[#ff9900]/20"
-                      : "bg-stone-900 text-stone-400 hover:text-white border border-stone-800"
+                      ? "bg-gradient-to-r from-[#d8ab5a] to-[#f0c979] text-[#050609] font-semibold shadow-[0_4px_16px_rgba(216,171,90,0.22)]"
+                      : "bg-white/[0.04] text-stone-400 hover:text-[#f2efe8] border border-white/[0.07]"
                   }`}
                 >
                   {cat}
@@ -207,7 +168,7 @@ export default function NeubergTerminal() {
             })}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-[11px] font-mono text-stone-400">Toggle Panel Views:</span>
             {NEUBERG_PANEL_CATALOG.slice(0, 5).map((p) => {
               const open = isPanelOpen(p.id);
@@ -215,10 +176,10 @@ export default function NeubergTerminal() {
                 <button
                   key={p.id}
                   onClick={() => togglePanel(p.id)}
-                  className={`rounded px-2 py-0.5 text-[10px] font-mono font-bold transition ${
+                  className={`rounded-md px-2 py-0.5 text-[10px] font-mono font-semibold transition ${
                     open
-                      ? "bg-[#ff9900]/20 text-[#ffcc00] border border-[#ff9900]/40"
-                      : "bg-stone-800 text-stone-500 border border-stone-800"
+                      ? "bg-[#d8ab5a]/15 text-[#f0c979] border border-[#d8ab5a]/35"
+                      : "bg-white/[0.04] text-stone-500 border border-white/[0.06]"
                   }`}
                 >
                   {p.tag}
@@ -233,69 +194,66 @@ export default function NeubergTerminal() {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* PANEL 1: FEAR & GREED COMPOSITE INDEX */}
         {isPanelOpen("fear-greed") && (
-          <div className="rounded-2xl border border-stone-800 bg-stone-950/90 p-5 space-y-5">
-            <div className="flex items-center justify-between border-b border-stone-800 pb-3">
+          <div className="rounded-2xl border border-white/[0.09] bg-gradient-to-b from-[#0d1017] to-[#07090e] p-5 space-y-5 shadow-xl">
+            <div className="flex items-center justify-between border-b border-white/[0.07] pb-3">
               <div>
-                <span className="text-[10px] font-mono font-bold text-[#ff9900] uppercase tracking-wider">
+                <span className="text-[10px] font-mono font-semibold text-[#d8ab5a] uppercase tracking-[0.14em]">
                   PANEL 01 · MARKET SENTIMENT ENGINE
                 </span>
-                <h3 className="font-mono text-lg font-bold text-white flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-[#ff9900]" />
+                <h3 className="font-display text-lg font-medium text-[#f2efe8] flex items-center gap-2 mt-0.5">
+                  <Activity className="h-4 w-4 text-[#d8ab5a]" />
                   Fear &amp; Greed Composite Index
                 </h3>
               </div>
-              <span className="rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 text-[10px] font-mono font-bold">
+              <span className="rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 px-2.5 py-0.5 text-[10px] font-mono font-semibold">
                 {fearGreed.rating}
               </span>
             </div>
 
-            {/* Fear & Greed Dial / Gauge */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 rounded-xl border border-stone-800/80 bg-stone-900/40 p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 rounded-xl border border-white/[0.07] bg-[#050609] p-4">
               <div className="text-center sm:text-left">
                 <span className="text-[11px] font-mono text-stone-400 uppercase">Current Reading</span>
-                <div className="text-5xl font-mono font-extrabold text-[#00d4aa]">
+                <div className="text-5xl font-mono font-bold text-emerald-400 tabular-nums">
                   {fearGreed.score}
                 </div>
                 <span className="text-xs font-mono text-stone-400">Scale: 0 (Extreme Fear) &ndash; 100 (Extreme Greed)</span>
               </div>
 
-              {/* Historical Comparison */}
-              <div className="grid grid-cols-3 gap-3 font-mono text-xs text-center border-t sm:border-t-0 sm:border-l border-stone-800 pt-3 sm:pt-0 sm:pl-6">
+              <div className="grid grid-cols-3 gap-3 font-mono text-xs text-center border-t sm:border-t-0 sm:border-l border-white/[0.08] pt-3 sm:pt-0 sm:pl-6 tabular-nums">
                 <div>
                   <span className="text-[10px] text-stone-500 block">Prev Close</span>
-                  <strong className="text-stone-300 text-sm">{fearGreed.previousClose}</strong>
+                  <strong className="text-stone-200 text-sm">{fearGreed.previousClose}</strong>
                 </div>
                 <div>
                   <span className="text-[10px] text-stone-500 block">1 Week Ago</span>
-                  <strong className="text-stone-300 text-sm">{fearGreed.oneWeekAgo}</strong>
+                  <strong className="text-stone-200 text-sm">{fearGreed.oneWeekAgo}</strong>
                 </div>
                 <div>
                   <span className="text-[10px] text-stone-500 block">1 Month Ago</span>
-                  <strong className="text-amber-400 text-sm">{fearGreed.oneMonthAgo}</strong>
+                  <strong className="text-[#f0c979] text-sm">{fearGreed.oneMonthAgo}</strong>
                 </div>
               </div>
             </div>
 
-            {/* Underlying Factor Breakdown */}
             <div className="space-y-2 font-mono text-xs">
-              <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">
+              <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">
                 Contributing Sub-Factor Signals
               </span>
               <div className="grid gap-2">
                 {fearGreed.factors.map((f) => (
                   <div
                     key={f.name}
-                    className="flex items-center justify-between rounded-lg bg-stone-900/60 px-3 py-2 border border-stone-800/80"
+                    className="flex items-center justify-between rounded-lg bg-[#050609] px-3 py-2 border border-white/[0.06]"
                   >
                     <span className="text-stone-300 text-xs">{f.name}</span>
                     <div className="flex items-center gap-3">
-                      <div className="w-16 h-1.5 rounded-full bg-stone-800 overflow-hidden hidden sm:block">
+                      <div className="w-16 h-1.5 rounded-full bg-white/[0.06] overflow-hidden hidden sm:block">
                         <div
-                          className="h-full bg-[#00d4aa]"
+                          className="h-full bg-emerald-400"
                           style={{ width: `${f.score}%` }}
                         />
                       </div>
-                      <span className="text-emerald-400 font-bold">{f.status}</span>
+                      <span className="text-emerald-400 font-semibold">{f.status}</span>
                     </div>
                   </div>
                 ))}
@@ -306,34 +264,30 @@ export default function NeubergTerminal() {
 
         {/* PANEL 2: MACRO REGIME QUADRANT */}
         {isPanelOpen("macro-regime") && (
-          <div className="rounded-2xl border border-stone-800 bg-stone-950/90 p-5 space-y-5">
-            <div className="flex items-center justify-between border-b border-stone-800 pb-3">
+          <div className="rounded-2xl border border-white/[0.09] bg-gradient-to-b from-[#0d1017] to-[#07090e] p-5 space-y-5 shadow-xl">
+            <div className="flex items-center justify-between border-b border-white/[0.07] pb-3">
               <div>
-                <span className="text-[10px] font-mono font-bold text-[#ff3366] uppercase tracking-wider">
+                <span className="text-[10px] font-mono font-semibold text-rose-400 uppercase tracking-[0.14em]">
                   PANEL 02 · MACRO CYCLE ANALYSIS
                 </span>
-                <h3 className="font-mono text-lg font-bold text-white flex items-center gap-2">
-                  <Compass className="h-4 w-4 text-[#ff3366]" />
+                <h3 className="font-display text-lg font-medium text-[#f2efe8] flex items-center gap-2 mt-0.5">
+                  <Compass className="h-4 w-4 text-rose-400" />
                   Macro Regime Quadrant
                 </h3>
               </div>
-              <span className="rounded bg-[#ff3366]/20 text-[#ff3366] border border-[#ff3366]/40 px-2 py-0.5 text-[10px] font-mono font-bold">
+              <span className="rounded-md bg-rose-500/15 text-rose-300 border border-rose-400/30 px-2.5 py-0.5 text-[10px] font-mono font-semibold">
                 {macroRegime.currentRegime}
               </span>
             </div>
 
-            {/* 2D Quadrant Visualizer */}
-            <div className="relative rounded-xl border border-stone-800 bg-stone-900/50 p-4 h-56 flex flex-col justify-between font-mono text-[11px]">
-              {/* Axes Labels */}
+            <div className="relative rounded-xl border border-white/[0.07] bg-[#050609] p-4 h-56 flex flex-col justify-between font-mono text-[11px]">
               <div className="flex justify-between text-stone-500">
                 <span>STAGFLATION (Low Growth / High Inf)</span>
-                <span className="text-emerald-400 font-bold">REFLATION (High Growth / High Inf) ★ CURRENT</span>
+                <span className="text-emerald-400 font-semibold">REFLATION (High Growth / High Inf) ★ CURRENT</span>
               </div>
-              {/* Crosshair lines */}
-              <div className="absolute inset-x-4 top-1/2 h-px bg-stone-800" />
-              <div className="absolute inset-y-4 left-1/2 w-px bg-stone-800" />
+              <div className="absolute inset-x-4 top-1/2 h-px bg-white/[0.08]" />
+              <div className="absolute inset-y-4 left-1/2 w-px bg-white/[0.08]" />
 
-              {/* Current Point Indicator */}
               <div
                 className="absolute z-10 flex items-center justify-center -translate-x-1/2 -translate-y-1/2"
                 style={{
@@ -342,8 +296,8 @@ export default function NeubergTerminal() {
                 }}
               >
                 <span className="relative flex h-4 w-4">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff3366] opacity-75" />
-                  <span className="relative inline-flex rounded-full h-4 w-4 bg-[#ff3366] border-2 border-white" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#f0c979] opacity-75" />
+                  <span className="relative inline-flex rounded-full h-4 w-4 bg-[#d8ab5a] border-2 border-[#f2efe8]" />
                 </span>
               </div>
 
@@ -353,20 +307,19 @@ export default function NeubergTerminal() {
               </div>
             </div>
 
-            {/* Regime Thesis & Allocation */}
             <div className="space-y-2 font-mono text-xs">
-              <p className="text-stone-300 text-xs leading-relaxed">
+              <p className="text-stone-300 text-xs leading-relaxed font-sans">
                 {macroRegime.historicalTransition}
               </p>
-              <div className="rounded-lg bg-stone-900/60 p-3 border border-stone-800 space-y-1">
-                <span className="text-[10px] font-bold text-[#ff9900] uppercase">
+              <div className="rounded-lg bg-[#050609] p-3 border border-white/[0.07] space-y-1">
+                <span className="text-[10px] font-semibold text-[#d8ab5a] uppercase tracking-wider">
                   Optimal Sector Playbook
                 </span>
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {macroRegime.recommendedAllocation.map((alloc) => (
                     <span
                       key={alloc}
-                      className="rounded bg-[#ff9900]/15 text-[#ffcc00] border border-[#ff9900]/30 px-2 py-0.5 text-[11px]"
+                      className="rounded-md bg-[#d8ab5a]/10 text-[#f0c979] border border-[#d8ab5a]/25 px-2 py-0.5 text-[11px]"
                     >
                       {alloc}
                     </span>
@@ -377,25 +330,24 @@ export default function NeubergTerminal() {
           </div>
         )}
 
-        {/* PANEL 3: 24/7 STOCK & CRYPTO PERPETUALS (HYPERLIQUID INTEGRATION) */}
+        {/* PANEL 3: 24/7 STOCK & CRYPTO PERPETUALS */}
         {isPanelOpen("perps-trading") && (
-          <div className="rounded-2xl border border-[#ff9900]/40 bg-[#0c0803] p-5 space-y-5">
-            <div className="flex items-center justify-between border-b border-[#ff9900]/30 pb-3">
+          <div className="rounded-2xl border border-[#d8ab5a]/30 bg-gradient-to-b from-[#110f0b] to-[#07090e] p-5 space-y-5 shadow-xl">
+            <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
               <div>
-                <span className="text-[10px] font-mono font-bold text-[#ff9900] uppercase tracking-wider">
-                  PANEL 03 · 24/7 TRADING ENGINE
+                <span className="text-[10px] font-mono font-semibold text-[#d8ab5a] uppercase tracking-[0.14em]">
+                  PANEL 03 · 24/7 EXECUTION ENGINE
                 </span>
-                <h3 className="font-mono text-lg font-bold text-white flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-[#ff9900]" />
-                  Hyperliquid 24/7 Perpetuals
+                <h3 className="font-display text-lg font-medium text-[#f2efe8] flex items-center gap-2 mt-0.5">
+                  <DollarSign className="h-4 w-4 text-[#d8ab5a]" />
+                  24/7 Stock &amp; Crypto Perpetuals
                 </h3>
               </div>
-              <span className="rounded bg-[#ff9900]/20 text-[#ffcc00] border border-[#ff9900]/40 px-2 py-0.5 text-[10px] font-mono font-bold">
+              <span className="rounded-md bg-[#d8ab5a]/15 text-[#f0c979] border border-[#d8ab5a]/35 px-2.5 py-0.5 text-[10px] font-mono font-semibold">
                 1x &ndash; 20x Leverage
               </span>
             </div>
 
-            {/* Contract Selector */}
             <div className="grid grid-cols-3 gap-2">
               {NEUBERG_PERP_CONTRACTS.map((contract) => {
                 const isSelected = selectedPerp.symbol === contract.symbol;
@@ -403,17 +355,17 @@ export default function NeubergTerminal() {
                   <button
                     key={contract.symbol}
                     onClick={() => setSelectedPerp(contract)}
-                    className={`rounded-xl p-2.5 font-mono text-left transition border ${
+                    className={`rounded-xl p-2.5 font-mono text-left transition border tabular-nums ${
                       isSelected
-                        ? "border-[#ff9900] bg-[#ff9900]/20 text-white font-bold"
-                        : "border-stone-800 bg-stone-900/60 text-stone-400 hover:text-white"
+                        ? "border-[#d8ab5a]/70 bg-[#d8ab5a]/15 text-[#f2efe8] font-bold"
+                        : "border-white/[0.07] bg-[#050609] text-stone-400 hover:text-[#f2efe8] hover:border-white/15"
                     }`}
                   >
                     <div className="flex items-center justify-between text-xs">
                       <span>{contract.symbol}</span>
-                      <span className="text-[9px] text-[#ffcc00]">{contract.maxLeverage}x</span>
+                      <span className="text-[9px] text-[#f0c979]">{contract.maxLeverage}x</span>
                     </div>
-                    <div className="mt-1 text-sm text-white font-bold">
+                    <div className="mt-1 text-sm text-[#f2efe8] font-bold">
                       {fmtPrice(contract.markPrice)}
                     </div>
                   </button>
@@ -421,16 +373,15 @@ export default function NeubergTerminal() {
               })}
             </div>
 
-            {/* Perps Order Placement Simulation */}
             <form onSubmit={handleExecutePerp} className="space-y-4 font-mono text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setPerpSide("LONG")}
-                  className={`py-2 rounded-lg font-bold transition ${
+                  className={`py-2 rounded-xl font-bold transition ${
                     perpSide === "LONG"
-                      ? "bg-[#00d4aa] text-stone-950 shadow-md"
-                      : "bg-stone-900 text-stone-400 border border-stone-800"
+                      ? "bg-emerald-500 text-[#050609] shadow-md"
+                      : "bg-[#050609] text-stone-400 border border-white/[0.08]"
                   }`}
                 >
                   LONG / BUY
@@ -438,21 +389,20 @@ export default function NeubergTerminal() {
                 <button
                   type="button"
                   onClick={() => setPerpSide("SHORT")}
-                  className={`py-2 rounded-lg font-bold transition ${
+                  className={`py-2 rounded-xl font-bold transition ${
                     perpSide === "SHORT"
-                      ? "bg-[#ff3366] text-white shadow-md"
-                      : "bg-stone-900 text-stone-400 border border-stone-800"
+                      ? "bg-rose-500 text-white shadow-md"
+                      : "bg-[#050609] text-stone-400 border border-white/[0.08]"
                   }`}
                 >
                   SHORT / SELL
                 </button>
               </div>
 
-              {/* Leverage Slider */}
               <div>
-                <div className="flex justify-between text-xs">
+                <div className="flex justify-between text-xs tabular-nums">
                   <span className="text-stone-300">Account Leverage:</span>
-                  <span className="text-[#ff9900] font-bold">{leverage}x Max</span>
+                  <span className="text-[#f0c979] font-bold">{leverage}x Max</span>
                 </div>
                 <input
                   type="range"
@@ -461,13 +411,12 @@ export default function NeubergTerminal() {
                   step="1"
                   value={leverage}
                   onChange={(e) => setLeverage(parseInt(e.target.value, 10))}
-                  className="w-full accent-[#ff9900] mt-1"
+                  className="w-full accent-[#d8ab5a] mt-1"
                 />
               </div>
 
-              {/* Margin Input & Execution Details */}
-              <div className="rounded-xl border border-stone-800 bg-stone-900/60 p-3 space-y-1.5 text-stone-400">
-                <div className="flex justify-between">
+              <div className="rounded-xl border border-white/[0.07] bg-[#050609] p-3 space-y-1.5 text-stone-400 tabular-nums">
+                <div className="flex justify-between items-center">
                   <span>Margin Deposit ($):</span>
                   <input
                     type="number"
@@ -475,25 +424,25 @@ export default function NeubergTerminal() {
                     max="50000"
                     value={perpMarginUsd}
                     onChange={(e) => setPerpMarginUsd(parseFloat(e.target.value) || 100)}
-                    className="w-24 bg-stone-950 border border-stone-700 px-2 py-0.5 rounded text-white text-right font-bold"
+                    className="w-24 bg-[#0a0d14] border border-white/15 px-2 py-0.5 rounded text-[#f2efe8] text-right font-bold"
                   />
                 </div>
                 <div className="flex justify-between">
                   <span>Effective Position Size:</span>
-                  <span className="text-white font-bold">{fmtPrice(perpNotional)}</span>
+                  <span className="text-[#f2efe8] font-bold">{fmtPrice(perpNotional)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Est. Liquidation Price:</span>
-                  <span className="text-[#ff3366] font-bold">{fmtPrice(perpLiquidationPrice)}</span>
+                  <span className="text-rose-400 font-bold">{fmtPrice(perpLiquidationPrice)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Hourly Funding Rate:</span>
-                  <span className="text-[#00d4aa]">+{selectedPerp.fundingRateHourlyPct}% / hr</span>
+                  <span className="text-emerald-400">+{selectedPerp.fundingRateHourlyPct}% / hr</span>
                 </div>
               </div>
 
               {perpOrderFeedback && (
-                <div className="rounded-lg bg-[#00d4aa]/20 border border-[#00d4aa]/40 p-2.5 text-[#00d4aa] text-[11px]">
+                <div className="rounded-lg bg-emerald-500/15 border border-emerald-400/35 p-2.5 text-emerald-300 text-[11px]">
                   {perpOrderFeedback}
                 </div>
               )}
@@ -502,8 +451,8 @@ export default function NeubergTerminal() {
                 type="submit"
                 className={`w-full py-2.5 rounded-xl font-bold font-mono transition ${
                   perpSide === "LONG"
-                    ? "bg-[#00d4aa] text-stone-950 hover:bg-[#00d4aa]/90"
-                    : "bg-[#ff3366] text-white hover:bg-[#ff3366]/90"
+                    ? "bg-emerald-500 text-[#050609] hover:bg-emerald-400"
+                    : "bg-rose-500 text-white hover:bg-rose-400"
                 }`}
               >
                 Execute {leverage}x {perpSide} {selectedPerp.symbol} &lt;GO&gt;
@@ -512,25 +461,24 @@ export default function NeubergTerminal() {
           </div>
         )}
 
-        {/* PANEL 4: POLYMARKET PREDICTION ORDER BOOK */}
+        {/* PANEL 4: EVENT PREDICTION ORDER BOOK */}
         {isPanelOpen("polymarket") && (
-          <div className="rounded-2xl border border-stone-800 bg-stone-950/90 p-5 space-y-5">
-            <div className="flex items-center justify-between border-b border-stone-800 pb-3">
+          <div className="rounded-2xl border border-white/[0.09] bg-gradient-to-b from-[#0d1017] to-[#07090e] p-5 space-y-5 shadow-xl">
+            <div className="flex items-center justify-between border-b border-white/[0.07] pb-3">
               <div>
-                <span className="text-[10px] font-mono font-bold text-[#00d4aa] uppercase tracking-wider">
-                  PANEL 04 · DECENTRALIZED PREDICTION MARKETS
+                <span className="text-[10px] font-mono font-semibold text-emerald-400 uppercase tracking-[0.14em]">
+                  PANEL 04 · EVENT PROBABILITY MARKETS
                 </span>
-                <h3 className="font-mono text-lg font-bold text-white flex items-center gap-2">
-                  <Vote className="h-4 w-4 text-[#00d4aa]" />
-                  Polymarket Order Book
+                <h3 className="font-display text-lg font-medium text-[#f2efe8] flex items-center gap-2 mt-0.5">
+                  <Vote className="h-4 w-4 text-emerald-400" />
+                  Event Prediction Order Book
                 </h3>
               </div>
-              <span className="rounded bg-[#00d4aa]/20 text-[#00d4aa] border border-[#00d4aa]/40 px-2 py-0.5 text-[10px] font-mono font-bold">
-                Polygon Web3 Core
+              <span className="rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-400/25 px-2.5 py-0.5 text-[10px] font-mono font-semibold">
+                Live Liquidity Book
               </span>
             </div>
 
-            {/* Question Selector */}
             <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
               {NEUBERG_POLYMARKETS.map((poly) => {
                 const isSelected = selectedPoly.id === poly.id;
@@ -540,15 +488,15 @@ export default function NeubergTerminal() {
                     onClick={() => setSelectedPoly(poly)}
                     className={`w-full text-left rounded-xl p-3 font-mono text-xs transition border ${
                       isSelected
-                        ? "border-[#00d4aa] bg-[#00d4aa]/15 text-white"
-                        : "border-stone-800 bg-stone-900/60 text-stone-400 hover:text-white"
+                        ? "border-emerald-400/50 bg-emerald-500/10 text-[#f2efe8]"
+                        : "border-white/[0.07] bg-[#050609] text-stone-400 hover:text-[#f2efe8]"
                     }`}
                   >
                     <div className="flex items-center justify-between text-[10px]">
-                      <span className="text-[#ff9900]">{poly.category}</span>
-                      <span className="text-stone-400">${(poly.volumeUsd / 1e6).toFixed(1)}M Vol</span>
+                      <span className="text-[#f0c979]">{poly.category}</span>
+                      <span className="text-stone-400 tabular-nums">${(poly.volumeUsd / 1e6).toFixed(1)}M Vol</span>
                     </div>
-                    <p className="mt-1 text-xs text-white font-semibold line-clamp-1">
+                    <p className="mt-1 text-xs text-[#f2efe8] font-semibold line-clamp-1">
                       {poly.question}
                     </p>
                   </button>
@@ -556,26 +504,25 @@ export default function NeubergTerminal() {
               })}
             </div>
 
-            {/* Polymarket Order Slip */}
             <form onSubmit={handleExecutePolyBet} className="space-y-3 font-mono text-xs">
-              <div className="rounded-xl border border-stone-800 bg-stone-900/50 p-3.5 space-y-2">
-                <p className="text-white font-bold text-xs">{selectedPoly.question}</p>
-                <div className="flex items-center justify-between text-xs pt-1 border-t border-stone-800">
+              <div className="rounded-xl border border-white/[0.07] bg-[#050609] p-3.5 space-y-2">
+                <p className="text-[#f2efe8] font-semibold text-xs">{selectedPoly.question}</p>
+                <div className="flex items-center justify-between text-xs pt-1.5 border-t border-white/[0.06]">
                   <span className="text-stone-400">Current Implied Probability:</span>
-                  <span className="text-[#00d4aa] font-extrabold text-sm">
+                  <span className="text-emerald-400 font-bold text-sm tabular-nums">
                     {selectedPoly.probabilityYesPct}% YES
                   </span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 tabular-nums">
                 <button
                   type="button"
                   onClick={() => setPolyBetOutcome("YES")}
-                  className={`py-2 rounded-lg font-bold transition ${
+                  className={`py-2 rounded-xl font-bold transition ${
                     polyBetOutcome === "YES"
-                      ? "bg-[#00d4aa] text-stone-950"
-                      : "bg-stone-900 text-stone-400 border border-stone-800"
+                      ? "bg-emerald-500 text-[#050609]"
+                      : "bg-[#050609] text-stone-400 border border-white/[0.08]"
                   }`}
                 >
                   BUY YES ({Math.round(selectedPoly.yesAsk * 100)}¢)
@@ -583,10 +530,10 @@ export default function NeubergTerminal() {
                 <button
                   type="button"
                   onClick={() => setPolyBetOutcome("NO")}
-                  className={`py-2 rounded-lg font-bold transition ${
+                  className={`py-2 rounded-xl font-bold transition ${
                     polyBetOutcome === "NO"
-                      ? "bg-[#ff3366] text-white"
-                      : "bg-stone-900 text-stone-400 border border-stone-800"
+                      ? "bg-rose-500 text-white"
+                      : "bg-[#050609] text-stone-400 border border-white/[0.08]"
                   }`}
                 >
                   BUY NO ({Math.round((1 - selectedPoly.yesBid) * 100)}¢)
@@ -601,19 +548,19 @@ export default function NeubergTerminal() {
                   max="10000"
                   value={polyStakeAmount}
                   onChange={(e) => setPolyStakeAmount(parseFloat(e.target.value) || 50)}
-                  className="w-28 bg-stone-950 border border-stone-700 px-3 py-1.5 rounded text-white text-right font-bold"
+                  className="w-28 bg-[#050609] border border-white/15 px-3 py-1.5 rounded-lg text-[#f2efe8] text-right font-bold tabular-nums"
                 />
               </div>
 
               {polyOrderFeedback && (
-                <div className="rounded-lg bg-[#00d4aa]/20 border border-[#00d4aa]/40 p-2 text-[#00d4aa] text-[11px]">
+                <div className="rounded-lg bg-emerald-500/15 border border-emerald-400/35 p-2 text-emerald-300 text-[11px]">
                   {polyOrderFeedback}
                 </div>
               )}
 
               <button
                 type="submit"
-                className="w-full py-2.5 rounded-xl bg-[#00d4aa] text-stone-950 font-bold hover:bg-[#00d4aa]/90 transition"
+                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#d8ab5a] to-[#f0c979] text-[#050609] font-bold hover:brightness-105 transition"
               >
                 Place Prediction Stake &lt;GO&gt;
               </button>
@@ -623,31 +570,31 @@ export default function NeubergTerminal() {
 
         {/* PANEL 5: COMMODITIES & PRECIOUS METALS MATRIX */}
         {isPanelOpen("commodities") && (
-          <div className="rounded-2xl border border-stone-800 bg-stone-950/90 p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-stone-800 pb-3">
+          <div className="rounded-2xl border border-white/[0.09] bg-gradient-to-b from-[#0d1017] to-[#07090e] p-5 space-y-4 shadow-xl">
+            <div className="flex items-center justify-between border-b border-white/[0.07] pb-3">
               <div>
-                <span className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider">
+                <span className="text-[10px] font-mono font-semibold text-[#d8ab5a] uppercase tracking-[0.14em]">
                   PANEL 05 · REAL ASSET PRICING
                 </span>
-                <h3 className="font-mono text-lg font-bold text-white flex items-center gap-2">
-                  <Flame className="h-4 w-4 text-amber-400" />
+                <h3 className="font-display text-lg font-medium text-[#f2efe8] flex items-center gap-2 mt-0.5">
+                  <Flame className="h-4 w-4 text-[#d8ab5a]" />
                   Commodities &amp; Precious Metals Matrix
                 </h3>
               </div>
               <span className="text-xs font-mono text-stone-400">NYMEX / COMEX Feeds</span>
             </div>
 
-            <div className="grid gap-2.5 sm:grid-cols-2 font-mono text-xs">
+            <div className="grid gap-2.5 sm:grid-cols-2 font-mono text-xs tabular-nums">
               {NEUBERG_COMMODITIES.map((c) => (
                 <div
                   key={c.symbol}
-                  className="rounded-xl border border-stone-800 bg-stone-900/50 p-3.5 space-y-1 hover:border-[#ff9900]/40 transition"
+                  className="rounded-xl border border-white/[0.07] bg-[#050609] p-3.5 space-y-1 hover:border-[#d8ab5a]/40 transition"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-white">{c.name}</span>
+                    <span className="font-semibold text-[#f2efe8]">{c.name}</span>
                     <span
                       className={`font-bold ${
-                        c.change24hPct >= 0 ? "text-emerald-400" : "text-red-400"
+                        c.change24hPct >= 0 ? "text-emerald-400" : "text-rose-400"
                       }`}
                     >
                       {c.change24hPct >= 0 ? "+" : ""}
@@ -655,12 +602,12 @@ export default function NeubergTerminal() {
                     </span>
                   </div>
                   <div className="flex items-baseline justify-between">
-                    <span className="text-lg font-bold text-amber-300">
+                    <span className="text-lg font-bold text-[#f0c979]">
                       ${c.price.toLocaleString()}
                     </span>
                     <span className="text-[10px] text-stone-500">{c.unit}</span>
                   </div>
-                  <div className="text-[10px] text-stone-400 pt-1 border-t border-stone-800">
+                  <div className="text-[10px] text-stone-400 pt-1 border-t border-white/[0.06]">
                     {c.spreadInfo}
                   </div>
                 </div>
@@ -671,18 +618,18 @@ export default function NeubergTerminal() {
 
         {/* PANEL 6: AI GEOPOLITICAL & CONFLICT RADAR */}
         {isPanelOpen("ai-news-intel") && (
-          <div className="rounded-2xl border border-stone-800 bg-stone-950/90 p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-stone-800 pb-3">
+          <div className="rounded-2xl border border-white/[0.09] bg-gradient-to-b from-[#0d1017] to-[#07090e] p-5 space-y-4 shadow-xl">
+            <div className="flex items-center justify-between border-b border-white/[0.07] pb-3">
               <div>
-                <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider">
+                <span className="text-[10px] font-mono font-semibold text-sky-300 uppercase tracking-[0.14em]">
                   PANEL 06 · INTELLIGENCE RADAR
                 </span>
-                <h3 className="font-mono text-lg font-bold text-white flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-cyan-400" />
-                  AI Geopolitical &amp; Conflict Radar
+                <h3 className="font-display text-lg font-medium text-[#f2efe8] flex items-center gap-2 mt-0.5">
+                  <Zap className="h-4 w-4 text-[#d8ab5a]" />
+                  Geopolitical &amp; Macro Risk Radar
                 </h3>
               </div>
-              <span className="rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 px-2 py-0.5 text-[10px] font-mono font-bold">
+              <span className="rounded-md bg-sky-500/10 text-sky-300 border border-sky-400/25 px-2.5 py-0.5 text-[10px] font-mono font-semibold">
                 NLP Classification
               </span>
             </div>
@@ -691,25 +638,25 @@ export default function NeubergTerminal() {
               {NEUBERG_NEWS_INTEL.map((news) => (
                 <div
                   key={news.id}
-                  className="rounded-xl border border-stone-800 bg-stone-900/50 p-4 space-y-2 hover:border-cyan-500/40 transition"
+                  className="rounded-xl border border-white/[0.07] bg-[#050609] p-4 space-y-2 hover:border-[#d8ab5a]/35 transition"
                 >
                   <div className="flex items-center justify-between text-[10px]">
-                    <span className="rounded bg-stone-800 px-2 py-0.5 text-stone-300 font-bold">
+                    <span className="rounded bg-white/[0.06] px-2 py-0.5 text-stone-300 font-semibold">
                       {news.category}
                     </span>
                     <span className="text-stone-400">{news.timestamp}</span>
                   </div>
-                  <h4 className="font-bold text-white text-xs leading-snug">{news.headline}</h4>
-                  <p className="text-[11px] text-stone-300 leading-relaxed bg-stone-950/60 p-2.5 rounded-lg border border-stone-850">
-                    <strong>AI Analysis:</strong> {news.aiBrief}
+                  <h4 className="font-semibold text-[#f2efe8] text-xs leading-snug font-sans">{news.headline}</h4>
+                  <p className="text-[11px] text-stone-300 leading-relaxed bg-[#090c12] p-2.5 rounded-lg border border-white/[0.05] font-sans">
+                    <strong className="text-[#f0c979]">Desk Brief:</strong> {news.aiBrief}
                   </p>
                   <div className="flex items-center justify-between text-[10px] text-stone-400 pt-1">
                     <span>
-                      Impact Score: <strong className="text-cyan-400">{news.impactScore}/10</strong>
+                      Impact Score: <strong className="text-[#f0c979] tabular-nums">{news.impactScore}/10</strong>
                     </span>
                     <div className="flex gap-1">
                       {news.affectedTickers.map((tick) => (
-                        <span key={tick} className="rounded bg-stone-800 px-1.5 py-0.2 text-white">
+                        <span key={tick} className="rounded bg-white/[0.06] border border-white/10 px-1.5 py-0.2 text-[#f2efe8]">
                           ${tick}
                         </span>
                       ))}

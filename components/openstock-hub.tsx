@@ -1,38 +1,25 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import React, { useState } from "react";
 import {
-  TrendingUp,
-  Activity,
   Globe,
   Clock,
   Bell,
   Search,
-  ExternalLink,
-  Plus,
   X,
-  Check,
-  ChevronRight,
-  ShieldCheck,
   BarChart3,
-  Layers,
   Sparkles,
   MessageSquare,
   Share2,
   Vote,
   ArrowUpRight,
   ArrowDownRight,
-  Sliders,
-  DollarSign,
-  AlertTriangle,
 } from "lucide-react";
 import {
   OPENSTOCK_GLOBAL_MARKETS,
   OPENSTOCK_SECTORS,
   INITIAL_OPENSTOCK_ALERTS,
   getSocialSentimentFor,
-  type GlobalMarketRegion,
   type OpenStockAlert,
   type SocialSentimentRadar,
 } from "@/lib/openstock-platform";
@@ -47,7 +34,6 @@ function getAssetPrice(symbol: string, fallback = 187.4): number {
 }
 
 export default function OpenStockHub() {
-  // Selected Region for Market Pulse
   const [selectedRegionId, setSelectedRegionId] = useState<string>("us");
   const currentRegion =
     OPENSTOCK_GLOBAL_MARKETS.find((r) => r.id === selectedRegionId) || OPENSTOCK_GLOBAL_MARKETS[0];
@@ -68,13 +54,11 @@ export default function OpenStockHub() {
   const [newAlertDirection, setNewAlertDirection] = useState<"ABOVE" | "BELOW">("ABOVE");
   const [alertSuccess, setAlertSuccess] = useState<string | null>(null);
 
-  // Active Stock Details
   const activeAsset = ASSET_BY_SYMBOL[activeTabSymbol] || ASSETS[0];
   const activeMetrics = metricsFor(activeAsset);
   const activeSentiment: SocialSentimentRadar = getSocialSentimentFor(activeTabSymbol);
   const activeSeries = series(activeAsset);
 
-  // Add stock to tabs
   const handleAddTab = (symbol: string) => {
     const sym = symbol.toUpperCase().trim();
     if (!openTabs.includes(sym)) {
@@ -86,7 +70,7 @@ export default function OpenStockHub() {
 
   const handleCloseTab = (e: React.MouseEvent, symbol: string) => {
     e.stopPropagation();
-    if (openTabs.length <= 1) return; // Keep at least one tab
+    if (openTabs.length <= 1) return;
     const filtered = openTabs.filter((t) => t !== symbol);
     setOpenTabs(filtered);
     if (activeTabSymbol === symbol) {
@@ -121,54 +105,36 @@ export default function OpenStockHub() {
 
   return (
     <div className="space-y-8">
-      {/* Top OpenStock Branding & Hero Card */}
-      <div className="rounded-2xl border border-emerald-500/40 bg-gradient-to-r from-[#03140c] via-[#051c11] to-[#020d08] p-6 shadow-2xl backdrop-blur">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-emerald-900/40 pb-6">
+      {/* Top Global Markets & Sentiment Hero Card */}
+      <div className="rounded-2xl border border-[#d8ab5a]/25 bg-gradient-to-br from-[#0c1210] via-[#090c12] to-[#06080d] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.65)] backdrop-blur-xl">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-white/[0.08] pb-6">
           <div>
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="inline-flex items-center gap-1.5 rounded bg-emerald-500/20 border border-emerald-500/40 px-2.5 py-1 text-xs font-mono font-bold uppercase tracking-wider text-emerald-300">
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500/10 border border-emerald-400/30 px-2.5 py-1 text-[10px] font-mono font-semibold uppercase tracking-[0.14em] text-emerald-300">
                 <Globe className="h-3.5 w-3.5 text-emerald-400" />
-                OPENSTOCK · 9 GLOBAL MARKETS
+                9 GLOBAL EXCHANGE HUBS
               </span>
-              <span className="rounded bg-stone-800/80 px-2 py-0.5 text-[10px] font-mono text-emerald-300">
-                Forever Open Source · AGPL-3.0
+              <span className="rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-[10px] font-mono text-[#f0c979]">
+                Multi-Tab Charts · Sentiment Radar
               </span>
               <WhopBadge size="xs" />
             </div>
-            <h2 className="mt-2 text-2xl sm:text-3xl font-display text-white font-bold tracking-tight flex items-center gap-2">
-              <span>OpenStock Market Platform</span>
+            <h2 className="mt-2.5 text-2xl sm:text-3xl font-display font-medium text-[#f2efe8] tracking-tight">
+              Global Markets &amp; Sentiment Hub
             </h2>
-            <p className="mt-1 text-xs sm:text-sm text-stone-300 max-w-3xl leading-relaxed">
-              Integrated from the official open-source repository{" "}
-              <a
-                href="https://github.com/Open-Dev-Society/OpenStock"
-                target="_blank"
-                rel="noreferrer"
-                className="text-emerald-400 hover:underline inline-flex items-center gap-1 font-bold"
-              >
-                Open-Dev-Society/OpenStock <ExternalLink className="h-3 w-3" />
-              </a>
-              {" "}&middot; Live demo at{" "}
-              <a
-                href="https://openstock-ods.vercel.app"
-                target="_blank"
-                rel="noreferrer"
-                className="text-emerald-400 hover:underline inline-flex items-center gap-1"
-              >
-                openstock-ods.vercel.app <ExternalLink className="h-3 w-3" />
-              </a>
-              . Markets minus the paywall: 9 global exchange hubs (US, India, Germany, Canada, Australia, Saudi Arabia, Poland, Crypto, Forex), browser-style multi-tab ticker exploration, social sentiment radar (Reddit, X, Polymarket), and personalized price alerts.
+            <p className="mt-1 text-xs sm:text-sm text-stone-400 max-w-3xl leading-relaxed">
+              Coverage across 9 international hubs (US, India, Germany, Canada, Australia, Saudi Arabia, Poland, Crypto 24/7, and Global FX) with browser-style multi-tab charting, crowd sentiment scoring, sector heatmaps, and custom price triggers.
             </p>
           </div>
 
           {/* Quick World Market Hours Dial */}
-          <div className="rounded-xl border border-emerald-500/30 bg-[#062416]/80 p-4 max-w-md w-full shrink-0 font-mono text-xs">
-            <div className="flex items-center justify-between border-b border-emerald-900/40 pb-2">
-              <span className="text-stone-300 flex items-center gap-1.5">
-                <Clock className="h-3.5 w-3.5 text-emerald-400" />
+          <div className="rounded-xl border border-[#d8ab5a]/25 bg-[#080a0f]/90 p-4 max-w-md w-full shrink-0 font-mono text-xs tabular-nums">
+            <div className="flex items-center justify-between border-b border-white/[0.07] pb-2">
+              <span className="text-stone-400 flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5 text-[#d8ab5a]" />
                 Active Region:
               </span>
-              <span className="text-emerald-300 font-bold flex items-center gap-1">
+              <span className="text-[#f0c979] font-semibold flex items-center gap-1">
                 <span>{currentRegion.flag}</span>
                 <span>{currentRegion.name}</span>
               </span>
@@ -178,8 +144,8 @@ export default function OpenStockHub() {
               <span
                 className={`rounded px-2 py-0.5 text-[10px] font-bold ${
                   currentRegion.status === "OPEN"
-                    ? "bg-emerald-500/20 text-emerald-400"
-                    : "bg-stone-800 text-stone-400"
+                    ? "bg-emerald-500/15 text-emerald-300 border border-emerald-400/25"
+                    : "bg-white/[0.05] text-stone-400"
                 }`}
               >
                 {currentRegion.status}
@@ -187,7 +153,7 @@ export default function OpenStockHub() {
             </div>
             <div className="mt-2 flex items-center justify-between">
               <span className="text-stone-400">Primary Index:</span>
-              <span className="text-white font-bold">
+              <span className="text-[#f2efe8] font-bold">
                 {currentRegion.primaryIndex} ({currentRegion.indexValue.toLocaleString()})
               </span>
             </div>
@@ -208,23 +174,23 @@ export default function OpenStockHub() {
               <button
                 key={region.id}
                 onClick={() => setSelectedRegionId(region.id)}
-                className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-mono transition-all ${
+                className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-mono transition-all tabular-nums ${
                   isSelected
-                    ? "bg-emerald-500 text-stone-950 font-bold shadow-lg shadow-emerald-500/20 scale-[1.02]"
-                    : "bg-stone-900/80 text-stone-300 hover:bg-stone-800 hover:text-white border border-stone-800"
+                    ? "bg-gradient-to-r from-[#d8ab5a] to-[#f0c979] text-[#050609] font-semibold shadow-[0_4px_18px_rgba(216,171,90,0.22)]"
+                    : "bg-[#080a0f] text-stone-300 hover:bg-white/[0.06] hover:text-white border border-white/[0.07]"
                 }`}
               >
                 <span className="text-base">{region.flag}</span>
                 <span>{region.name}</span>
                 <span
-                  className={`text-[9px] px-1 rounded ${
+                  className={`text-[10px] px-1.5 py-0.2 rounded font-semibold ${
                     region.indexChangePct >= 0
                       ? isSelected
-                        ? "bg-stone-950 text-emerald-400"
+                        ? "bg-[#050609]/20 text-[#050609]"
                         : "text-emerald-400"
                       : isSelected
-                      ? "bg-stone-950 text-red-400"
-                      : "text-red-400"
+                      ? "bg-[#050609]/20 text-[#050609]"
+                      : "text-rose-400"
                   }`}
                 >
                   {region.indexChangePct >= 0 ? "+" : ""}
@@ -236,10 +202,10 @@ export default function OpenStockHub() {
         </div>
       </div>
 
-      {/* MULTI-TAB STOCK WORKSPACE (Signature OpenStock Feature) */}
-      <div className="rounded-2xl border border-stone-800 bg-stone-950/90 p-5 shadow-2xl space-y-6">
+      {/* MULTI-TAB STOCK WORKSPACE */}
+      <div className="rounded-2xl border border-white/[0.09] bg-gradient-to-b from-[#0d1017] to-[#07090e] p-5 shadow-2xl space-y-6">
         {/* Browser-style Tab Header & Search */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-800 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-3">
           <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto pb-1">
             {openTabs.map((sym) => {
               const isActive = sym === activeTabSymbol;
@@ -249,10 +215,10 @@ export default function OpenStockHub() {
                 <div
                   key={sym}
                   onClick={() => setActiveTabSymbol(sym)}
-                  className={`group flex items-center gap-2 rounded-lg px-3 py-1.5 font-mono text-xs cursor-pointer transition ${
+                  className={`group flex items-center gap-2 rounded-lg px-3 py-1.5 font-mono text-xs cursor-pointer transition tabular-nums ${
                     isActive
-                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 shadow-sm"
-                      : "bg-stone-900 text-stone-400 hover:text-stone-200 border border-stone-800"
+                      ? "bg-[#d8ab5a]/15 text-[#f0c979] border border-[#d8ab5a]/45 shadow-sm"
+                      : "bg-[#050609] text-stone-400 hover:text-stone-200 border border-white/[0.07]"
                   }`}
                 >
                   <span className="font-bold">${sym}</span>
@@ -260,7 +226,7 @@ export default function OpenStockHub() {
                   {openTabs.length > 1 && (
                     <button
                       onClick={(e) => handleCloseTab(e, sym)}
-                      className="opacity-60 hover:opacity-100 hover:text-red-400 transition"
+                      className="opacity-60 hover:opacity-100 hover:text-rose-400 transition"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -270,9 +236,8 @@ export default function OpenStockHub() {
             })}
           </div>
 
-          {/* Search bar to open new stock tab */}
           <div className="relative max-w-xs w-full">
-            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-stone-400" />
+            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-[#d8ab5a]" />
             <input
               type="text"
               value={searchQuery}
@@ -283,12 +248,12 @@ export default function OpenStockHub() {
                 }
               }}
               placeholder="Search ticker (e.g. TSLA, MSFT, GOOGL)..."
-              className="w-full rounded-xl border border-stone-800 bg-stone-900 py-1.5 pl-9 pr-8 text-xs text-white placeholder-stone-500 focus:border-emerald-500 focus:outline-none"
+              className="w-full rounded-xl border border-white/10 bg-[#050609] py-1.5 pl-9 pr-8 text-xs text-[#f2efe8] placeholder-stone-500 focus:border-[#d8ab5a]/60 focus:outline-none"
             />
             {searchQuery && (
               <button
                 onClick={() => handleAddTab(searchQuery)}
-                className="absolute right-2 top-1.5 text-emerald-400 hover:text-emerald-300 text-xs font-mono font-bold"
+                className="absolute right-2.5 top-1.5 text-[#f0c979] hover:text-white text-xs font-mono font-bold"
               >
                 +
               </button>
@@ -300,16 +265,16 @@ export default function OpenStockHub() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div>
             <div className="flex flex-wrap items-center gap-3">
-              <h3 className="font-display text-3xl font-bold text-white">${activeAsset.symbol}</h3>
+              <h3 className="font-display text-3xl font-medium text-[#f2efe8]">${activeAsset.symbol}</h3>
               <span className="text-lg text-stone-300 font-medium">{activeAsset.name}</span>
               <span
-                className={`rounded-full border px-2.5 py-0.5 text-[11px] font-mono ${stanceColor(
+                className={`rounded-md border px-2.5 py-0.5 text-[11px] font-mono ${stanceColor(
                   activeMetrics.stance
                 )}`}
               >
                 {activeMetrics.stance}
               </span>
-              <span className="rounded-full border border-stone-800 bg-stone-900 px-2.5 py-0.5 text-[11px] text-stone-400 font-mono">
+              <span className="rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-[11px] text-stone-300 font-mono">
                 {activeAsset.group}
               </span>
             </div>
@@ -318,12 +283,11 @@ export default function OpenStockHub() {
             </p>
           </div>
 
-          {/* Live Price Block */}
-          <div className="text-left lg:text-right font-mono">
-            <div className="text-3xl font-bold text-white">{fmtPrice(activeMetrics.last)}</div>
+          <div className="text-left lg:text-right font-mono tabular-nums">
+            <div className="text-3xl font-bold text-[#f2efe8]">{fmtPrice(activeMetrics.last)}</div>
             <div
               className={`mt-1 text-sm font-bold flex items-center gap-1 lg:justify-end ${
-                activeMetrics.change24h >= 0 ? "text-emerald-400" : "text-red-400"
+                activeMetrics.change24h >= 0 ? "text-emerald-400" : "text-rose-400"
               }`}
             >
               {activeMetrics.change24h >= 0 ? (
@@ -340,42 +304,42 @@ export default function OpenStockHub() {
         </div>
 
         {/* Technical Indicators Toggle Strip & Chart */}
-        <div className="rounded-xl border border-stone-800 bg-stone-900/40 p-4 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-800/80 pb-3">
-            <div className="flex items-center gap-2 text-xs font-mono text-stone-400">
+        <div className="rounded-xl border border-white/[0.07] bg-[#050609] p-4 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.07] pb-3">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-stone-400">
               <span>Technical Overlays:</span>
               <button
                 onClick={() => setShowSMA20(!showSMA20)}
-                className={`rounded px-2.5 py-0.5 text-[11px] font-bold transition ${
+                className={`rounded-md px-2.5 py-0.5 text-[11px] font-semibold transition tabular-nums ${
                   showSMA20
-                    ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
-                    : "bg-stone-800 text-stone-500"
+                    ? "bg-[#d8ab5a]/15 text-[#f0c979] border border-[#d8ab5a]/35"
+                    : "bg-white/[0.04] text-stone-500"
                 }`}
               >
                 20-SMA (${activeMetrics.sma20.toFixed(2)})
               </button>
               <button
                 onClick={() => setShowSMA50(!showSMA50)}
-                className={`rounded px-2.5 py-0.5 text-[11px] font-bold transition ${
+                className={`rounded-md px-2.5 py-0.5 text-[11px] font-semibold transition tabular-nums ${
                   showSMA50
-                    ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40"
-                    : "bg-stone-800 text-stone-500"
+                    ? "bg-sky-500/15 text-sky-300 border border-sky-400/35"
+                    : "bg-white/[0.04] text-stone-500"
                 }`}
               >
                 50-SMA (${activeMetrics.sma50.toFixed(2)})
               </button>
             </div>
 
-            <div className="flex items-center gap-3 text-xs font-mono text-stone-400">
+            <div className="flex items-center gap-3 text-xs font-mono text-stone-400 tabular-nums">
               <span>
                 RSI (14D):{" "}
                 <strong
                   className={
                     activeMetrics.rsi > 70
-                      ? "text-red-400"
+                      ? "text-rose-400"
                       : activeMetrics.rsi < 30
                       ? "text-emerald-400"
-                      : "text-amber-400"
+                      : "text-[#f0c979]"
                   }
                 >
                   {activeMetrics.rsi.toFixed(1)}
@@ -384,12 +348,11 @@ export default function OpenStockHub() {
               <span>&middot;</span>
               <span>
                 Realized Vol:{" "}
-                <strong className="text-white">{(activeMetrics.vol * 100).toFixed(1)}%</strong>
+                <strong className="text-[#f2efe8]">{(activeMetrics.vol * 100).toFixed(1)}%</strong>
               </span>
             </div>
           </div>
 
-          {/* Interactive Chart */}
           <div className="h-64 w-full">
             <TrendChart
               values={activeSeries.map((s) => s.close)}
@@ -399,27 +362,27 @@ export default function OpenStockHub() {
         </div>
 
         {/* 4-Column Metric Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs">
-          <div className="rounded-xl border border-stone-800 bg-stone-900/60 p-3.5">
-            <span className="text-stone-400 text-[10px] uppercase">Trend Score</span>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs tabular-nums">
+          <div className="rounded-xl border border-white/[0.07] bg-[#050609] p-3.5">
+            <span className="text-stone-400 text-[10px] uppercase tracking-wider">Trend Score</span>
             <p className="mt-1 text-xl font-bold text-emerald-400">{activeMetrics.score} / 100</p>
             <span className="text-[10px] text-stone-500">Quantitative composite</span>
           </div>
-          <div className="rounded-xl border border-stone-800 bg-stone-900/60 p-3.5">
-            <span className="text-stone-400 text-[10px] uppercase">Technical Invalidation</span>
-            <p className="mt-1 text-xl font-bold text-amber-400">
+          <div className="rounded-xl border border-white/[0.07] bg-[#050609] p-3.5">
+            <span className="text-stone-400 text-[10px] uppercase tracking-wider">Technical Invalidation</span>
+            <p className="mt-1 text-xl font-bold text-[#f0c979]">
               ${(Math.min(activeMetrics.sma20, activeMetrics.sma50) * 0.975).toFixed(2)}
             </p>
             <span className="text-[10px] text-stone-500">Thesis stop-loss</span>
           </div>
-          <div className="rounded-xl border border-stone-800 bg-stone-900/60 p-3.5">
-            <span className="text-stone-400 text-[10px] uppercase">Risk Grade</span>
+          <div className="rounded-xl border border-white/[0.07] bg-[#050609] p-3.5">
+            <span className="text-stone-400 text-[10px] uppercase tracking-wider">Risk Grade</span>
             <p className="mt-1 text-xl font-bold text-stone-200">{activeMetrics.riskGrade}</p>
             <span className="text-[10px] text-stone-500">Vol-scaled sizing</span>
           </div>
-          <div className="rounded-xl border border-stone-800 bg-stone-900/60 p-3.5">
-            <span className="text-stone-400 text-[10px] uppercase">200-Day Structural SMA</span>
-            <p className="mt-1 text-xl font-bold text-white">${activeMetrics.sma200.toFixed(2)}</p>
+          <div className="rounded-xl border border-white/[0.07] bg-[#050609] p-3.5">
+            <span className="text-stone-400 text-[10px] uppercase tracking-wider">200-Day Structural SMA</span>
+            <p className="mt-1 text-xl font-bold text-[#f2efe8]">${activeMetrics.sma200.toFixed(2)}</p>
             <span className="text-[10px] text-stone-500">
               {activeMetrics.last > activeMetrics.sma200 ? "Above 200-SMA" : "Below 200-SMA"}
             </span>
@@ -429,45 +392,43 @@ export default function OpenStockHub() {
 
       {/* SOCIAL SENTIMENT RADAR & SECTOR HEATMAP */}
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1.6fr]">
-        {/* Social Sentiment Radar (Reddit, X, Polymarket) */}
-        <div className="rounded-2xl border border-stone-800 bg-stone-950 p-6 space-y-5">
-          <div className="border-b border-stone-800 pb-3 flex items-center justify-between">
+        <div className="rounded-2xl border border-white/[0.09] bg-gradient-to-b from-[#0d1017] to-[#07090e] p-6 space-y-5 shadow-xl">
+          <div className="border-b border-white/[0.07] pb-3 flex items-center justify-between">
             <div>
-              <h3 className="font-mono text-base font-bold text-white flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-emerald-400" />
+              <h3 className="font-display text-base font-medium text-[#f2efe8] flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-[#d8ab5a]" />
                 Social Sentiment Radar: ${activeAsset.symbol}
               </h3>
               <p className="text-xs text-stone-400 font-mono">
-                Real-time scraping across Reddit, X (FinTwit), News &amp; Polymarket
+                Real-time crowd telemetry across Reddit, X, News &amp; Event Markets
               </p>
             </div>
             <span
-              className={`rounded px-2 py-0.5 text-[10px] font-mono font-bold ${
+              className={`rounded-md px-2.5 py-0.5 text-[10px] font-mono font-semibold ${
                 activeSentiment.sentimentBand === "Very Bullish" ||
                 activeSentiment.sentimentBand === "Bullish"
-                  ? "bg-emerald-500/20 text-emerald-300"
-                  : "bg-amber-500/20 text-amber-300"
+                  ? "bg-emerald-500/15 text-emerald-300 border border-emerald-400/25"
+                  : "bg-[#d8ab5a]/15 text-[#f0c979] border border-[#d8ab5a]/30"
               }`}
             >
               {activeSentiment.sentimentBand}
             </span>
           </div>
 
-          <div className="space-y-4 font-mono text-xs">
-            {/* Reddit Stream */}
-            <div className="rounded-xl border border-stone-800 bg-stone-900/50 p-4 space-y-2">
+          <div className="space-y-4 font-mono text-xs tabular-nums">
+            <div className="rounded-xl border border-white/[0.07] bg-[#050609] p-4 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-stone-300 font-bold flex items-center gap-1.5">
-                  <MessageSquare className="h-3.5 w-3.5 text-orange-400" />
+                <span className="text-stone-300 font-semibold flex items-center gap-1.5">
+                  <MessageSquare className="h-3.5 w-3.5 text-[#d8ab5a]" />
                   Reddit (r/WallStreetBets &amp; r/Stocks)
                 </span>
                 <span className="text-emerald-400 font-bold">
                   {activeSentiment.redditBullishPct}% Bullish
                 </span>
               </div>
-              <div className="h-2 w-full rounded-full bg-stone-800 overflow-hidden">
+              <div className="h-2 w-full rounded-full bg-white/[0.06] overflow-hidden">
                 <div
-                  className="h-full bg-orange-400"
+                  className="h-full bg-[#d8ab5a]"
                   style={{ width: `${activeSentiment.redditBullishPct}%` }}
                 />
               </div>
@@ -476,20 +437,19 @@ export default function OpenStockHub() {
               </span>
             </div>
 
-            {/* X (Twitter) Stream */}
-            <div className="rounded-xl border border-stone-800 bg-stone-900/50 p-4 space-y-2">
+            <div className="rounded-xl border border-white/[0.07] bg-[#050609] p-4 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-stone-300 font-bold flex items-center gap-1.5">
-                  <Share2 className="h-3.5 w-3.5 text-cyan-400" />
+                <span className="text-stone-300 font-semibold flex items-center gap-1.5">
+                  <Share2 className="h-3.5 w-3.5 text-sky-400" />
                   X (FinTwit Order Flow)
                 </span>
                 <span className="text-emerald-400 font-bold">
                   {activeSentiment.xBullishPct}% Bullish
                 </span>
               </div>
-              <div className="h-2 w-full rounded-full bg-stone-800 overflow-hidden">
+              <div className="h-2 w-full rounded-full bg-white/[0.06] overflow-hidden">
                 <div
-                  className="h-full bg-cyan-400"
+                  className="h-full bg-sky-400"
                   style={{ width: `${activeSentiment.xBullishPct}%` }}
                 />
               </div>
@@ -498,32 +458,31 @@ export default function OpenStockHub() {
               </span>
             </div>
 
-            {/* Polymarket Prediction Contract */}
-            <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-4 space-y-2">
+            <div className="rounded-xl border border-emerald-400/25 bg-emerald-950/15 p-4 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-emerald-300 font-bold flex items-center gap-1.5">
+                <span className="text-emerald-300 font-semibold flex items-center gap-1.5">
                   <Vote className="h-3.5 w-3.5 text-emerald-400" />
-                  Polymarket Crowd Probability
+                  Event Market Crowd Probability
                 </span>
-                <span className="text-emerald-400 font-extrabold text-sm">
+                <span className="text-emerald-400 font-bold text-sm">
                   {activeSentiment.polymarketProbabilityPct}% YES
                 </span>
               </div>
-              <p className="text-stone-300 text-xs italic">
+              <p className="text-stone-300 text-xs italic font-sans">
                 &ldquo;{activeSentiment.polymarketQuestion}&rdquo;
               </p>
               <span className="text-[10px] text-stone-400 block pt-1">
-                Prediction market probability derived from decentralized staked volume
+                Implied probability derived from staked prediction market volume
               </span>
             </div>
           </div>
         </div>
 
-        {/* Global / S&P Sector Performance Heatmap */}
-        <div className="rounded-2xl border border-stone-800 bg-stone-950 p-6 space-y-4">
-          <div className="border-b border-stone-800 pb-3 flex items-center justify-between">
+        {/* Sector Performance Heatmap */}
+        <div className="rounded-2xl border border-white/[0.09] bg-gradient-to-b from-[#0d1017] to-[#07090e] p-6 space-y-4 shadow-xl">
+          <div className="border-b border-white/[0.07] pb-3 flex items-center justify-between">
             <div>
-              <h3 className="font-mono text-base font-bold text-white flex items-center gap-2">
+              <h3 className="font-display text-base font-medium text-[#f2efe8] flex items-center gap-2">
                 <BarChart3 className="h-4 w-4 text-emerald-400" />
                 Sector Rotation Heatmap
               </h3>
@@ -531,19 +490,19 @@ export default function OpenStockHub() {
                 Performance across 11 key industry verticals
               </p>
             </div>
-            <span className="text-[10px] font-mono text-stone-400">Real-Time Breadth</span>
+            <span className="text-[10px] font-mono text-[#f0c979]">Real-Time Breadth</span>
           </div>
 
-          <div className="space-y-2.5 font-mono text-xs">
+          <div className="space-y-2 font-mono text-xs tabular-nums">
             {OPENSTOCK_SECTORS.map((sec) => (
               <div
                 key={sec.sector}
-                className="flex items-center justify-between rounded-lg bg-stone-900/60 px-3 py-2 border border-stone-800/80 hover:border-emerald-500/40 transition"
+                className="flex items-center justify-between rounded-lg bg-[#050609] px-3 py-2 border border-white/[0.06] hover:border-[#d8ab5a]/35 transition"
               >
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-stone-200">{sec.sector}</span>
+                  <span className="font-semibold text-stone-200">{sec.sector}</span>
                   <span className="text-[10px] text-stone-500">
-                    Leader: <strong className="text-emerald-400">${sec.leadingSymbol}</strong>
+                    Leader: <strong className="text-[#f0c979]">${sec.leadingSymbol}</strong>
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -552,7 +511,7 @@ export default function OpenStockHub() {
                     className={`font-bold px-2 py-0.5 rounded text-[11px] ${
                       sec.changePct >= 0
                         ? "bg-emerald-500/15 text-emerald-400"
-                        : "bg-red-500/15 text-red-400"
+                        : "bg-rose-500/15 text-rose-400"
                     }`}
                   >
                     {sec.changePct >= 0 ? "+" : ""}
@@ -565,30 +524,29 @@ export default function OpenStockHub() {
         </div>
       </div>
 
-      {/* PRICE ALERTS MANAGER (Signature OpenStock Feature) */}
-      <div className="rounded-2xl border border-stone-800 bg-stone-950 p-6 space-y-6">
-        <div className="border-b border-stone-800 pb-4 flex flex-wrap items-center justify-between gap-4">
+      {/* PRICE ALERTS MANAGER */}
+      <div className="rounded-2xl border border-white/[0.09] bg-gradient-to-b from-[#0d1017] to-[#07090e] p-6 space-y-6 shadow-xl">
+        <div className="border-b border-white/[0.07] pb-4 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h3 className="font-mono text-lg font-bold text-white flex items-center gap-2">
-              <Bell className="h-4 w-4 text-emerald-400" />
+            <h3 className="font-display text-lg font-medium text-[#f2efe8] flex items-center gap-2">
+              <Bell className="h-4 w-4 text-[#d8ab5a]" />
               Personalized Price Alerts Engine
             </h3>
             <p className="text-xs text-stone-400 font-mono">
               Set target triggers above or below key technical levels with instant alerts
             </p>
           </div>
-          <span className="rounded bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 text-[10px] font-mono text-emerald-300">
+          <span className="rounded-md bg-[#d8ab5a]/10 border border-[#d8ab5a]/30 px-2.5 py-0.5 text-[10px] font-mono text-[#f0c979] tabular-nums">
             {alerts.length} Active Triggers
           </span>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1.3fr_1.7fr]">
-          {/* Create Alert Form */}
           <form
             onSubmit={handleCreateAlert}
-            className="rounded-xl border border-stone-800 bg-stone-900/60 p-5 space-y-4 font-mono text-xs"
+            className="rounded-xl border border-white/[0.07] bg-[#050609] p-5 space-y-4 font-mono text-xs"
           >
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#d8ab5a]">
               Configure New Trigger
             </span>
 
@@ -600,7 +558,7 @@ export default function OpenStockHub() {
                   setNewAlertSymbol(e.target.value);
                   setNewAlertTarget(getAssetPrice(e.target.value).toString());
                 }}
-                className="w-full rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-white"
+                className="w-full rounded-lg border border-white/15 bg-[#090c12] px-3 py-2 text-[#f2efe8]"
               >
                 {ASSETS.slice(0, 16).map((a) => (
                   <option key={a.symbol} value={a.symbol}>
@@ -616,7 +574,7 @@ export default function OpenStockHub() {
                 <select
                   value={newAlertDirection}
                   onChange={(e) => setNewAlertDirection(e.target.value as "ABOVE" | "BELOW")}
-                  className="w-full rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-white"
+                  className="w-full rounded-lg border border-white/15 bg-[#090c12] px-3 py-2 text-[#f2efe8]"
                 >
                   <option value="ABOVE">&ge; Price Rises Above</option>
                   <option value="BELOW">&le; Price Drops Below</option>
@@ -630,28 +588,27 @@ export default function OpenStockHub() {
                   step="0.01"
                   value={newAlertTarget}
                   onChange={(e) => setNewAlertTarget(e.target.value)}
-                  className="w-full rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-white"
+                  className="w-full rounded-lg border border-white/15 bg-[#090c12] px-3 py-2 text-[#f2efe8] tabular-nums"
                 />
               </div>
             </div>
 
             {alertSuccess && (
-              <div className="rounded-lg bg-emerald-500/20 border border-emerald-500/40 p-2 text-emerald-300 text-[11px]">
+              <div className="rounded-lg bg-emerald-500/15 border border-emerald-400/35 p-2 text-emerald-300 text-[11px]">
                 {alertSuccess}
               </div>
             )}
 
             <button
               type="submit"
-              className="w-full rounded-xl bg-emerald-500 py-2.5 font-bold text-stone-950 hover:bg-emerald-400 transition"
+              className="w-full rounded-xl bg-gradient-to-r from-[#d8ab5a] to-[#f0c979] py-2.5 font-bold text-[#050609] hover:brightness-105 transition"
             >
               Arm Price Alert &lt;GO&gt;
             </button>
           </form>
 
-          {/* Active Alerts List */}
           <div className="space-y-3 font-mono text-xs">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-stone-400">
               Live Monitored Triggers
             </span>
             <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
@@ -660,21 +617,21 @@ export default function OpenStockHub() {
                 return (
                   <div
                     key={alt.id}
-                    className="flex items-center justify-between rounded-xl border border-stone-800 bg-stone-900/40 p-3.5"
+                    className="flex items-center justify-between rounded-xl border border-white/[0.07] bg-[#050609] p-3.5 tabular-nums"
                   >
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-white text-sm">${alt.symbol}</span>
+                        <span className="font-bold text-[#f2efe8] text-sm">${alt.symbol}</span>
                         <span
-                          className={`rounded px-1.5 py-0.2 text-[10px] font-bold ${
+                          className={`rounded px-1.5 py-0.2 text-[10px] font-semibold ${
                             alt.direction === "ABOVE"
-                              ? "bg-emerald-500/20 text-emerald-400"
-                              : "bg-red-500/20 text-red-400"
+                              ? "bg-emerald-500/15 text-emerald-400"
+                              : "bg-rose-500/15 text-rose-400"
                           }`}
                         >
                           {alt.direction === "ABOVE" ? "Rises Above" : "Drops Below"}
                         </span>
-                        <span className="text-white font-bold">${alt.targetPrice.toFixed(2)}</span>
+                        <span className="text-[#f0c979] font-bold">${alt.targetPrice.toFixed(2)}</span>
                       </div>
                       <span className="text-[11px] text-stone-400 mt-0.5 block">
                         Current: {fmtPrice(cur)} &middot; Created: {alt.createdAt}
@@ -683,17 +640,17 @@ export default function OpenStockHub() {
 
                     <div className="flex items-center gap-3">
                       {alt.triggered ? (
-                        <span className="rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 text-[10px] font-bold">
+                        <span className="rounded bg-emerald-500/15 text-emerald-400 border border-emerald-400/35 px-2 py-0.5 text-[10px] font-bold">
                           TRIGGERED
                         </span>
                       ) : (
-                        <span className="rounded bg-stone-800 text-stone-400 px-2 py-0.5 text-[10px]">
+                        <span className="rounded bg-white/[0.05] text-stone-400 px-2 py-0.5 text-[10px]">
                           WATCHING
                         </span>
                       )}
                       <button
                         onClick={() => handleDeleteAlert(alt.id)}
-                        className="text-stone-500 hover:text-red-400 transition"
+                        className="text-stone-500 hover:text-rose-400 transition"
                         title="Delete alert"
                       >
                         <X className="h-4 w-4" />

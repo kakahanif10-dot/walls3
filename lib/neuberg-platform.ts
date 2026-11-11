@@ -1,9 +1,7 @@
 /**
- * Neuberg Terminal Quantitative Engine
- * Ported from https://github.com/KoNananachan/Neuberg
- * The open-source Bloomberg Terminal ($24,000/year alternative).
- * 516 panels, real-time market telemetry, Fear & Greed Index, Macro Regime Quadrant,
- * 24/7 Stock & Crypto Perpetuals (Hyperliquid style), and Prediction Markets (Polymarket).
+ * 516-Panel Macro & Perpetuals Workstation Engine
+ * Modular panels, real-time market telemetry, Fear & Greed Index, Macro Regime Quadrant,
+ * 24/7 Stock & Crypto Perpetuals, and Event Prediction Order Books.
  */
 
 import { ASSET_BY_SYMBOL, ASSETS, fmtPrice, metricsFor } from "./market";
@@ -159,7 +157,7 @@ export const NEUBERG_NEWS_INTEL: AINewsIntel[] = [
   {
     id: "news-1",
     headline: "Taiwan Semiconductor (TSMC) Expands 2nm Foundry Capacity with Record $38B Capex Allocation",
-    source: "Bloomberg / Neuberg Terminal Feed",
+    source: "Institutional Equity & Foundry Wire",
     timestamp: "12 mins ago",
     category: "Big Tech",
     sentiment: "BULLISH",

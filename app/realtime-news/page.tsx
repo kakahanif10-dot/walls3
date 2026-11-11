@@ -2,69 +2,60 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import RealtimeNewsTerminal from "@/components/realtime-news-terminal";
 import WhopBadge from "@/components/whop-badge";
-import { ExternalLink, Radio, Globe, Terminal, Zap, ShieldCheck } from "lucide-react";
+import { Radio, Terminal, Zap, ShieldCheck } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Real-Time Financial News Stream & Query API — NextWall Street",
+  title: "Live News Stream & Query Wire — NextWall Street",
   description:
-    "Integrated from https://github.com/janlukasschroeder/realtime-newsapi. Aggregating 10,000+ financial news sources (Bloomberg, Reuters, WSJ, Seeking Alpha, SEC Form 8-K, FDA Approvals) mapped to company ticker symbols with sub-second WebSocket streaming and Lucene query API.",
+    "Sub-second financial news aggregator connecting 10,000+ market wires (Reuters, WSJ, SEC Form 8-K, FDA Approvals, BusinessWire) mapped to ticker symbols with Lucene query filtering and WebSocket streaming.",
 };
 
 export default function RealtimeNewsPage() {
   return (
-    <div className="bg-[#030906] min-h-screen text-stone-100">
-      <section className="border-b border-emerald-900/40 bg-gradient-to-b from-[#06180e] to-[#030906]">
-        <div className="mx-auto max-w-7xl px-5 py-12">
+    <div className="min-h-screen bg-[#050609] text-[#f2efe8]">
+      <section className="relative overflow-hidden border-b border-[#d8ab5a]/20 bg-gradient-to-b from-[#0d1118] via-[#080a0f] to-[#050609]">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(216,171,90,0.10),transparent_55%)]" />
+        <div className="relative mx-auto max-w-7xl px-5 py-12">
           <nav className="flex items-center gap-2 text-xs font-mono text-stone-400">
-            <Link href="/" className="hover:text-emerald-300">Home</Link>
+            <Link href="/" className="hover:text-[#f0c979] transition-colors">Home</Link>
             <span className="text-stone-600">/</span>
-            <span className="text-emerald-400">Real-Time News API</span>
+            <span className="text-[#f0c979]">Live News Stream &amp; Query Wire</span>
           </nav>
-          <div className="mt-3 flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 rounded bg-emerald-500/15 border border-emerald-500/40 px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-300">
-              <Radio className="h-3 w-3 text-emerald-400" />
-              10,000+ FINANCIAL NEWS SOURCES
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-[#d8ab5a]/35 bg-[#d8ab5a]/10 px-2.5 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-[0.14em] text-[#f0c979]">
+              <Radio className="h-3 w-3 text-emerald-400 animate-pulse" />
+              10,000+ FINANCIAL NEWS FEEDS
             </span>
-            <span className="rounded bg-stone-800/80 px-2 py-0.5 text-[10px] font-mono text-stone-300">
-              WEBSOCKET STREAM + QUERY API
+            <span className="rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-[10px] font-mono text-stone-300">
+              WEBSOCKET STREAM + LUCENE QUERY WIRE
             </span>
             <WhopBadge size="xs" />
           </div>
-          <h1 className="mt-2 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight flex items-center gap-3">
-            <span>Real-Time Financial News API Platform</span>
+
+          <h1 className="mt-3 font-display text-3xl sm:text-4xl lg:text-5xl font-medium text-[#f2efe8] tracking-tight">
+            Live News Stream &amp; Query Wire
           </h1>
-          <p className="mt-4 max-w-3xl text-xs sm:text-sm leading-relaxed text-stone-300 font-sans">
-            Ported directly from the open-source repository{" "}
-            <a
-              href="https://github.com/janlukasschroeder/realtime-newsapi"
-              target="_blank"
-              rel="noreferrer"
-              className="text-emerald-400 underline inline-flex items-center gap-1 font-bold"
-            >
-              janlukasschroeder/realtime-newsapi <ExternalLink className="h-3 w-3 inline" />
-            </a>
-            . Streaming financial news aggregator connecting over 10,000 news wires (Bloomberg Terminal, Reuters, The Wall Street Journal, Seeking Alpha, SEC Form 8-K/10-K, FDA Approvals, and BusinessWire) directly mapped to ticker symbols with Lucene filter queries and live WebSocket feeds.
+          <p className="mt-4 max-w-3xl text-xs sm:text-sm leading-relaxed text-stone-300/90 font-sans">
+            High-throughput market news wire unifying over 10,000 institutional dispatches—including Reuters, The Wall Street Journal, SEC Form 8-K/10-K filings, FDA drug evaluations, and BusinessWire—mapped directly to equity and digital asset tickers with real-time Lucene query filtering.
           </p>
 
-          <div className="mt-6 flex flex-wrap gap-4 text-xs font-mono text-stone-400">
-            <span className="flex items-center gap-1.5 text-emerald-300">
-              <Radio className="h-3.5 w-3.5 text-emerald-400" />
+          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-mono text-stone-400">
+            <span className="flex items-center gap-1.5 text-emerald-400">
+              <Radio className="h-3.5 w-3.5" />
               Sub-second WebSocket Stream
             </span>
-            <span>•</span>
-            <span className="flex items-center gap-1.5 text-emerald-300">
-              <Terminal className="h-3.5 w-3.5 text-emerald-400" />
+            <span className="flex items-center gap-1.5 text-[#f0c979]">
+              <Terminal className="h-3.5 w-3.5" />
               Lucene Query Engine (symbols, source, category)
             </span>
-            <span>•</span>
-            <span className="flex items-center gap-1.5 text-emerald-300">
-              <Zap className="h-3.5 w-3.5 text-emerald-400" />
+            <span className="flex items-center gap-1.5 text-stone-200">
+              <Zap className="h-3.5 w-3.5 text-[#d8ab5a]" />
               Direct Ticker Symbol Resolution
             </span>
-            <span>•</span>
-            <span className="flex items-center gap-1.5 text-emerald-300">
+            <span className="flex items-center gap-1.5 text-stone-200">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-              Invalidation Stop Alerts
+              Invalidation Stop Thresholds
             </span>
           </div>
         </div>

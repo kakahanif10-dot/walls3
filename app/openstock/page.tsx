@@ -2,64 +2,60 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import OpenStockHub from "@/components/openstock-hub";
 import WhopBadge from "@/components/whop-badge";
-import { ExternalLink, Globe, TrendingUp, Sparkles, Bell } from "lucide-react";
+import { Globe, Sparkles, Bell, TrendingUp } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "OpenStock Platform & 9 Global Markets Hub — NextWall Street",
+  title: "Global Markets & Sentiment Hub — NextWall Street",
   description:
-    "Integrated from https://github.com/Open-Dev-Society/OpenStock. Track 9 global market exchanges (US, India, Germany, Canada, Australia, Saudi Arabia, Poland, Crypto 24/7, Forex), multi-tab browser-style stock exploration, social sentiment radar (Reddit, X, Polymarket), and personalized price alerts.",
+    "Track 9 international market exchanges (US, India, Germany, Canada, Australia, Saudi Arabia, Poland, Crypto 24/7, Forex), multi-tab ticker exploration, crowd sentiment radar, sector heatmaps, and custom price alerts.",
 };
 
 export default function OpenStockPage() {
   return (
-    <div className="bg-[#020a06] min-h-screen text-stone-100">
-      <section className="border-b border-emerald-900/40 bg-gradient-to-b from-[#041a10] to-[#020a06]">
-        <div className="mx-auto max-w-7xl px-5 py-12">
+    <div className="min-h-screen bg-[#050609] text-[#f2efe8]">
+      <section className="relative overflow-hidden border-b border-[#d8ab5a]/20 bg-gradient-to-b from-[#0b1210] via-[#080a0f] to-[#050609]">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(62,207,142,0.09),transparent_55%)]" />
+        <div className="relative mx-auto max-w-7xl px-5 py-12">
           <nav className="flex items-center gap-2 text-xs font-mono text-stone-400">
-            <Link href="/" className="hover:text-emerald-300">Home</Link>
+            <Link href="/" className="hover:text-[#f0c979] transition-colors">Home</Link>
             <span className="text-stone-600">/</span>
-            <span className="text-emerald-400">OpenStock Platform</span>
+            <span className="text-[#f0c979]">Global Markets &amp; Sentiment Hub</span>
           </nav>
-          <div className="mt-3 flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 rounded bg-emerald-500/15 border border-emerald-500/40 px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-300">
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-400/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-[0.14em] text-emerald-300">
               <Globe className="h-3 w-3 text-emerald-400" />
-              OPEN-SOURCE GLOBAL MARKET INTELLIGENCE
+              GLOBAL EXCHANGE &amp; SENTIMENT HUB
             </span>
-            <span className="rounded bg-stone-800/80 px-2 py-0.5 text-[10px] font-mono text-stone-300">
-              AGPL-3.0 FOREVER FREE
+            <span className="rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-[10px] font-mono text-stone-300">
+              9 INTERNATIONAL REGIONS · MULTI-TAB DESK
             </span>
             <WhopBadge size="xs" />
           </div>
-          <h1 className="mt-2 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight flex items-center gap-3">
-            <span>OpenStock Global Workspace</span>
+
+          <h1 className="mt-3 font-display text-3xl sm:text-4xl lg:text-5xl font-medium text-[#f2efe8] tracking-tight">
+            Global Markets &amp; Sentiment Hub
           </h1>
-          <p className="mt-4 max-w-3xl text-xs sm:text-sm leading-relaxed text-stone-300 font-sans">
-            Ported directly from the popular open-source repository{" "}
-            <a
-              href="https://github.com/Open-Dev-Society/OpenStock"
-              target="_blank"
-              rel="noreferrer"
-              className="text-emerald-400 underline inline-flex items-center gap-1 font-bold"
-            >
-              Open-Dev-Society/OpenStock <ExternalLink className="h-3 w-3 inline" />
-            </a>
-            . Markets, minus the paywall: comprehensive coverage across 9 international hubs (US, India, Germany, Canada, Australia, Saudi Arabia, Poland, Crypto 24/7, and Forex), browser-style multi-tab ticker analysis, social sentiment radar (Reddit WSB, FinTwit, Polymarket odds), sector rotation heatmaps, and custom price alerts.
+          <p className="mt-4 max-w-3xl text-xs sm:text-sm leading-relaxed text-stone-300/90 font-sans">
+            Comprehensive global market workstation tracking 9 international trading hubs—US, India, Germany, Canada, Australia, Saudi Arabia, Poland, Crypto 24/7, and Global FX—paired with a multi-tab technical analyzer, crowd sentiment radar, sector rotation heatmaps, and real-time price trigger alerts.
           </p>
 
-          <div className="mt-6 flex flex-wrap gap-4 text-xs font-mono text-stone-400">
-            <span className="flex items-center gap-1.5 text-emerald-300">
-              <Globe className="h-3.5 w-3.5 text-emerald-400" />
-              9 Global Exchanges
+          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-mono text-stone-400">
+            <span className="flex items-center gap-1.5 text-emerald-400">
+              <Globe className="h-3.5 w-3.5" />
+              9 Global Exchanges &amp; Clocks
             </span>
-            <span>•</span>
-            <span className="flex items-center gap-1.5 text-emerald-300">
-              <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-              Reddit + X + Polymarket Radar
+            <span className="flex items-center gap-1.5 text-[#f0c979]">
+              <TrendingUp className="h-3.5 w-3.5 text-[#d8ab5a]" />
+              Multi-Tab Technical Overlays
             </span>
-            <span>•</span>
-            <span className="flex items-center gap-1.5 text-emerald-300">
+            <span className="flex items-center gap-1.5 text-stone-200">
+              <Sparkles className="h-3.5 w-3.5 text-[#d8ab5a]" />
+              Social &amp; Crowd Sentiment Radar
+            </span>
+            <span className="flex items-center gap-1.5 text-stone-200">
               <Bell className="h-3.5 w-3.5 text-emerald-400" />
-              Real-time Invalidation &amp; Price Alerts
+              Custom Price Trigger Manager
             </span>
           </div>
         </div>
