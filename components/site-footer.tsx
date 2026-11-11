@@ -11,15 +11,17 @@ interface FooterLink {
 
 const COLUMNS: { title: string; links: FooterLink[] }[] = [
   {
-    title: "Coverage",
+    title: "Coverage & Platforms",
     links: [
+      { href: "/terminal", label: "Terminal (Workstation)", exclusive: true },
+      { href: "/openbb", label: "OpenBB Quantitative Platform", exclusive: true },
+      { href: "/gold-news", label: "News (100 Live Dossiers)", exclusive: true },
+      { href: "/wsj", label: "Market Center & Analysis", exclusive: true },
       { href: "/markets", label: "S&P 500 & Nasdaq" },
       { href: "/crypto", label: "Binance crypto", exclusive: true },
       { href: "/meme-coins", label: "Pump.fun memes", exclusive: true },
       { href: "/pipeline", label: "Data Pipeline & 2,000+ Scoring", exclusive: true },
       { href: "/chat", label: "Live Trading Chat", exclusive: true },
-      { href: "/ticker/BTC", label: "Bitcoin trend score" },
-      { href: "/ticker/NVDA", label: "NVIDIA trend score" },
     ],
   },
   {

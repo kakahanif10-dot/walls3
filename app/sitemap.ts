@@ -5,7 +5,7 @@ import { ARTICLES, COURSES } from "@/lib/content";
 const BASE = "https://nextwallstreet.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const staticPages = ["", "/markets", "/crypto", "/meme-coins", "/research", "/academy", "/pricing", "/watchlist", "/disclaimer"];
+  const staticPages = ["", "/terminal", "/gold-news", "/wsj", "/markets", "/crypto", "/meme-coins", "/chat", "/calculator", "/research", "/academy", "/pricing", "/watchlist", "/disclaimer"];
 
   return [
     ...staticPages.map((path) => ({

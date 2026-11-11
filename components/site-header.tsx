@@ -8,7 +8,7 @@ import FeedBadge from "@/components/feed-badge";
 import AuthButton from "@/components/auth-button";
 import WhopBadge from "@/components/whop-badge";
 import { useWhop } from "@/lib/whop-context";
-import { TrendingUp, BarChart3, Coins, Flame, Bell, Cpu } from "lucide-react";
+import { TrendingUp, BarChart3, Coins, Flame, Bell, Cpu, Terminal, FileText, Zap, Database } from "lucide-react";
 
 interface NavLink {
   href: string;
@@ -18,22 +18,28 @@ interface NavLink {
 }
 
 const DESK_TABS = [
+  { href: "/terminal", label: "Terminal", icon: Terminal, desc: "Professional Multi-Screen Financial Workstation", pro: true },
+  { href: "/openbb", label: "OpenBB", icon: Database, desc: "OpenBB Quant Platform & CLI", pro: true },
+  { href: "/gold-news", label: "News", icon: Zap, desc: "100 Live Breaking Action Catalysts", pro: true },
+  { href: "/wsj", label: "Market Center", icon: FileText, desc: "Most Active, Form 4 Insiders & Deep Analysis", pro: true },
   { href: "/markets", label: "Wall Street Desk", icon: BarChart3, desc: "S&P 500, Nasdaq, Institutional Flow", pro: false },
   { href: "/calculator", label: "Day Trader Desk", icon: TrendingUp, desc: "Intraday Levels & Invalidation Sizing", pro: true },
   { href: "/crypto", label: "Crypto Desk", icon: Coins, desc: "Binance, Layer-1/2, Liquidity Float", pro: false },
-  { href: "/meme-coins", label: "Meme Coin Desk", icon: Flame, desc: "pump.fun, Bonding Curves, 2% Risk Cap", pro: false },
+  { href: "/meme-coins", label: "Meme Desk", icon: Flame, desc: "pump.fun, Bonding Curves, 2% Risk Cap", pro: false },
   { href: "/desks", label: "All 44 Desks", icon: Cpu, desc: "44 Quantitative Desks", pro: true },
 ];
 
 const MAIN_LINKS: NavLink[] = [
+  { href: "/terminal", label: "Terminal", pro: true },
+  { href: "/openbb", label: "OpenBB", pro: true },
+  { href: "/gold-news", label: "News", live: true, pro: true },
+  { href: "/wsj", label: "Market Center", pro: true },
+  { href: "/chat", label: "Trading Floor", live: true, pro: true },
   { href: "/desks", label: "44 Desks", pro: true },
   { href: "/markets", label: "Equities" },
   { href: "/crypto", label: "Crypto" },
   { href: "/meme-coins", label: "Memes" },
-  { href: "/chat", label: "Trading Floor", live: true, pro: true },
   { href: "/calculator", label: "Calculator", pro: true },
-  { href: "/research", label: "70 Research Decks", pro: true },
-  { href: "/academy/watch", label: "60 Masterclasses", pro: true },
   { href: "/pricing", label: "Pricing" },
 ];
 
@@ -68,7 +74,7 @@ export default function SiteHeader() {
                 >
                   <Icon className="h-3 w-3 text-gold" />
                   <span>{desk.label}</span>
-                  {desk.pro && <WhopBadge size="xs" />}
+                  {desk.pro && <WhopBadge size="xs" asSpan />}
                 </Link>
               );
             })}
@@ -83,7 +89,7 @@ export default function SiteHeader() {
             >
               <Bell className="h-3 w-3 text-emerald-400 animate-pulse" />
               <span>VIP Alerts Terminal</span>
-              <WhopBadge size="xs" />
+              <WhopBadge size="xs" asSpan />
             </Link>
             <span className="h-3 w-px bg-line" />
             <LiveClock compact />
@@ -116,7 +122,7 @@ export default function SiteHeader() {
               }`}
             >
               <span>{link.label}</span>
-              {link.pro && <WhopBadge size="xs" />}
+              {link.pro && <WhopBadge size="xs" asSpan />}
               {link.live && (
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
               )}
@@ -132,13 +138,7 @@ export default function SiteHeader() {
           >
             <span>Watchlist</span>
           </Link>
-          <button
-            type="button"
-            onClick={() => openWhopModal("Whop PRO Membership")}
-            title="NextWall Street PRO Access"
-          >
-            <WhopBadge size="sm" />
-          </button>
+          <WhopBadge size="sm" />
           <AuthButton />
           <Link
             href="/pricing"
@@ -194,7 +194,7 @@ export default function SiteHeader() {
                     <Icon className="h-3.5 w-3.5 text-gold" />
                     <span>{desk.label}</span>
                   </span>
-                  {desk.pro && <WhopBadge size="xs" />}
+                  {desk.pro && <WhopBadge size="xs" asSpan />}
                 </Link>
               );
             })}
@@ -214,7 +214,7 @@ export default function SiteHeader() {
                 }`}
               >
                 <span>{link.label}</span>
-                {link.pro && <WhopBadge size="xs" />}
+                {link.pro && <WhopBadge size="xs" asSpan />}
               </Link>
             ))}
           </div>

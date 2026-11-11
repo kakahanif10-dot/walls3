@@ -39,8 +39,10 @@ const KIND_LABEL: Record<Kind, string> = {
   meme: "Meme coins",
 };
 
+export const dynamicParams = true;
+
 export function generateStaticParams() {
-  return ASSETS.map((asset) => ({ symbol: asset.symbol }));
+  return ASSETS.slice(0, 25).map((asset) => ({ symbol: asset.symbol }));
 }
 
 export async function generateMetadata({

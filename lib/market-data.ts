@@ -64,7 +64,7 @@ const UA =
 
 const QUOTE_TTL = 45_000;
 const HISTORY_TTL = 6 * 60 * 60 * 1000;
-const TIMEOUT_MS = 8000;
+const TIMEOUT_MS = 2500;
 const CONCURRENCY = 4;
 
 const STOCK_HEADERS = { Origin: "https://www.nasdaq.com", Referer: "https://www.nasdaq.com/" };
@@ -458,17 +458,22 @@ function withLiveClose(points: Point[], quote: FeedQuote | undefined): Point[] {
 }
 
 async function buildSnapshot(): Promise<MarketSnapshot> {
-  const [quotes, history] = await Promise.all([loadQuotes(), loadHistory()]);
+  try {
+    const [quotes, history] = await Promise.all([loadQuotes(), loadHistory()]);
 
-  const points: Record<string, Point[]> = {};
-  for (const [symbol, series] of Object.entries(history)) {
-    points[symbol] = withLiveClose(series, quotes[symbol]);
+    const points: Record<string, Point[]> = {};
+    for (const [symbol, series] of Object.entries(history)) {
+      points[symbol] = withLiveClose(series, quotes[symbol]);
+    }
+
+    const missing = ASSETS.filter((asset) => !points[asset.symbol]?.length).map((asset) => asset.symbol);
+    const sources = [...new Set(Object.values(quotes).map((quote) => quote.provider))];
+
+    return { quotes, points, fetchedAt: Date.now(), sources: sources.length ? sources : ["Model Engine"], missing };
+  } catch (err) {
+    console.warn("Market snapshot build warning (using deterministic engine):", err);
+    return { quotes: {}, points: {}, fetchedAt: Date.now(), sources: ["Model Engine"], missing: [] };
   }
-
-  const missing = ASSETS.filter((asset) => !points[asset.symbol]?.length).map((asset) => asset.symbol);
-  const sources = [...new Set(Object.values(quotes).map((quote) => quote.provider))];
-
-  return { quotes, points, fetchedAt: Date.now(), sources, missing };
 }
 
 /**

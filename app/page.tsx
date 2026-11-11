@@ -10,7 +10,7 @@ import { LivePrice, LiveChange } from "@/components/live-price";
 import { ARTICLES, COURSES } from "@/lib/content";
 import { marketPulse, rowsFor, stanceColor, ASSET_BY_SYMBOL, metricsFor, type Row } from "@/lib/market";
 import { ensureMarketData } from "@/lib/market-data";
-import { TrendingUp, BarChart3, Coins, Flame, ArrowRight } from "lucide-react";
+import { TrendingUp, BarChart3, Coins, Flame, ArrowRight, Terminal, Zap, FileText, Database } from "lucide-react";
 
 function BoardRow({ row }: { row: Row }) {
   return (
@@ -177,6 +177,114 @@ export default async function HomePage() {
 
       {/* TICKER TAPE */}
       <TickerTape rows={rowsFor().slice(0, 18)} />
+
+      {/* INSTITUTIONAL TERMINALS & ACTION FEEDS */}
+      <section className="mx-auto max-w-7xl px-5 pt-12 pb-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {/* 1. Professional Terminal */}
+          <Link
+            href="/terminal"
+            className="group relative overflow-hidden rounded-2xl border-2 border-[#ff8800]/50 bg-[#0a0a0a] p-5 transition-all duration-300 hover:border-[#ff8800] hover:shadow-[0_0_35px_rgba(255,136,0,0.25)] flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 rounded bg-[#ff8800]/15 border border-[#ff8800]/40 px-2 py-0.5 text-[10px] font-mono font-bold text-[#ffcc00] uppercase tracking-wider">
+                  <Terminal className="h-3 w-3 text-[#ff8800]" />
+                  INSTITUTIONAL
+                </span>
+                <span className="text-xs font-mono font-bold text-[#00ff66]">&lt;GO&gt;</span>
+              </div>
+              <h3 className="mt-4 font-mono text-lg font-bold text-white group-hover:text-[#ff8800] transition">
+                Professional Terminal
+              </h3>
+              <p className="mt-2 text-xs text-stone-400 font-mono leading-relaxed">
+                Full-screen classic terminal interface. Multi-indicator interactive candlestick charts (GP), Terminal Command Line (&lt;CMD&gt;), and Instant Trading Floor (IB) institutional chat.
+              </p>
+            </div>
+            <div className="mt-6 flex items-center justify-between border-t border-[#ff8800]/30 pt-3 text-xs font-mono text-[#00ff66]">
+              <span>Launch Terminal →</span>
+              <span className="text-[#ffcc00] font-bold">2,000+ Ticks</span>
+            </div>
+          </Link>
+
+          {/* 2. OpenBB Quantitative Workspace */}
+          <Link
+            href="/openbb"
+            className="group relative overflow-hidden rounded-2xl border-2 border-cyan-500/40 bg-gradient-to-br from-[#061826] via-[#040e17] to-[#02080d] p-5 transition-all duration-300 hover:border-cyan-400 hover:shadow-[0_0_35px_rgba(6,182,212,0.25)] flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 rounded bg-cyan-500/15 border border-cyan-500/40 px-2 py-0.5 text-[10px] font-mono font-bold text-cyan-300 uppercase tracking-wider">
+                  <Database className="h-3 w-3 text-cyan-400" />
+                  OPENBB ODP v4.3
+                </span>
+                <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
+              </div>
+              <h3 className="mt-4 font-mono text-lg font-bold text-white group-hover:text-cyan-400 transition">
+                OpenBB Workspace
+              </h3>
+              <p className="mt-2 text-xs text-stone-400 font-mono leading-relaxed">
+                Open Data Platform terminal CLI (`obb`), Parametric &amp; Monte Carlo VaR, US Treasury yield curves, Markowitz Efficient Frontier, and FINRA dark pool volume tracking.
+              </p>
+            </div>
+            <div className="mt-6 flex items-center justify-between border-t border-cyan-900/40 pt-3 text-xs font-mono text-cyan-400">
+              <span>OpenBB CLI &amp; Quant →</span>
+              <span className="text-cyan-300 font-bold">ODP Engine</span>
+            </div>
+          </Link>
+
+          {/* 3. News Action */}
+          <Link
+            href="/gold-news"
+            className="group relative overflow-hidden rounded-2xl border-2 border-amber-500/40 bg-gradient-to-br from-amber-950/20 via-ink-900 to-ink-950 p-5 transition-all duration-300 hover:border-amber-400 hover:shadow-[0_0_35px_rgba(216,171,90,0.2)] flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 border border-amber-500/40 px-2 py-0.5 text-[10px] font-mono font-bold text-amber-300 uppercase tracking-wider">
+                  <Zap className="h-3 w-3 text-amber-400" />
+                  100 BULLETINS
+                </span>
+                <span className="flex h-2 w-2 rounded-full bg-amber-400 animate-ping" />
+              </div>
+              <h3 className="mt-4 font-display text-lg text-bone group-hover:text-gold-bright transition">
+                News Action
+              </h3>
+              <p className="mt-2 text-xs text-muted leading-relaxed">
+                100 breaking dossiers updated minute-by-minute across geopolitics, executive investigations, and central bank repos with direct BUY, HOLD, and TRIM trade directives.
+              </p>
+            </div>
+            <div className="mt-6 flex items-center justify-between border-t border-line/60 pt-3 text-xs text-gold font-medium">
+              <span>100 Catalysts →</span>
+              <span className="font-mono text-emerald-400">Minute Sync</span>
+            </div>
+          </Link>
+
+          {/* 4. Market Center */}
+          <Link
+            href="/wsj"
+            className="group relative overflow-hidden rounded-2xl border-2 border-stone-800 bg-stone-950/90 p-5 transition-all duration-300 hover:border-amber-500/50 hover:shadow-[0_0_30px_rgba(245,158,11,0.15)] flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="font-serif font-black tracking-widest text-[9px] uppercase px-2 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded">
+                  INTELLIGENCE
+                </span>
+                <span className="text-[10px] text-stone-400 font-mono">MARKET DATA</span>
+              </div>
+              <h3 className="mt-4 font-serif text-lg text-stone-100 group-hover:text-amber-400 transition">
+                Market Center
+              </h3>
+              <p className="mt-2 text-xs text-stone-400 font-serif leading-relaxed">
+                Most Active by Volume, SEC Form 4 insider transaction ledger, S&amp;P 500 / Nasdaq sector heatmaps, and exclusive institutional executive columns.
+              </p>
+            </div>
+            <div className="mt-6 flex items-center justify-between border-t border-stone-800 pt-3 text-xs text-amber-400 font-serif">
+              <span>Market Center →</span>
+              <span className="text-stone-400 text-[11px] font-mono">SEC Form 4</span>
+            </div>
+          </Link>
+        </div>
+      </section>
 
       {/* 44 ANALYST DESKS SHOWCASE */}
       <section className="mx-auto max-w-7xl px-5 py-16">
